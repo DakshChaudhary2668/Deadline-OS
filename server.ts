@@ -400,66 +400,35 @@ app.post('/api/tasks/:id/analyze', (req, res) => {
   res.json(strategic);
 });
 
+
+import { getRecoveryStrategy } from './src/utils/aiRecovery';
+
 app.post('/api/tasks/:id/recovery', async (req, res) => {
+  const role = (req.query.role as string) || 'professional';
   const db = readDB();
   const task = db.tasks.find((t: any) => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: 'Not found' });
   
-  task.recoveryStrategy = {
-    strategyText: 'Deploy immediate recovery block.',
-    suggestedNewDeadline: new Date(Date.now() + 24 * 3600000).toISOString(),
-    actionItems: ['Review dependencies', 'Reallocate hours', 'Execute'],
-    resourceReallocation: 'Reallocate 2 hours from secondary activities.',
-    scopeReduction: 'Limit verification to core requirements.',
-    priorityShifts: 'De-prioritize non-urgent modules.',
-    riskMitigation: 'Activate automatic tracking.',
-    generatedAt: new Date().toISOString()
-  };
+  task.recoveryStrategy = getRecoveryStrategy(role);
   writeDB(db);
   res.json(task.recoveryStrategy);
 });
 
 // --- AI Briefing & Momentum ---
+
+import { calculateBriefing, calculateMomentum } from './src/utils/aiEngines';
+
 app.get('/api/ai/briefing', (req, res) => {
   const role = (req.query.role as string) || 'professional';
   const db = readDB();
   const tasks = db.tasks || [];
   const pending = tasks.filter((t: any) => t.status !== 'completed');
-  const config = MODE_LANGUAGES[role as keyof typeof MODE_LANGUAGES] || MODE_LANGUAGES.professional;
-  const templates = config.narrativeTemplates;
   
-  const successProbability = pending.length === 0 ? 100 : Math.max(10, 100 - (pending.length * 5));
-  const highRiskCount = pending.filter((t: any) => t.riskScore >= 60).length;
-  const totalEffort = pending.reduce((sum: number, t: any) => sum + (t.estimatedEffort || 0), 0);
+  const { successReason, strategicFocusArea } = calculateBriefing(pending, role);
   
-  const isOverloaded = totalEffort > 30;
-  const isWarning = successProbability < 75 || highRiskCount > 0;
-
-  let activeTemplate = templates.optimal;
-  if (isOverloaded) {
-    activeTemplate = templates.overloaded;
-  } else if (isWarning) {
-    activeTemplate = templates.warning;
-  }
-
-  let successReason = activeTemplate
-    .replace('{totalEffort}', String(totalEffort))
-    .replace('{remainingCount}', String(pending.length))
-    .replace('{successProbability}', String(Math.round(successProbability)));
-
-  let strategicFocusArea = (config.strategicLabels as any).executeLabel || config.strategicLabels.statusLabel || "Execute";
-  let recommendedActions = pending.slice(0, 3).map((t: any) => `Focus early efforts on resolving '${t.title}'.`);
-
   res.json({
-    successProbability,
+    dateLabel: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
     successReason,
-    highRiskCount,
-    recommendedActions,
-    workloadStressLevel: isOverloaded ? 'High' : 'Optimal',
-    biggestRiskToday: highRiskCount > 0 ? 'High deadline compression' : 'None',
-    mostImportantTask: pending.length > 0 ? pending[0].title : 'None',
-    criticalBottleneck: 'None',
-    recommendedIntervention: 'Proceed as scheduled',
     strategicFocusArea
   });
 });
@@ -471,80 +440,30 @@ app.get('/api/ai/momentum', (req, res) => {
   const pending = tasks.filter((t: any) => t.status !== 'completed');
   const completed = tasks.filter((t: any) => t.status === 'completed');
   
-  const pendingEffort = pending.reduce((sum: number, t: any) => sum + (t.estimatedEffort || 0), 0);
-  const recentCompleted = completed.length;
+  const result = calculateMomentum(pending, completed, role);
 
-  let momentumStatus = 'STABLE';
-  let keyObservation = '';
-  let riskAssessment = '';
-  let executiveRecommendation = '';
+  // Generate chart data logic can remain the same roughly, just keeping it generic
+  const last7Days = Array.from({length: 7}, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
 
-  const config = MODE_LANGUAGES[role as keyof typeof MODE_LANGUAGES] || MODE_LANGUAGES.professional;
-  const insights = (config as any).momentumInsights || {
-    overloaded: {
-      keyObservation: (pendingEffort: number) => `Workload exceeds sustainable velocity (${pendingEffort}h).`,
-      riskAssessment: 'High risk of cascading delays.',
-      executiveRecommendation: 'Initiate immediate scope reduction.'
-    },
-    accelerating: {
-      keyObservation: (recentCompleted: number) => `Velocity is high with ${recentCompleted} tasks recently cleared.`,
-      riskAssessment: 'Current trajectory is favorable.',
-      executiveRecommendation: 'Maintain current cadence.'
-    },
-    stable: {
-      keyObservation: 'Workflow is balanced with predictable output.',
-      riskAssessment: 'Low risk. Current pacing is sustainable.',
-      executiveRecommendation: 'Continue execution according to plan.'
-    },
-    declining: {
-      keyObservation: 'Task accumulation is outpacing completion rate.',
-      riskAssessment: 'Moderate risk of bottleneck formation.',
-      executiveRecommendation: 'Identify and unblock stalled tasks.'
-    }
-  };
-
-  if (pendingEffort > 25) {
-    momentumStatus = 'OVERLOADED';
-    keyObservation = insights.overloaded.keyObservation(pendingEffort);
-    riskAssessment = insights.overloaded.riskAssessment;
-    executiveRecommendation = insights.overloaded.executiveRecommendation;
-  } else if (recentCompleted > 2) {
-    momentumStatus = 'ACCELERATING';
-    keyObservation = insights.accelerating.keyObservation(recentCompleted);
-    riskAssessment = insights.accelerating.riskAssessment;
-    executiveRecommendation = insights.accelerating.executiveRecommendation;
-  } else if (pending.length === 0) {
-    momentumStatus = 'STABLE';
-    keyObservation = insights.stable.keyObservation;
-    riskAssessment = insights.stable.riskAssessment;
-    executiveRecommendation = insights.stable.executiveRecommendation;
-  } else {
-    momentumStatus = 'DECLINING';
-    keyObservation = insights.declining.keyObservation;
-    riskAssessment = insights.declining.riskAssessment;
-    executiveRecommendation = insights.declining.executiveRecommendation;
-  }
+  const chartData = last7Days.map(date => {
+    const added = tasks.filter((t: any) => t.createdAt && t.createdAt.startsWith(date)).length;
+    const finished = completed.filter((t: any) => t.createdAt && t.createdAt.startsWith(date)).length;
+    return { date: date.slice(5), effort: added, completions: finished };
+  });
 
   res.json({
-    chartData: [],
-    stats: {
-      velocityScore: 85,
-      burnRate: 1.2,
-      completionTrend: '+5%',
-      focusScore: 90
-    },
-    analysis: {
-      momentumStatus,
-      keyObservation,
-      riskAssessment,
-      executiveRecommendation
-    },
-    generatedAt: new Date().toISOString()
+    ...result,
+    chartData,
+    overallCompletionRate: pending.length === 0 && completed.length === 0 ? 0 : Math.round((completed.length / tasks.length) * 100),
+    tasksAddedThisWeek: 4,
+    tasksCompletedThisWeek: completed.length
   });
 });
 
-
-// Fetch current Day and Week plans if cached
 app.get('/api/ai/plans', (req, res) => {
   const db = readDB();
   res.json({
@@ -628,451 +547,12 @@ function classifyTask(task: Task): ClassifiedCategory {
 }
 
 // Helper for local offline backup simulation calculations
-function computeLocalSimulation(task: Task | undefined, scenario: string, pending: Task[], tasks: Task[]): any {
-  const totalEffort = pending.reduce((sum, t) => sum + t.estimatedEffort, 0);
-  const highRiskCount = pending.filter(t => t.status === 'overdue' || (t.riskScore && t.riskScore >= 70)).length;
 
-  // Workspace baseline probability
-  let currentWorkspace = 100 - Math.round(totalEffort * 1.2) - (highRiskCount * 5);
-  currentWorkspace = Math.max(15, Math.min(95, currentWorkspace));
-
-  let currentObjective = 100;
-  if (task) {
-    const risk = task.riskScore || 30;
-    currentObjective = 100 - risk;
-  }
-
-  let projectedWorkspace = currentWorkspace;
-  let projectedObjective = currentObjective;
-  
-  // Task classification
-  const classifiedCat = task ? classifyTask(task) : 'Engineering Project';
-
-  // Selected task context values
-  const taskTitle = task ? task.title : 'Selected Task';
-  const taskEffort = task ? task.estimatedEffort : 5;
-  const importance = task ? task.importance : 'Medium';
-  const remainingDays = task 
-    ? Math.max(1, Math.ceil((new Date(task.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : 2;
-  const availableCapacity = remainingDays * 6; // Standard 6 focus hours per day
-
-  // Opportunity Cost Analysis candidates
-  const otherTasks = pending.filter(t => t.id !== task?.id);
-  const exposedTask = otherTasks.find(t => t.importance === 'Critical' || t.importance === 'High') || otherTasks[0];
-  const delayedTask = [...otherTasks].reverse().find(t => t.importance === 'Medium' || t.importance === 'Low') || otherTasks[otherTasks.length - 1];
-
-  let gains: string[] = [];
-  let losses: string[] = [];
-  let netImpact = '';
-  let criticalConsequences: string[] = [];
-  let recoveryRecommendations: string[] = [];
-  let verdict: 'RECOMMENDED' | 'ACCEPTABLE_RISK' | 'NOT_RECOMMENDED' = 'ACCEPTABLE_RISK';
-  let verdictExplanation = '';
-  let impactSummary = '';
-
-  // Scenario-specific reasoning & outcomes mapping
-  switch (scenario) {
-    case 'SKIP_TASK': {
-      projectedObjective = 0;
-      projectedWorkspace = Math.min(95, currentWorkspace + Math.round(taskEffort * 1.4));
-
-      gains = [
-        `Reclaims ${taskEffort} immediate cognitive focus hours from "${taskTitle}"`,
-        `Completely eliminates active deadline pressure for this objective`
-      ];
-
-      if (delayedTask) {
-        gains.push(`Allows accelerated pacing on delayed item: "${delayedTask.title}"`);
-      }
-
-      // Losses / Consequences / Verdicts based on classification & importance
-      if (importance === 'Critical' || importance === 'High' || ['Academic', 'Career', 'Engineering Project', 'Finance'].includes(classifiedCat)) {
-        verdict = 'NOT_RECOMMENDED';
-        verdictExplanation = `Abandons a high-stakes ${classifiedCat} objective. The immediate stress relief does not justify total milestone failure.`;
-        
-        losses = [
-          `Complete abandonment of the ${classifiedCat} milestone: "${taskTitle}"`,
-          `Guarantees a 0% completion record for this specific objective`
-        ];
-        if (exposedTask) {
-          losses.push(`Exposes parallel workload and leaves "${exposedTask.title}" highly vulnerable to cascading neglect.`);
-        }
-
-        if (classifiedCat === 'Academic') {
-          criticalConsequences = [
-            'Direct downgrade of overall academic standing and core evaluation indicators',
-            'Severe reduction in exam readiness or course-credit compliance',
-            'Shatters revision momentum for high-priority consensus replication material'
-          ];
-          recoveryRecommendations = [
-            'Request a strict academic timeline extension or seek tutor/peer consultation',
-            'Isolate and complete a micro-scaled 1-hour outline of core consensus theorems',
-            'Immediately reallocate all reclaimed hours to protect other parallel academic exams'
-          ];
-        } else if (classifiedCat === 'Career') {
-          criticalConsequences = [
-            'Permanent damage to your professional recruiting or internship application pipeline',
-            'Misses high-stakes networking window with key industry advocates',
-            'Severe penalty to professional milestone compliance index'
-          ];
-          recoveryRecommendations = [
-            'Immediately contact the recruitment team to explain timeline mismatch',
-            'Submit a simplified application draft to remain in active contention',
-            'Lock in early-morning high-energy slots to prepare secondary resume tailoring'
-          ];
-        } else if (classifiedCat === 'Engineering Project') {
-          criticalConsequences = [
-            'Forces a complete breach of project SLA commitment thresholds',
-            'Accumulates severe technical debt by postponing core database connector integrations',
-            'Blocks front-end integration pipelines scheduled for parallel deployments'
-          ];
-          recoveryRecommendations = [
-            'Isolate the minimum viable prototype draft and perform a partial deploy',
-            'Renegotiate downstream pipeline dependencies with your software partners',
-            'Refocus the reclaimed bandwidth on core architectural stabilization goals'
-          ];
-        } else if (classifiedCat === 'Finance') {
-          criticalConsequences = [
-            'Direct exposure to punitive financial late fees or interest compounding',
-            'Negative impact on personal credit rating or business compliance audits',
-            'Immediate freeze on secondary transactional liquidity registers'
-          ];
-          recoveryRecommendations = [
-            'Activate an automatic bank draft transfer tonight to limit payment delays',
-            'Request a temporary 48-hour compliance waiver from the audit platform',
-            'Triage transaction logs immediately to finalize baseline federal estimates'
-          ];
-        } else {
-          criticalConsequences = [
-            `Slight reduction in overall backlog compliance records for "${taskTitle}"`,
-            'Compromises systematic habit building routines'
-          ];
-          recoveryRecommendations = [
-            'Log this item in archival backlog logs for evaluation next review cycle',
-            'Re-route focus strictly to stabilize core remaining milestone paths'
-          ];
-        }
-      } else {
-        // Low importance or non-critical category (e.g. Personal Learning, Health, Admin)
-        verdict = 'RECOMMENDED';
-        verdictExplanation = `Strategically recommended. Offloading non-critical ${classifiedCat} objectives protects core workload buffers.`;
-        
-        losses = [
-          `Slight postponement of non-essential ${classifiedCat} goal: "${taskTitle}"`,
-          'Minor reduction in overall personal backlog breadth'
-        ];
-
-        criticalConsequences = [
-          'Slight deferral of auxiliary learning or fitness habit loops',
-          'Negligible impact on overall professional or academic milestone tracking'
-        ];
-
-        recoveryRecommendations = [
-          'Direct all reallocated focus hours into core remaining tasks',
-          'Schedule a lightweight 30-minute block on the weekend to revisit this learning goal'
-        ];
-      }
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Skipping "${taskTitle}" completely reclaims ${taskEffort} focus hours, reducing workspace stress indicators from High to Moderate. However, since this is a ${importance} priority ${classifiedCat} objective, abandoning it completely collapses its success probability to 0%. This trade-off is only justifiable to prevent a total systemic meltdown on other parallel deliverables.`;
-      break;
-    }
-
-    case 'DELAY_1_DAY': {
-      projectedObjective = Math.max(15, currentObjective - 8);
-      projectedWorkspace = Math.max(10, currentWorkspace - 4);
-
-      gains = [
-        'Immediate short-term decompression of today\'s focus schedule',
-        'Extra time to organize study resources, outline code architectures, or review documentation'
-      ];
-
-      losses = [
-        `Compresses the remaining timeline buffer for "${taskTitle}" from ${remainingDays} to ${Math.max(1, remainingDays - 1)} days`,
-        'Increases backlog density and stress levels for subsequent calendar blocks'
-      ];
-      if (exposedTask) {
-        losses.push(`Exposed: "${exposedTask.title}" stands vulnerable to tomorrow's compacted focus slots.`);
-      }
-
-      criticalConsequences = [
-        'Slight increase in next-day cognitive overload probability',
-        'Reduces the capacity to absorb unexpected hardware or API integration friction'
-      ];
-
-      recoveryRecommendations = [
-        'Lock in a 2-hour uninterrupted morning study or coding block tomorrow without fail',
-        'Pre-write a high-level conceptual skeleton or outline tonight to minimize tomorrow\'s starting friction'
-      ];
-
-      verdict = 'ACCEPTABLE_RISK';
-      verdictExplanation = `Acceptable tactical postponement. Decompression is helpful, but requires disciplined execution tomorrow.`;
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Postponing "${taskTitle}" by 24 hours provides instant breathing room today to address critical tasks. However, it compresses your remaining execution window to ${Math.max(1, remainingDays - 1)} days, increasing tomorrow's backlog density. The decision is acceptable, provided you strictly lock in focus hours to prevent cascading delays.`;
-      break;
-    }
-
-    case 'DELAY_3_DAYS': {
-      projectedObjective = Math.max(5, currentObjective - 25);
-      projectedWorkspace = Math.max(10, currentWorkspace - 16);
-
-      gains = [
-        'Significant immediate near-term cognitive decompression and psychological relief',
-        'Enables a complete temporary pivot to address urgent workspace fires'
-      ];
-
-      losses = [
-        `Drastically compresses remaining execution buffer from ${remainingDays} days to critical limits`,
-        'Creates an extreme risk of deadline convergence and scheduling bottleneck'
-      ];
-      if (exposedTask) {
-        losses.push(`Exposed: "${exposedTask.title}" must now compete directly for time due to timeline overlap.`);
-      }
-
-      criticalConsequences = [
-        'Major convergence of high-stakes milestones near mid-week thresholds',
-        'Significant accumulation of cognitive fatigue as multiple deliverables come due at once'
-      ];
-
-      recoveryRecommendations = [
-        'Instantly initiate scope-trimming on minor sub-features to compress effort requirements',
-        'Conduct a lightweight 15-minute conceptual check-in daily to keep technical context warm'
-      ];
-
-      // Verdict logic based on remaining days and priority
-      if (remainingDays <= 4 || importance === 'Critical' || importance === 'High') {
-        verdict = 'NOT_RECOMMENDED';
-        verdictExplanation = `Creating a massive 3-day backlog compression is highly dangerous. Consider scope reduction instead.`;
-      } else {
-        verdict = 'ACCEPTABLE_RISK';
-        verdictExplanation = `Acceptable with high risk. Generous remaining timeline buffer prevents immediate failure, but watch convergence closely.`;
-      }
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Delaying "${taskTitle}" by 72 hours provides substantial near-term relief, but risks a severe scheduling bottleneck. Compressing the timeline creates a high convergence hazard with parallel objectives. This action is not recommended unless you aggressively scale back scope.`;
-      break;
-    }
-
-    case 'REDUCE_EFFORT': {
-      const savedEffort = Math.round(taskEffort * 0.5);
-      projectedObjective = Math.max(30, currentObjective - 18);
-      projectedWorkspace = Math.min(95, currentWorkspace + 12);
-
-      gains = [
-        `Saves ${savedEffort} focus hours, which can be immediately reallocated to high-stakes fires`,
-        'Reduces immediate mental friction and procrastination risk by lowering the task barrier'
-      ];
-
-      losses = [
-        `Direct risk of quality reduction or superficial results for "${taskTitle}"`,
-        `Accepts a less comprehensive or lower-evaluation output for this deliverable`
-      ];
-
-      if (classifiedCat === 'Academic') {
-        criticalConsequences = [
-          'Increased risk of superficial understanding of Consensus replication or Replication protocols',
-          'Vulnerability to low grades or negative evaluation scores on high-priority coursework'
-        ];
-        recoveryRecommendations = [
-          'Focus exclusively on core Consensus theorems (Paxos, Raft) and skip secondary case studies',
-          'Use highly structured summaries or peer outline guides to maintain high-yield review'
-        ];
-      } else if (classifiedCat === 'Career') {
-        criticalConsequences = [
-          'Fails to highlight Staff Engineer impact metrics or Leadership qualifications thoroughly',
-          'Slightly lowers overall application polish against highly competitive resumes'
-        ];
-        recoveryRecommendations = [
-          'Ensure the Staff Engineer metrics highlighting performance optimizations are protected',
-          'Get a rapid 15-minute peer review to catch glaring resume optimization typos'
-        ];
-      } else if (classifiedCat === 'Engineering Project') {
-        criticalConsequences = [
-          'Trades off critical testing, security checkups, or deep error-handling routines',
-          'Slightly higher risk of regression errors slipping into the Core database connector integration'
-        ];
-        recoveryRecommendations = [
-          'Focus 100% of remaining hours on the core CRUD functions; postpone advanced telemetry filters',
-          'Run automated compilers and basic lint checks to prevent syntax/import breaks'
-        ];
-      } else {
-        criticalConsequences = [
-          'Results in a minimal viable outcome that lacks detail or deep-dive analysis',
-          'Trades off thoroughness for chronological safety'
-        ];
-        recoveryRecommendations = [
-          'De-prioritize formatting and minor polish; lock in core functional deliverables first',
-          'Log outstanding secondary elements to revisit in subsequent low-pressure periods'
-        ];
-      }
-
-      verdict = 'RECOMMENDED';
-      verdictExplanation = `Highly recommended. Pragmatic scope compression is the single best defense against systemic timeline failures.`;
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Compressing the scope of "${taskTitle}" reduces its effort requirements from ${taskEffort}h to ${taskEffort - savedEffort}h, reclaiming critical cognitive bandwidth. While this trade-off slightly compromises final output quality, it significantly lifts overall workspace safety, making it a highly intelligent tactical adjustment.`;
-      break;
-    }
-
-    case 'ADD_2_HOURS': {
-      projectedObjective = Math.min(98, currentObjective + 15);
-      projectedWorkspace = Math.min(98, currentWorkspace + 15);
-
-      gains = [
-        'Injects significant raw execution capacity into your active daily workspace',
-        'Accelerates task velocity across all academic, professional, and personal backlogs'
-      ];
-
-      losses = [
-        'Significant risk of acute cognitive fatigue and early burnout symptoms',
-        'Compromises sleep patterns, physiological recovery, and somatic grounding windows'
-      ];
-
-      criticalConsequences = [
-        'Heightened stress indicators and elevated error rate due to prolonged fatigue',
-        'Potential cognitive crash within 48 to 72 hours if sustained without recovery'
-      ];
-
-      recoveryRecommendations = [
-        'Use strict 50/10 Pomodoro intervals to protect ocular and cognitive energy',
-        'Eliminate social feeds, phone alerts, and other focus leaks to conserve mental fuel'
-      ];
-
-      verdict = 'RECOMMENDED';
-      verdictExplanation = `Strategically recommended as a short-term tactical sprint. Unsustainable beyond 72 hours.`;
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Forcing an extra 2 focus hours daily boosts your workspace capacity from 6h to 8h, noticeably increasing success rates. While this high-impact strategy is highly effective for pushing through immediate peaks like exam revision, it introduces severe fatigue risks if maintained for more than a few days.`;
-      break;
-    }
-
-    case 'DROP_LOW_PRIORITY': {
-      const lowCount = pending.filter(t => t.importance === 'Low').length || 1;
-      projectedObjective = currentObjective;
-      projectedWorkspace = Math.min(98, currentWorkspace + 16);
-
-      gains = [
-        `Purges ${lowCount} low-importance, distracting task(s) completely from the active workspace radar`,
-        'Maximizes cognitive bandwidth and creates an ultra-clean operational pipeline for core deliverables'
-      ];
-
-      losses = [
-        'Postpones personal enrichment, learning skills, or auxiliary housekeeping items indefinitely'
-      ];
-
-      criticalConsequences = [
-        'Minor delay in secondary, long-term personal development milestones',
-        'Negligible impact on high-importance professional or academic timeline indicators'
-      ];
-
-      recoveryRecommendations = [
-        'Devote large, uninterrupted focus blocks exclusively to Critical and High priority items',
-        'Archive dropped minor tasks to secondary lists for review during low-pressure cycles'
-      ];
-
-      verdict = 'RECOMMENDED';
-      verdictExplanation = `Classic executive prioritization. Clearing non-essential clutter secures high-stakes success.`;
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Dropping low-priority items completely clears auxiliary clutter from your screen, allowing you to focus 100% of your energy on critical deliverables like "${taskTitle}". This clean prioritization dramatically boosts workspace success indicators while minimizing unnecessary mental friction.`;
-      break;
-    }
-
-    case 'PRIORITIZE_TASK': {
-      projectedObjective = Math.min(98, currentObjective + 20);
-      projectedWorkspace = Math.max(10, currentWorkspace - 6);
-
-      gains = [
-        `Guarantees hyper-focused allocation and premium resources for "${taskTitle}"`,
-        `Maximizes conceptual thoroughness, code coverage, or exam preparation safety`
-      ];
-
-      losses = [
-        'Decelerates progress and increases deadline risk on parallel secondary items'
-      ];
-      if (exposedTask) {
-        losses.push(`Exposed: "${exposedTask.title}" stands vulnerable as focus is heavily diverted elsewhere.`);
-      }
-
-      criticalConsequences = [
-        'Other outstanding tasks see a moderate increase in deadline-miss probability',
-        'Requires deliberate temporary neglect of minor parallel administrative tasks'
-      ];
-
-      recoveryRecommendations = [
-        'Establish 3-hour hyper-focus zones strictly for this priority',
-        'Pre-negotiate soft buffers with software partners or tutors for secondary items'
-      ];
-
-      verdict = 'RECOMMENDED';
-      verdictExplanation = `Highly recommended. Isolating focus onto high-stakes targets prevents systemic risk.`;
-
-      // Context-aware reasoning (Executive Summary)
-      impactSummary = `Elevating "${taskTitle}" to supreme priority ensures maximum attention is given to this crucial ${classifiedCat} milestone. While this slight shift introduces a minor deadline-miss risk for other tasks, securing this key objective is critical to protecting your overall reputation.`;
-      break;
-    }
-
-    default:
-      break;
-  }
-
-  let projectedFailureRisk = 100 - projectedWorkspace;
-  projectedFailureRisk = Math.max(2, Math.min(98, projectedFailureRisk));
-
-  // Dynamic Confidence Score calculation based on certainty factors
-  let baseConfidence = 85;
-  if (scenario === 'SKIP_TASK') baseConfidence = 95;
-  else if (scenario === 'DELAY_1_DAY') baseConfidence = 82;
-  else if (scenario === 'DELAY_3_DAYS') baseConfidence = 76;
-  else if (scenario === 'REDUCE_EFFORT') baseConfidence = 71;
-  else if (scenario === 'ADD_2_HOURS') baseConfidence = 64;
-  else if (scenario === 'DROP_LOW_PRIORITY') baseConfidence = 89;
-  else if (scenario === 'PRIORITIZE_TASK') baseConfidence = 84;
-
-  const historicalBonus = Math.min(6, Math.round(tasks.length / 2));
-  const loadRatio = totalEffort / Math.max(1, availableCapacity);
-  const overloadPenalty = loadRatio > 1.4 ? -10 : loadRatio > 1.0 ? -5 : 2;
-  const proximityPenalty = remainingDays <= 1 ? -8 : remainingDays <= 2 ? -4 : 0;
-
-  let finalConfidence = baseConfidence + historicalBonus + overloadPenalty + proximityPenalty;
-  finalConfidence = Math.max(45, Math.min(98, finalConfidence));
-
-  // Net Impact Opportunity Cost Summary
-  let netImpactLabel = 'Moderate';
-  if (importance === 'Critical' && (scenario === 'SKIP_TASK' || scenario === 'DELAY_3_DAYS')) {
-    netImpactLabel = 'High';
-  } else if (importance === 'Low' || ['Personal Learning', 'Health & Fitness', 'Administrative'].includes(classifiedCat)) {
-    netImpactLabel = 'Low';
-  }
-
-  const opportunityCostSection = `Opportunity Cost:
-Gains: +${scenario === 'SKIP_TASK' ? taskEffort : scenario === 'REDUCE_EFFORT' ? Math.round(taskEffort * 0.5) : scenario === 'ADD_2_HOURS' ? remainingDays * 2 : 0} focus hours
-Delayed: ${delayedTask ? delayedTask.title : 'None outstanding'}
-Exposed: ${exposedTask ? exposedTask.title : 'None identified'}
-Strategic Impact: ${netImpactLabel}`;
-
-  return {
-    currentWorkspaceSuccess: currentWorkspace,
-    projectedWorkspaceSuccess: projectedWorkspace,
-    currentObjectiveSuccess: currentObjective,
-    projectedObjectiveSuccess: projectedObjective,
-    currentFailureRisk: 100 - currentWorkspace,
-    projectedFailureRisk: projectedFailureRisk,
-    impactSummary,
-    gains,
-    losses,
-    netImpact: opportunityCostSection,
-    criticalConsequences,
-    recoveryRecommendations,
-    verdict,
-    verdictExplanation,
-    confidenceScore: finalConfidence
-  };
+import { computeSimulation } from './src/utils/aiSimulation';
+function computeLocalSimulation(task: any, scenario: string, pending: any[], tasks: any[], role: string) {
+  return computeSimulation(task, scenario, pending, tasks, role);
 }
 
-// What-If Simulator Endpoint
 app.post('/api/ai/simulate', async (req, res) => {
   const { taskId, scenario } = req.body;
   const db = readDB();
@@ -1084,7 +564,7 @@ app.post('/api/ai/simulate', async (req, res) => {
   const modeInfo = getModeInstructions(role);
 
   // Run the deterministic simulation first to secure accurate forecasting numbers
-  const deterministicResults = computeLocalSimulation(selectedTask, scenario, pending, tasks);
+  const deterministicResults = computeLocalSimulation(selectedTask, scenario, pending, tasks, role);
 
   if (!process.env.GEMINI_API_KEY) {
     return res.json(deterministicResults);
@@ -1222,10 +702,10 @@ app.post('/api/ai/chat', async (req, res) => {
   const modeInfo = getModeInstructions(r);
 
   const fallbackResponses: Record<string, string> = {
-    developer: "As your Chief of Staff, I am currently running on the local fallback engine because no GEMINI_API_KEY is configured. Based on your current engineering tasks, you have active sprints like 'Prototype Cloud Microservices Integration' requiring focus. To maximize Sprint Velocity and unblock downstream dependencies, prioritize your active tickets and avoid context-switching. To unlock fully interactive real-time AI strategic guidance, configure your API key in the Settings > Secrets workspace.",
-    student: "As your Academic Advisor, I am currently running on local backup parameters as no GEMINI_API_KEY has been set. Looking at your academic syllabus, you have demanding commitments like 'Prep for Systems Architecture Final Exam'. Secure your Exam Readiness by dedicating undistracted morning blocks to complex topic reviews. Add a GEMINI_API_KEY in the Secrets configuration area to begin dynamic real-time coaching.",
-    job_seeker: "As your Career Chief of Staff, I am operating on local backup algorithms. You have active goals like 'Tailor Resume for Staff Engineer Roles'. To secure your target offers, maintain consistent portfolio development and networking schedules. Provide your GEMINI_API_KEY in the Secrets section of your workspace settings to activate deep strategic conversational logic.",
-    professional: "As your Corporate Chief of Staff, I am operating on local fallback guidelines. Your current deliverables include critical work like 'Submit Federal Freelance Quarterly Taxes'. To maintain peak operational alignment, protect your deep work windows from low-priority administrative overhead. Configure your GEMINI_API_KEY under Settings > Secrets to unlock personalized interactive conversational advising."
+    developer: "As your Chief of Staff, I am currently running on the local fallback engine because no GEMINI_API_KEY is configured. Based on your current engineering tasks, Sprint Velocity is tracking normally but watch out for merge queue bottlenecks. Focus on your unmerged PRs.",
+    student: "As your Academic Advisor, I am currently running on local backup parameters as no GEMINI_API_KEY has been set. Look at your syllabus schedule. Ensure you are maintaining spaced repetition for upcoming heavy-weighted exams.",
+    job_seeker: "As your Career Coach, I am operating on local backup algorithms. Maintain a high velocity of applications, but ensure your ATS matches are optimized. Prioritize interview prep today.",
+    professional: "As your Corporate Chief of Staff, I am operating on local fallback guidelines. Ensure SLAs are protected and delegate any tasks that exceed operational capacity to preserve core deliverable bandwidth."
   };
 
   const defaultFallback = fallbackResponses[r] || fallbackResponses.professional;
