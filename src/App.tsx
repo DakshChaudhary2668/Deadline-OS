@@ -16,7 +16,8 @@ import {
   UserCircle2,
   AlertCircle,
   Gauge,
-  Sparkles
+  Sparkles,
+  Brain
 } from 'lucide-react';
 import { Task, DayPlan, WeekPlan, DashboardBriefing, MomentumIntelligence } from './types';
 import DailyBriefing from './components/DailyBriefing';
@@ -25,6 +26,8 @@ import TaskForm from './components/TaskForm';
 import PlanningAgent from './components/PlanningAgent';
 import RecoveryHub from './components/RecoveryHub';
 import WhatIfSimulator from './components/WhatIfSimulator';
+import { StrategicDecisions } from './components/StrategicDecisions';
+import { MODE_LANGUAGES } from './utils/modeLanguage';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
@@ -36,7 +39,7 @@ export default function App() {
   const [weekPlan, setWeekPlan] = useState<WeekPlan | null>(null);
   
   // Navigation
-  const [activeView, setActiveView] = useState<'briefing' | 'tasks' | 'plans' | 'recovery' | 'simulator'>('briefing');
+  const [activeView, setActiveView] = useState<'briefing' | 'tasks' | 'strategic' | 'plans' | 'recovery' | 'simulator'>('briefing');
   
   // Mock Role Context (Academic, Dev, Job, etc.)
   const [mockRole, setMockRole] = useState<RoleType>('developer');
@@ -77,7 +80,7 @@ export default function App() {
   const fetchBriefing = async () => {
     setLoadingBriefing(true);
     try {
-      const res = await fetch('/api/ai/briefing');
+      const res = await fetch(`/api/ai/briefing?role=${mockRole}`);
       if (!res.ok) throw new Error('Briefing consolidation failed');
       const data = await res.json();
       setBriefing(data);
@@ -92,7 +95,7 @@ export default function App() {
   const fetchMomentum = async () => {
     setLoadingMomentum(true);
     try {
-      const res = await fetch('/api/ai/momentum');
+      const res = await fetch(`/api/ai/momentum?role=${mockRole}`);
       if (!res.ok) throw new Error('Momentum consolidation failed');
       const data = await res.json();
       setMomentum(data);
@@ -200,7 +203,7 @@ export default function App() {
   const handleAnalyzeTaskPriority = async (id: string) => {
     setAnalyzingTaskId(id);
     try {
-      const res = await fetch(`/api/tasks/${id}/analyze`, { method: 'POST' });
+      const res = await fetch(`/api/tasks/${id}/analyze?role=${mockRole}`, { method: 'POST' });
       if (!res.ok) throw new Error('AI Priority computation rejected');
       const updated = await res.json();
       setTasks(prev => prev.map(t => t.id === id ? updated : t));
@@ -215,7 +218,7 @@ export default function App() {
   const handleGenerateRecoveryPlan = async (id: string) => {
     setRecoveringTaskId(id);
     try {
-      const res = await fetch(`/api/tasks/${id}/recovery`, { method: 'POST' });
+      const res = await fetch(`/api/tasks/${id}/recovery?role=${mockRole}`, { method: 'POST' });
       if (!res.ok) throw new Error('AI recovery calculations failed');
       const updated = await res.json();
       setTasks(prev => prev.map(t => t.id === id ? updated : t));
@@ -230,7 +233,7 @@ export default function App() {
   const handleGenerateDayPlan = async () => {
     setLoadingDayPlan(true);
     try {
-      const res = await fetch('/api/ai/plan/day', { method: 'POST' });
+      const res = await fetch(`/api/ai/plan/day?role=${mockRole}`, { method: 'POST' });
       if (!res.ok) throw new Error('Daily planning sequence timed out');
       const data = await res.json();
       setDayPlan(data);
@@ -245,7 +248,7 @@ export default function App() {
   const handleGenerateWeekPlan = async () => {
     setLoadingWeekPlan(true);
     try {
-      const res = await fetch('/api/ai/plan/week', { method: 'POST' });
+      const res = await fetch(`/api/ai/plan/week?role=${mockRole}`, { method: 'POST' });
       if (!res.ok) throw new Error('Weekly planning sequence timed out');
       const data = await res.json();
       setWeekPlan(data);
@@ -283,20 +286,21 @@ export default function App() {
     <div className="min-h-screen bg-[#080808] text-[#E0E0E0] flex font-sans antialiased overflow-x-hidden selection:bg-white selection:text-black">
       
       {/* SIDEBAR NAVIGATION PANEL */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-[#0E0E0E] border-r border-[#1A1A1A] justify-between relative z-10">
+      <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 shrink-0 bg-[#0E0E0E] border-r border-[#1A1A1A] relative z-10">
         
         {/* LOGO AREA */}
-        <div>
-          <div className="p-6 border-b border-[#1A1A1A] flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded bg-white flex items-center justify-center shadow">
-              <CloudLightning className="h-4 w-4 text-black shrink-0" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-white tracking-widest font-mono uppercase">DeadlineOS</h1>
-              <span className="text-[9px] text-gray-500 font-mono tracking-wider">CHIEF OF STAFF // AI</span>
-            </div>
+        <div className="p-6 border-b border-[#1A1A1A] flex items-center gap-2.5 shrink-0">
+          <div className="h-7 w-7 rounded bg-white flex items-center justify-center shadow">
+            <CloudLightning className="h-4 w-4 text-black shrink-0" />
           </div>
+          <div>
+            <h1 className="text-sm font-bold text-white tracking-widest font-mono uppercase">DeadlineOS</h1>
+            <span className="text-[9px] text-gray-500 font-mono tracking-wider">CHIEF OF STAFF // AI</span>
+          </div>
+        </div>
 
+        {/* SCROLLABLE MAIN CONTENT AREA */}
+        <div className="flex-grow overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* ROLE SWITCHER */}
           <div className="p-4 border-b border-[#1A1A1A]">
             <span className="text-[9px] font-mono text-gray-505 uppercase block tracking-widest mb-2.5">Context Profile</span>
@@ -309,6 +313,7 @@ export default function App() {
               ] as const).map(role => {
                 const Icon = role.icon;
                 const active = mockRole === role.key;
+                const displayLabel = MODE_LANGUAGES[role.key]?.title || role.label;
                 return (
                   <button
                     key={role.key}
@@ -320,7 +325,7 @@ export default function App() {
                     }`}
                   >
                     <Icon className={`h-3.5 w-3.5 ${active ? 'text-white' : ''}`} />
-                    <span>{role.label}</span>
+                    <span>{displayLabel}</span>
                   </button>
                 );
               })}
@@ -329,7 +334,7 @@ export default function App() {
 
           {/* NAVIGATION BUTTON INDEX */}
           <nav className="p-4 space-y-1">
-            <span className="text-[9px] font-mono text-gray-505 uppercase block tracking-widest mb-2.5">Control Bay</span>
+            <span className="text-[9px] font-mono text-gray-555 uppercase block tracking-widest mb-2.5">Control Bay</span>
             
             <button
               onClick={() => setActiveView('briefing')}
@@ -341,7 +346,7 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <Compass className={`h-3.5 w-3.5 ${activeView === 'briefing' ? 'text-white' : 'text-gray-500'}`} />
-                <span>Briefing Cockpit</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.briefing}</span>
               </div>
               <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
@@ -356,11 +361,26 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <Layers className={`h-3.5 w-3.5 ${activeView === 'tasks' ? 'text-white' : 'text-gray-500'}`} />
-                <span>Task Matrix</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.tasks}</span>
               </div>
               <div className="bg-[#1C1C1C] px-1.5 py-0.5 rounded text-[9px] text-gray-400 font-mono">
                 {tasks.filter(t => t.status !== 'completed').length}
               </div>
+            </button>
+
+            <button
+              onClick={() => setActiveView('strategic')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs font-mono font-medium cursor-pointer transition ${
+                activeView === 'strategic' 
+                  ? 'bg-[#131313] text-white border border-[#1A1A1A]' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Brain className={`h-3.5 w-3.5 ${activeView === 'strategic' ? 'text-emerald-400' : 'text-gray-500'}`} />
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.strategic}</span>
+              </div>
+              <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
 
             <button
@@ -373,7 +393,7 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <CalendarDays className={`h-3.5 w-3.5 ${activeView === 'plans' ? 'text-white' : 'text-gray-500'}`} />
-                <span>Temporal Planners</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.plans}</span>
               </div>
               <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
@@ -388,7 +408,7 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <ShieldAlert className={`h-3.5 w-3.5 ${activeView === 'recovery' ? 'text-rose-500' : 'text-gray-500'}`} />
-                <span>Recovery Hub</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.recovery}</span>
               </div>
               {tasks.filter(t => t.status === 'overdue').length > 0 && (
                 <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
@@ -405,7 +425,7 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <Gauge className={`h-3.5 w-3.5 ${activeView === 'simulator' ? 'text-indigo-400' : 'text-gray-500'}`} />
-                <span>What-If Simulator</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.simulator}</span>
               </div>
               <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
@@ -414,12 +434,12 @@ export default function App() {
         </div>
 
         {/* BOTTOM USER UTILITY */}
-        <div className="p-4 border-t border-[#1A1A1A]">
+        <div className="p-4 border-t border-[#1A1A1A] shrink-0">
           <div className="p-3 bg-[#131313] rounded border border-[#1A1A1A] flex items-center gap-2.5">
-            <UserCircle2 className="h-7 w-7 text-gray-505" />
+            <UserCircle2 className="h-7 w-7 text-gray-555" />
             <div className="overflow-hidden">
               <p className="text-xs font-bold text-white truncate">dakshchaudhary</p>
-              <span className="text-[9px] text-gray-505 font-mono block truncate">dakshchaudhary2668...</span>
+              <span className="text-[9px] text-gray-555 font-mono block truncate">dakshchaudhary2668...</span>
             </div>
           </div>
         </div>
@@ -444,11 +464,12 @@ export default function App() {
               onChange={(e) => setActiveView(e.target.value as any)}
               className="px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-300 focus:outline-none"
             >
-              <option value="briefing">Briefing Cockpit</option>
-              <option value="tasks">Task Matrix</option>
-              <option value="plans">Temporal Planners</option>
-              <option value="recovery">Recovery Hub</option>
-              <option value="simulator">What-If Simulator</option>
+              <option value="briefing">{MODE_LANGUAGES[mockRole]?.sidebarLabels.briefing}</option>
+              <option value="tasks">{MODE_LANGUAGES[mockRole]?.sidebarLabels.tasks}</option>
+              <option value="strategic">{MODE_LANGUAGES[mockRole]?.sidebarLabels.strategic}</option>
+              <option value="plans">{MODE_LANGUAGES[mockRole]?.sidebarLabels.plans}</option>
+              <option value="recovery">{MODE_LANGUAGES[mockRole]?.sidebarLabels.recovery}</option>
+              <option value="simulator">{MODE_LANGUAGES[mockRole]?.sidebarLabels.simulator}</option>
             </select>
 
             <select
@@ -456,10 +477,10 @@ export default function App() {
               onChange={(e) => setMockRole(e.target.value as any)}
               className="px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-500 focus:outline-none"
             >
-              <option value="developer">Engineering</option>
-              <option value="student">Academic</option>
-              <option value="job_seeker">Careers</option>
-              <option value="professional">Corporate</option>
+              <option value="developer">{MODE_LANGUAGES.developer?.title || "Engineering Mode"}</option>
+              <option value="student">{MODE_LANGUAGES.student?.title || "Academic Mode"}</option>
+              <option value="job_seeker">{MODE_LANGUAGES.job_seeker?.title || "Careers Mode"}</option>
+              <option value="professional">{MODE_LANGUAGES.professional?.title || "Corporate Mode"}</option>
             </select>
           </div>
         </header>
@@ -494,7 +515,7 @@ export default function App() {
                   tasks={tasks}
                   loading={loadingBriefing || loadingMomentum}
                   onRefresh={handleRecalibrateBriefing}
-                  mockRole={getRoleNameAndSymbol(mockRole).label}
+                  mockRole={mockRole}
                 />
               </motion.div>
             )}
@@ -521,6 +542,34 @@ export default function App() {
                     setEditingTask(null);
                     setIsFormOpen(true);
                   }}
+                  mockRole={mockRole}
+                />
+              </motion.div>
+            )}
+
+            {activeView === 'strategic' && (
+              <motion.div
+                key="strategic"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <StrategicDecisions 
+                  tasks={tasks}
+                  onToggleComplete={handleToggleComplete}
+                  onEdit={(task) => {
+                    setEditingTask(task);
+                    setIsFormOpen(true);
+                  }}
+                  onDelete={handleDeleteTask}
+                  onAnalyzePriority={handleAnalyzeTaskPriority}
+                  analyzingId={analyzingTaskId}
+                  onOpenForm={() => {
+                    setEditingTask(null);
+                    setIsFormOpen(true);
+                  }}
+                  mockRole={mockRole}
                 />
               </motion.div>
             )}
@@ -542,6 +591,7 @@ export default function App() {
                   onGenerateDay={handleGenerateDayPlan}
                   onGenerateWeek={handleGenerateWeekPlan}
                   onResetPlans={handleResetPlans}
+                  mockRole={mockRole}
                 />
               </motion.div>
             )}
@@ -558,6 +608,7 @@ export default function App() {
                   tasks={tasks}
                   onGenerateRecovery={handleGenerateRecoveryPlan}
                   generatingId={recoveringTaskId}
+                  mockRole={mockRole}
                 />
               </motion.div>
             )}
@@ -570,7 +621,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <WhatIfSimulator tasks={tasks} />
+                <WhatIfSimulator tasks={tasks} mockRole={mockRole} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -587,6 +638,7 @@ export default function App() {
             setIsFormOpen(false);
             setEditingTask(null);
           }}
+          mockRole={mockRole}
         />
       )}
 

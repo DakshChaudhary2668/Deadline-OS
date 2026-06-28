@@ -41,12 +41,18 @@ export interface Task {
 
   // Strategic Decision Layer
   strategicDecision?: {
-    decisionType: 'CONTINUE' | 'FOCUS' | 'ACCELERATE' | 'DEFER' | 'DROP';
+    decisionType: 'CONTINUE' | 'FOCUS' | 'ACCELERATE' | 'DEFER' | 'DROP' | 'DELEGATE' | 'SCOPE REDUCE' | 'WAIT' | 'REVIEW' | 'REPLAN' | 'BLOCKED';
     reasoning: string;
     expectedBenefit: string;
     opportunityCost: string;
     recommendedAction: string;
     whyThisDecision: string;
+    executiveScore?: number;
+    strategicAlignment?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    whyNotOtherActions?: string;
+    tradeoffSummary?: string;
+    cosSummary?: string;
+    primaryRisk?: string;
   };
 }
 

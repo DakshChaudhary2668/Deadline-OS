@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, BookOpen, User, Briefcase, Award, Zap } from 'lucide-react';
 import { Task } from '../types';
+import { MODE_LANGUAGES } from '../utils/modeLanguage';
 
 interface TaskFormProps {
   task: Task | null; // If null, we are in Create mode
   onSave: (taskData: Partial<Task>) => void;
   onClose: () => void;
+  mockRole?: string;
 }
 
-export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
+export default function TaskForm({ task, onSave, onClose, mockRole = 'professional' }: TaskFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
   const [estimatedEffort, setEstimatedEffort] = useState(2);
   const [category, setCategory] = useState<Task['category']>('Work');
   const [importance, setImportance] = useState<Task['importance']>('Medium');
+
+  const roleKey = mockRole as 'student' | 'developer' | 'job_seeker' | 'professional';
+  const config = MODE_LANGUAGES[roleKey] || MODE_LANGUAGES.professional;
+  const labels = config.taskFormLabels;
 
   // Pre-populate if editing
   useEffect(() => {
@@ -48,6 +54,31 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
     });
   };
 
+  const getCategoryLabel = (cat: string) => {
+    switch (mockRole) {
+      case 'student':
+        if (cat === 'Work') return 'Curriculum';
+        if (cat === 'Study') return 'Study';
+        if (cat === 'Career') return 'Academic';
+        return 'Personal';
+      case 'developer':
+        if (cat === 'Work') return 'Sprint';
+        if (cat === 'Study') return 'Tech Debt';
+        if (cat === 'Career') return 'Skillup';
+        return 'Individual';
+      case 'job_seeker':
+        if (cat === 'Work') return 'Applications';
+        if (cat === 'Study') return 'Prep';
+        if (cat === 'Career') return 'Networking';
+        return 'Routine';
+      default:
+        if (cat === 'Work') return 'Operations';
+        if (cat === 'Study') return 'Skill-Up';
+        if (cat === 'Career') return 'Strategic';
+        return 'Personal';
+    }
+  };
+
   const categoriesObj = [
     { name: 'Work', icon: Briefcase, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
     { name: 'Study', icon: BookOpen, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' },
@@ -72,10 +103,10 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
         <div className="p-6 border-b border-[#1A1A1A] flex items-center justify-between">
           <div>
             <span className="text-[9px] font-mono text-emerald-500 uppercase tracking-widest">
-              {task ? 'Update Constraints' : 'Register Blocker'}
+              {task ? labels.updateConstraints : labels.registerBlocker}
             </span>
             <h3 className="text-lg font-serif italic text-white mt-1">
-              {task ? 'Edit Dynamic Task' : 'Register New Milestone'}
+              {task ? labels.editMilestone : labels.registerMilestone}
             </h3>
           </div>
           <button 
@@ -89,11 +120,11 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* TITLE */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Milestone Name / Title</label>
+            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">{labels.milestoneTitle}</label>
             <input 
               type="text"
               required
-              placeholder="e.g., Deliver Raft Consensus API draft"
+              placeholder={labels.milestonePlaceholder}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-3 py-2 bg-[#131313] border border-[#1A1A1A] rounded text-white placeholder-gray-600 text-xs focus:outline-none focus:border-gray-500 transition"
@@ -102,9 +133,9 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
 
           {/* DESCRIPTION */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">Deliverables / Summary</label>
+            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">{labels.deliverablesSummary}</label>
             <textarea
-              placeholder="Explicitly define what successful completion looks like..."
+              placeholder={labels.deliverablesPlaceholder}
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -117,7 +148,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
             <div className="space-y-1.5">
               <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1">
                 <Calendar className="h-3 w-3 text-gray-500" />
-                Hard Deadline
+                {labels.hardDeadline}
               </label>
               <input 
                 type="datetime-local"
@@ -132,7 +163,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
             <div className="space-y-1.5">
               <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1">
                 <Clock className="h-3 w-3 text-gray-500" />
-                Effort Hours
+                {labels.effortHours}
               </label>
               <div className="flex items-center bg-[#131313] border border-[#1A1A1A] rounded overflow-hidden">
                 <button
@@ -164,7 +195,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
 
           {/* CATEGORY (GRID CHOICE) */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">Workspace Category</label>
+            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">{labels.workspaceCategory}</label>
             <div className="grid grid-cols-4 gap-2">
               {categoriesObj.map(cat => {
                 const Icon = cat.icon;
@@ -181,7 +212,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
-                    <span className="mt-0.5">{cat.name}</span>
+                    <span className="mt-0.5">{getCategoryLabel(cat.name)}</span>
                   </button>
                 );
               })}
@@ -190,7 +221,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
 
           {/* IMPORTANCE */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">SLA Importance Level</label>
+            <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">{labels.importanceLevel}</label>
             <div className="grid grid-cols-4 gap-2">
               {importanceObj.map(imp => {
                 const active = importance === imp.name;
@@ -226,7 +257,7 @@ export default function TaskForm({ task, onSave, onClose }: TaskFormProps) {
               className="flex-1 py-1.5 px-4 bg-white text-black text-xs font-mono font-bold rounded hover:bg-gray-200 transition duration-150 uppercase tracking-widest flex items-center justify-center gap-1.5"
             >
               <Zap className="h-3 w-3 shrink-0 fill-current" />
-              {task ? 'SAVE CHANGES' : 'DEPLOY TARGET'}
+              {task ? labels.saveButton : labels.deployButton}
             </button>
           </div>
         </form>

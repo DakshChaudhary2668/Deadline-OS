@@ -18,12 +18,51 @@ import {
   MinusCircle
 } from 'lucide-react';
 import { Task, SimulationScenario, SimulationResult } from '../types';
+import { MODE_LANGUAGES } from '../utils/modeLanguage';
+
+const getConfidenceDrivers = (role?: string): string[] => {
+  if (role === 'student') {
+    return [
+      'Coursework consistency',
+      'Submission certainty',
+      'Exam load volatility',
+      'Hypothesis complexity',
+      'Syllabic signal indicators'
+    ];
+  }
+  if (role === 'developer') {
+    return [
+      'Commit history consistency',
+      'Code freeze certainty',
+      'PR/deploy volatility',
+      'Scenario complexity',
+      'Branch telemetry signals'
+    ];
+  }
+  if (role === 'job_seeker') {
+    return [
+      'Interview funnel consistency',
+      'Process/round certainty',
+      'Hiring wave volatility',
+      'Scenario complexity',
+      'Recruiter signal indicators'
+    ];
+  }
+  return [
+    'Historical deliverable consistency',
+    'SLA breach certainty',
+    'Operational capacity volatility',
+    'Scenario complexity',
+    'Contextual telemetry signals'
+  ];
+};
 
 interface WhatIfSimulatorProps {
   tasks: Task[];
+  mockRole?: string;
 }
 
-export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
+export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProps) {
   const pendingTasks = tasks.filter(t => t.status !== 'completed');
   
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
@@ -31,53 +70,264 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showConfidenceDrivers, setShowConfidenceDrivers] = useState<boolean>(false);
 
   // Selected task context
   const activeTask = pendingTasks.find(t => t.id === selectedTaskId);
 
-  const scenarioOptions: { value: SimulationScenario; label: string; description: string }[] = [
-    { 
-      value: 'SKIP_TASK', 
-      label: 'Skip Task completely', 
-      description: 'Remove this task from the queue entirely. Reallocates estimated effort hours but fails the objective.' 
-    },
-    { 
-      value: 'DELAY_1_DAY', 
-      label: 'Delay Task by 1 Day', 
-      description: 'Postpone the target deadline by 24 hours. Offloads near-term stress but causes timeline compression.' 
-    },
-    { 
-      value: 'DELAY_3_DAYS', 
-      label: 'Delay Task by 3 Days', 
-      description: 'Push the task deadline out by 72 hours. Postpones immediate focus requirement with downstream spillover risks.' 
-    },
-    { 
-      value: 'REDUCE_EFFORT', 
-      label: 'Reduce Effort (Scope compression)', 
-      description: 'Halve the estimated cognitive effort hours to meet the timeline at the cost of final quality.' 
-    },
-    { 
-      value: 'ADD_2_HOURS', 
-      label: 'Add +2 Focus Hours Daily', 
-      description: 'Force 2 extra hours of uninterrupted daily deep-work capacity. Boosts output but increases fatigue.' 
-    },
-    { 
-      value: 'DROP_LOW_PRIORITY', 
-      label: 'Drop Low Priority Tasks', 
-      description: 'Erase all low-importance outstanding tasks from the queue to prioritize core deliverables.' 
-    },
-    { 
-      value: 'PRIORITIZE_TASK', 
-      label: 'Prioritize This Task', 
-      description: 'Elevate this objective to Critical status, assigning all immediate cognitive bandwidth to it.' 
+  const getSimulatorLabels = (role?: string) => {
+    switch (role) {
+      case 'student':
+        return {
+          predictorPanel: "Academic Performance Predictor",
+          title: "What-If Course Load Simulator",
+          description: "Explore the GPA and timeline impact of skipping homeworks, delaying research milestones, or cramming extra study hours.",
+          chooseTarget: "-- Choose Target Syllabus Goal --",
+          originalCost: "Study Hours Required",
+          constraintDeadline: "Submission Deadline",
+          baselineUrgency: "Academic Weight",
+          step1: "Step 1: Select Syllabus Target",
+          step2: "Step 2: Hypothesize Academic Adjustments",
+          executeButton: "RUN ACADEMIC PROJECTION",
+          executingButton: "ANALYZING GRADE IMPACT...",
+          outcomeHeader: "Projected Academic Standing",
+          workspaceSuccess: "Syllabus Mastery",
+          objectiveSuccess: "Goal Grade Success",
+          failureRisk: "Academic Failure Risk",
+          awaitingInput: "Awaiting Course Load Inputs",
+          awaitingDesc: "Adjust study hours or deadlines on the left to project exam performance and grade impact."
+        };
+      case 'developer':
+        return {
+          predictorPanel: "Sprint Performance Predictor",
+          title: "What-If Sprint Simulator",
+          description: "Project the sprint success, code velocity, and deployment risk of delaying tickets, scaling down scope, or working overtime.",
+          chooseTarget: "-- Choose Target Sprint Ticket --",
+          originalCost: "Dev Effort Required",
+          constraintDeadline: "Sprint Deadline",
+          baselineUrgency: "Ticket Priority",
+          step1: "Step 1: Select Backlog Ticket",
+          step2: "Step 2: Define Sprint Intervention",
+          executeButton: "PROJECT SPRINT IMPACT",
+          executingButton: "RUNNING OVERTIME SIMULATION...",
+          outcomeHeader: "Projected Sprint Metrics",
+          workspaceSuccess: "Sprint Completion",
+          objectiveSuccess: "Build Stability",
+          failureRisk: "SLA Breach Risk",
+          awaitingInput: "Awaiting Sprint Parameters",
+          awaitingDesc: "Configure sprint adjustments to simulate code-freeze bottlenecks and delivery velocity."
+        };
+      case 'job_seeker':
+        return {
+          predictorPanel: "Placement Pipeline Predictor",
+          title: "What-If Placement Simulator",
+          description: "Analyze how skipping application tailored adjustments, delaying interview prep, or dropping low-yield job leads impacts your hiring likelihood.",
+          chooseTarget: "-- Choose Target Opportunity --",
+          originalCost: "Preparation Time",
+          constraintDeadline: "Interview/Expiry Date",
+          baselineUrgency: "Opportunity Priority",
+          step1: "Step 1: Select Career Target",
+          step2: "Step 2: Set Placement Hypothesis",
+          executeButton: "PROJECT PIPELINE IMPACT",
+          executingButton: "CALCULATING CONVERSION LIKELIHOOD...",
+          outcomeHeader: "Projected Placement Outlook",
+          workspaceSuccess: "Pipeline Health",
+          objectiveSuccess: "Hiring Probability",
+          failureRisk: "Opportunity Loss Risk",
+          awaitingInput: "Awaiting Pipeline Inputs",
+          awaitingDesc: "Hypothesize hiring decisions on the left to project active loops and recruiter responses."
+        };
+      case 'professional':
+      default:
+        return {
+          predictorPanel: "SLA Deliverables Predictor",
+          title: "What-If Operational SLA Simulator",
+          description: "Explore resource allocations, schedule congestions, and SLA risk factors prior to committing operational team reallocations.",
+          chooseTarget: "-- Choose Target Operational Milestone --",
+          originalCost: "FTE Focus Hours",
+          constraintDeadline: "SLA Delivery Window",
+          baselineUrgency: "Strategic Importance",
+          step1: "Step 1: Select Operational Objective",
+          step2: "Step 2: Hypothesize Resource Adjustments",
+          executeButton: "EXECUTE OPERATIONAL SIMULATION",
+          executingButton: "ANALYZING RISK BUFFERS...",
+          outcomeHeader: "Projected Operational Health",
+          workspaceSuccess: "SLA Compliance",
+          objectiveSuccess: "Milestone Resolution",
+          failureRisk: "SLA Violation Risk",
+          awaitingInput: "Awaiting Operational Inputs",
+          awaitingDesc: "Simulate operational interventions to analyze capacity bottlenecks and project milestone resolution."
+        };
     }
-  ];
+  };
+
+  const getScenarioOptions = (role?: string): { value: SimulationScenario; label: string; description: string }[] => {
+    switch (role) {
+      case 'student':
+        return [
+          { 
+            value: 'SKIP_TASK', 
+            label: 'Skip Homework / Topic', 
+            description: 'Skip studying this topic or submitting the homework. Frees up study hours but guarantees zero credit.' 
+          },
+          { 
+            value: 'DELAY_1_DAY', 
+            label: 'Extend Deadline by 1 Day', 
+            description: 'Request a late extension of 24 hours. Offloads tonight\'s stress but causes late penalty risks.' 
+          },
+          { 
+            value: 'DELAY_3_DAYS', 
+            label: 'Extend Deadline by 3 Days', 
+            description: 'Delay submission by 72 hours. Postpones exam prep runway and increases grade penalty risk.' 
+          },
+          { 
+            value: 'REDUCE_EFFORT', 
+            label: 'Cram Study / Reduce Scope', 
+            description: 'Halve the revision depth to meet the exam window, reducing final comprehension and test grade.' 
+          },
+          { 
+            value: 'ADD_2_HOURS', 
+            label: 'Cram +2 Extra Hours Daily', 
+            description: 'Force 2 extra hours of intensive library cramming daily. Boosts syllabus coverage but increases cognitive fatigue.' 
+          },
+          { 
+            value: 'DROP_LOW_PRIORITY', 
+            label: 'Drop Non-Weighted Electives', 
+            description: 'Stop reviewing elective non-weighted topics to focus fully on core exam courses.' 
+          },
+          { 
+            value: 'PRIORITIZE_TASK', 
+            label: 'Focus Fully on This Paper', 
+            description: 'Mark this subject as Critical, committing all study blocks to mastering it.' 
+          }
+        ];
+      case 'developer':
+        return [
+          { 
+            value: 'SKIP_TASK', 
+            label: 'Skip Backlog Ticket', 
+            description: 'Deprioritize and skip this ticket from the active sprint. Reallocates developer hours but misses delivery.' 
+          },
+          { 
+            value: 'DELAY_1_DAY', 
+            label: 'Delay Release by 1 Day', 
+            description: 'Push code freeze back by 24 hours. Gives debugging runway but compresses CI/CD and QA testing window.' 
+          },
+          { 
+            value: 'DELAY_3_DAYS', 
+            label: 'Delay Release by 3 Days', 
+            description: 'Delay target build freeze by 72 hours. Risks missing the deployment train and client SLA targets.' 
+          },
+          { 
+            value: 'REDUCE_EFFORT', 
+            label: 'Reduce Scope / Ship MVP', 
+            description: 'Halve developer effort hours by building a strict MVP, compromising on refactoring and testing.' 
+          },
+          { 
+            value: 'ADD_2_HOURS', 
+            label: 'Sprint +2 Dev Hours Daily', 
+            description: 'Increase developer overtime by 2 hours daily. Accelerates code completion but boosts developer burnout.' 
+          },
+          { 
+            value: 'DROP_LOW_PRIORITY', 
+            label: 'Drop Secondary Dev Tickets', 
+            description: 'Remove low-importance tickets from the sprint backlog to preserve core feature delivery.' 
+          },
+          { 
+            value: 'PRIORITIZE_TASK', 
+            label: 'Assign Elite Dev Priority', 
+            description: 'Elevate this ticket to Blocker/Critical status, redirecting all developer bandwidth here.' 
+          }
+        ];
+      case 'job_seeker':
+        return [
+          { 
+            value: 'SKIP_TASK', 
+            label: 'Skip Application / Lead', 
+            description: 'Abandon this job application. Reallocates preparation time but closes this career path.' 
+          },
+          { 
+            value: 'DELAY_1_DAY', 
+            label: 'Delay Application by 1 Day', 
+            description: 'Postpone your application submission by 24 hours. Gives polish runway but reduces early-applicant advantage.' 
+          },
+          { 
+            value: 'DELAY_3_DAYS', 
+            label: 'Delay Interview Prep by 3 Days', 
+            description: 'Delay interview preparation by 72 hours. Postpones stress but compresses final rehearsal runway.' 
+          },
+          { 
+            value: 'REDUCE_EFFORT', 
+            label: 'Use Standard Resume (No Tailor)', 
+            description: 'Apply using a generic resume without custom tailoring, saving time but reducing response rates.' 
+          },
+          { 
+            value: 'ADD_2_HOURS', 
+            label: 'Add +2 Career Focus Hours Daily', 
+            description: 'Dedicate 2 extra hours daily to portfolio construction and outreach. Boosts pipeline but causes job-hunt fatigue.' 
+          },
+          { 
+            value: 'DROP_LOW_PRIORITY', 
+            label: 'Drop Low-Yield Applications', 
+            description: 'Erase weak job leads from your active pipelines to concentrate fully on elite placements.' 
+          },
+          { 
+            value: 'PRIORITIZE_TASK', 
+            label: 'Prioritize This Dream Role', 
+            description: 'Mark this application as Critical, focusing all networking and interview preparation here.' 
+          }
+        ];
+      case 'professional':
+      default:
+        return [
+          { 
+            value: 'SKIP_TASK', 
+            label: 'Skip Deliverable', 
+            description: 'Cancel or archive this milestone deliverable. Frees up immediate FTE capacity but results in missed objectives.' 
+          },
+          { 
+            value: 'DELAY_1_DAY', 
+            label: 'Delay SLA Deadline by 1 Day', 
+            description: 'Postpone target delivery by 24 hours. Relieves active schedule but reduces delivery buffers.' 
+          },
+          { 
+            value: 'DELAY_3_DAYS', 
+            label: 'Delay SLA Deadline by 3 Days', 
+            description: 'Defer target milestone by 72 hours. Risks breaching client expectations and downstream delays.' 
+          },
+          { 
+            value: 'REDUCE_EFFORT', 
+            label: 'Scope Compression / Limit Deliverables', 
+            description: 'Reduce estimated work hours by half. Meets immediate timeline at the expense of quality and polish.' 
+          },
+          { 
+            value: 'ADD_2_HOURS', 
+            label: 'Add +2 Executive Overtime Hours Daily', 
+            description: 'Force 2 extra hours of operational focus daily. Increases project throughput but elevates burnout index.' 
+          },
+          { 
+            value: 'DROP_LOW_PRIORITY', 
+            label: 'Prune Minor Admin Objectives', 
+            description: 'Remove low-impact admin tasks to focus maximum corporate capacity on key results.' 
+          },
+          { 
+            value: 'PRIORITIZE_TASK', 
+            label: 'Elevate to Top Business Priority', 
+            description: 'Assign Critical status to this deliverable, allocating all immediate project bandwidth to it.' 
+          }
+        ];
+    }
+  };
+
+  const labels = getSimulatorLabels(mockRole);
+  const scenarioOptions = getScenarioOptions(mockRole);
 
   const handleRunSimulation = async () => {
     // Some scenarios require a task context
     const needsTask = ['SKIP_TASK', 'DELAY_1_DAY', 'DELAY_3_DAYS', 'REDUCE_EFFORT', 'PRIORITIZE_TASK'].includes(scenario);
     if (needsTask && !selectedTaskId) {
-      setError('Please choose a target task to execute this scenario simulation.');
+      const taskLabel = mockRole === 'student' ? 'milestone' : mockRole === 'developer' ? 'ticket' : mockRole === 'job_seeker' ? 'application' : 'objective';
+      setError(`Please choose a target ${taskLabel} to execute this scenario simulation.`);
       return;
     }
 
@@ -85,7 +335,7 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
     setError(null);
 
     try {
-      const res = await fetch('/api/ai/simulate', {
+      const res = await fetch(`/api/ai/simulate?role=${mockRole || 'developer'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -121,11 +371,11 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_5px_rgba(99,102,241,0.5)] animate-pulse"></span>
-            <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">Workspace Core Predictor Panel</span>
+            <span className="text-[10px] font-mono text-indigo-400 uppercase tracking-widest">{labels.predictorPanel}</span>
           </div>
-          <h2 className="text-2xl font-medium font-serif italic text-white mt-1">What-If Scenario Intelligence Simulator</h2>
+          <h2 className="text-2xl font-medium font-serif italic text-white mt-1">{labels.title}</h2>
           <p className="text-xs text-slate-400 mt-1">
-            Explore cognitive outcome parameters, deadline impacts, and risk indicators before confirming critical task reallocations.
+            {labels.description}
           </p>
         </div>
         
@@ -157,11 +407,11 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
             {/* STEP 1: SELECT TASK */}
             <div className="space-y-2">
               <label className="block text-[10px] font-mono uppercase text-gray-500 tracking-wider">
-                Step 1: Select Focus Target
+                {labels.step1}
               </label>
               {pendingTasks.length === 0 ? (
                 <div className="p-3 bg-[#131313] rounded border border-[#1A1A1A] text-center text-xs text-gray-500 font-sans">
-                  No active pending tasks in database.
+                  {MODE_LANGUAGES[(mockRole || 'professional') as 'student' | 'developer' | 'job_seeker' | 'professional']?.emptyStateMessages.noTasks || 'No active pending deliverables in SLA registry.'}
                 </div>
               ) : (
                 <select
@@ -169,7 +419,7 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                   onChange={(e) => setSelectedTaskId(e.target.value)}
                   className="w-full px-3 py-2 bg-[#131313] border border-[#1A1A1A] rounded text-xs text-white focus:outline-none focus:border-indigo-500 transition [color-scheme:dark]"
                 >
-                  <option value="">-- Choose Target Milestone --</option>
+                  <option value="">{labels.chooseTarget}</option>
                   {pendingTasks.map(t => (
                     <option key={t.id} value={t.id}>
                       {t.title} ({t.estimatedEffort}h / {t.importance})
@@ -180,15 +430,15 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
               {activeTask && (
                 <div className="p-3 bg-[#131313] rounded border border-[#1C1C1C] text-[11px] space-y-1.5 font-sans">
                   <div className="flex justify-between items-center text-gray-400">
-                    <span className="font-mono text-[10px] uppercase">Original Cost:</span>
-                    <span className="font-semibold text-white">{activeTask.estimatedEffort} cognitive hours</span>
+                    <span className="font-mono text-[10px] uppercase">{labels.originalCost}:</span>
+                    <span className="font-semibold text-white">{activeTask.estimatedEffort} {mockRole === 'student' ? 'study hours' : mockRole === 'job_seeker' ? 'preparation hours' : 'cognitive hours'}</span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
-                    <span className="font-mono text-[10px] uppercase">Constraint Deadline:</span>
+                    <span className="font-mono text-[10px] uppercase">{labels.constraintDeadline}:</span>
                     <span className="font-semibold text-white">{new Date(activeTask.deadline).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
-                    <span className="font-mono text-[10px] uppercase">Baseline Urgency:</span>
+                    <span className="font-mono text-[10px] uppercase">{labels.baselineUrgency}:</span>
                     <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${
                       activeTask.importance === 'Critical' ? 'bg-rose-950/40 text-rose-400 border border-rose-900/40' :
                       activeTask.importance === 'High' ? 'bg-orange-950/40 text-orange-400 border border-orange-900/40' :
@@ -205,7 +455,7 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
             {/* STEP 2: SELECT INTERVENTION SCENARIO */}
             <div className="space-y-2">
               <label className="block text-[10px] font-mono uppercase text-gray-500 tracking-wider">
-                Step 2: Define Hypothesized Intervention
+                {labels.step2}
               </label>
               <div className="space-y-1">
                 {scenarioOptions.map(opt => {
@@ -248,12 +498,12 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
               {loading ? (
                 <>
                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  ANALYZING RISK BUFFERS...
+                  {labels.executingButton}
                 </>
               ) : (
                 <>
                   <Activity className="h-3.5 w-3.5" />
-                  EXECUTE STRATEGIC SIMULATION
+                  {labels.executeButton}
                 </>
               )}
             </button>
@@ -272,15 +522,49 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                 className="space-y-5 text-left"
               >
                 {/* Result header */}
-                <div className="flex justify-between items-center border-b border-[#1A1A1A] pb-3">
-                  <div>
-                    <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Outcome Model Metrics</span>
-                    <h3 className="text-base font-semibold text-white mt-0.5">SIMULATED WORKSPACE STATE</h3>
+                <div className="flex flex-col gap-2 border-b border-[#1A1A1A] pb-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Outcome Model Metrics</span>
+                      <h3 className="text-base font-semibold text-white mt-0.5">SIMULATED WORKSPACE STATE</h3>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-[#121212] px-3 py-1 rounded-full border border-[#222]">
+                      <span className="text-[9px] font-mono text-gray-500 uppercase">AI CONFIDENCE:</span>
+                      <span className="text-xs font-bold font-mono text-emerald-400">{result.confidenceScore}%</span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-[#121212] px-3 py-1 rounded-full border border-[#222]">
-                    <span className="text-[9px] font-mono text-gray-500 uppercase">AI CONFIDENCE:</span>
-                    <span className="text-xs font-bold font-mono text-emerald-400">{result.confidenceScore}%</span>
+                  {/* Expandable Confidence Drivers */}
+                  <div className="mt-1" id="confidence-drivers-wrapper">
+                    <button 
+                      onClick={() => setShowConfidenceDrivers(!showConfidenceDrivers)}
+                      className="text-[10px] font-mono text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1 focus:outline-none"
+                    >
+                      <span className="text-[8px]">{showConfidenceDrivers ? '▼' : '►'}</span>
+                      <span>Confidence Drivers</span>
+                    </button>
+                    <AnimatePresence>
+                      {showConfidenceDrivers && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="mt-2 p-3 bg-[#111] border border-[#222] rounded-lg text-left overflow-hidden space-y-2"
+                        >
+                          <div className="text-[9px] font-mono uppercase text-gray-500 tracking-wider font-semibold">Contributing Factors</div>
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[10px] text-[#BBBBBB] font-mono">
+                            {getConfidenceDrivers(mockRole).map((driver, index) => (
+                              <li key={index} className="flex items-center gap-1.5">• {driver}</li>
+                            ))}
+                          </ul>
+                          <p className="text-[10px] text-gray-500 italic leading-relaxed font-sans pt-1 border-t border-[#1C1C1C]">
+                            "The confidence score reflects the quality and certainty of the underlying decision model rather than the likelihood of success."
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
 
@@ -322,9 +606,32 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                   {/* WORKSPACE SUCCESS PROBABILITY */}
                   <div className="p-4 bg-[#121212] rounded-xl border border-[#1C1C1C] flex flex-col justify-between relative overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 relative group">
                         <Gauge className="h-4 w-4 text-indigo-400" />
-                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">Workspace Success</span>
+                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">{labels.workspaceSuccess}</span>
+                        
+                        {/* Interactive Tooltip Icon */}
+                        <div className="relative inline-block">
+                          <HelpCircle className="h-3.5 w-3.5 text-indigo-400/80 hover:text-indigo-400 cursor-help transition" />
+                          
+                          {/* Tooltip Hover Overlay */}
+                          <div className="absolute bottom-6 -left-12 sm:-left-6 w-64 bg-[#0A0A0A] border border-indigo-500/20 rounded-lg p-3 shadow-[0_4px_24px_rgba(0,0,0,0.95)] z-50 text-left space-y-1.5 pointer-events-none invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200">
+                            <div className="text-[10px] font-mono uppercase text-indigo-400 tracking-wider font-semibold">How {labels.workspaceSuccess} is Calculated</div>
+                            <div className="text-[10px] text-gray-300 space-y-1 font-sans">
+                              <p className="font-semibold text-gray-400">{labels.workspaceSuccess} combines:</p>
+                              <ul className="list-disc list-inside space-y-0.5 text-gray-400 text-[9px]">
+                                <li>Remaining execution capacity</li>
+                                <li>Deadline pressure</li>
+                                <li>Task completion probability</li>
+                                <li>Scheduling conflicts</li>
+                                <li>Overall workload balance</li>
+                              </ul>
+                            </div>
+                            <p className="text-[9px] text-gray-500 italic leading-normal pt-1 border-t border-[#1C1C1C] font-sans">
+                              "Higher values indicate a healthier and more achievable execution plan."
+                            </p>
+                          </div>
+                        </div>
                       </div>
                       
                       {wsDiff !== 0 && (
@@ -376,7 +683,7 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-1.5">
                         <CheckCircle2 className="h-4 w-4 text-sky-400" />
-                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">Objective Success</span>
+                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">{labels.objectiveSuccess}</span>
                       </div>
                       
                       {objDiff !== 0 && (
@@ -428,7 +735,7 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-1.5">
                         <Skull className="h-4 w-4 text-rose-400" />
-                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">Failure Risk Level</span>
+                        <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">{labels.failureRisk}</span>
                       </div>
                       
                       {riskDiff !== 0 && (
@@ -475,6 +782,68 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                     </div>
                   </div>
 
+                </div>
+
+                {/* MINI TIMELINE IMPACT VISUALIZATION */}
+                <div className="bg-[#111] p-5 rounded-xl border border-[#1A1A1A] space-y-3" id="timeline-impact-viz">
+                  <div className="flex items-center justify-between border-b border-[#1C1C1C] pb-2">
+                    <div className="flex items-center gap-1.5 text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-semibold">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>Timeline Impact & Workload Distribution</span>
+                    </div>
+                    <span className="text-[9px] font-mono text-gray-500 uppercase">Load Analysis</span>
+                  </div>
+
+                  <div className="space-y-3 font-mono">
+                    {/* Before Simulation */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] text-gray-400">
+                        <span>Before Simulation</span>
+                        <span className="text-gray-500">[{result.currentFailureRisk}% Load Pressure]</span>
+                      </div>
+                      <div className={`text-sm tracking-tight break-all select-none ${
+                        result.currentFailureRisk >= 75 ? 'text-rose-500' :
+                        result.currentFailureRisk >= 40 ? 'text-amber-500' : 'text-emerald-500'
+                      }`}>
+                        {'█'.repeat(Math.max(1, Math.round(result.currentFailureRisk / 4)))}
+                        <span className="text-gray-800">{'█'.repeat(Math.max(0, 25 - Math.round(result.currentFailureRisk / 4)))}</span>
+                      </div>
+                    </div>
+
+                    {/* After Simulation */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px] text-gray-400">
+                        <span>After Simulation</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-white">[{result.projectedFailureRisk}% Load Pressure]</span>
+                          {riskDiff !== 0 && (
+                            <span className={`text-[10px] ${riskDiff < 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              ({riskDiff < 0 ? '▼ Relief' : '▲ Compression'})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className={`text-sm tracking-tight break-all select-none ${
+                        result.projectedFailureRisk >= 75 ? 'text-rose-500' :
+                        result.projectedFailureRisk >= 40 ? 'text-emerald-500' : 'text-emerald-500'
+                      }`}>
+                        {'█'.repeat(Math.max(1, Math.round(result.projectedFailureRisk / 4)))}
+                        <span className="text-gray-800">{'█'.repeat(Math.max(0, 25 - Math.round(result.projectedFailureRisk / 4)))}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#0B0B0B] rounded border border-[#1A1A1A] text-[11px] text-slate-400 leading-relaxed font-sans flex items-start gap-2">
+                    <span className="text-indigo-400 font-mono mt-0.5">•</span>
+                    <span>
+                      {riskDiff < 0 
+                        ? `The intervention successfully relieves timeline bottlenecks, reducing operational failure risk by ${Math.abs(riskDiff)}%. This provides immediate cognitive breathing room.`
+                        : riskDiff > 0 
+                          ? `This action compresses outstanding milestones, increasing schedule congestion and failure risk by ${riskDiff}%. Prepare for cascading bottleneck stress.`
+                          : `Timeline parameters remain stable with no significant change in active load concentration indices.`
+                      }
+                    </span>
+                  </div>
                 </div>
 
                 {/* STRATEGIC TRADE-OFF ANALYSIS */}
@@ -585,10 +954,10 @@ export default function WhatIfSimulator({ tasks }: WhatIfSimulatorProps) {
                 </div>
                 <div>
                   <h4 className="text-xs font-semibold text-white uppercase tracking-widest font-mono">
-                    Awaiting Simulation Model Inputs
+                    {labels.awaitingInput}
                   </h4>
                   <p className="text-[11px] text-slate-500 italic max-w-sm mx-auto mt-1 leading-relaxed">
-                    Set hypothetical parameters in the left panel and trigger the execution stream to map projected outcome timelines.
+                    {labels.awaitingDesc}
                   </p>
                 </div>
               </motion.div>

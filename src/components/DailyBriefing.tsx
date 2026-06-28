@@ -17,6 +17,10 @@ import {
 } from 'lucide-react';
 import { Task, DashboardBriefing, MomentumIntelligence } from '../types';
 
+import { MODE_LANGUAGES } from '../utils/modeLanguage';
+
+type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
+
 interface DailyBriefingProps {
   briefing: DashboardBriefing | null;
   momentum: MomentumIntelligence | null;
@@ -26,8 +30,140 @@ interface DailyBriefingProps {
   mockRole: string;
 }
 
+const getDailyBriefingLabels = (role: string) => {
+  const r = (role as RoleType) || 'professional';
+  const config = MODE_LANGUAGES[r] || MODE_LANGUAGES.professional;
+  return config.dailyBriefingLabels;
+};
+
+const getSecondaryDailyLabels = (role: RoleType) => {
+  let statusAccelerating = 'ACCELERATING CADENCE';
+  let statusStable = 'STABLE OPERATIONS';
+  let statusDeclining = 'VELOCITY COMPRESSION';
+  let statusOverloaded = 'CRITICAL CONGESTION';
+  let activeNarrativeSummary = 'AI CHIEF OF STAFF // NARRATIVE SUMMARY';
+  let narrativeLoading = 'Analyzing system metrics and formulating narrative insight...';
+  
+  let nominalRiskLabel = 'NOMINAL';
+  let thresholdTargetLabel = 'THRESHOLD TARGET';
+  let activeProbabilityMatrix = 'ACTIVE PROBABILITY ASSESSMENT MATRIX';
+  let noThreatHeader = 'No Urgent Scheduling Threat Detected';
+  let noThreatReasoning = 'All task deadlines are safely structured relative to estimated cognitive hours.';
+  let noThreatMitigation = 'Maintain current delivery rate. Allocate secondary buffers where available.';
+  
+  let awaitingScansText = 'Awaiting executive alignment scans. Please trigger recalibration.';
+  let awaitingVisualsText = 'Regenerating dynamic visual streams...';
+  let awaitingHistoryText = 'Awaiting historic metrics telemetry.';
+  let noPendingTasksText = 'No active pending strategic milestones registered.';
+  let resolvedUnitsLabel = 'Units';
+
+  if (role === 'student') {
+    statusAccelerating = 'HIGH WORK ETHIC';
+    statusStable = 'STABLE PROGRESS';
+    statusDeclining = 'ACADEMIC FATIGUE';
+    statusOverloaded = 'ACADEMIC CRUSH';
+    activeNarrativeSummary = 'AI STUDY ADVISOR // NARRATIVE SUMMARY';
+    narrativeLoading = 'Analyzing academic syllabus metrics and formulating study insight...';
+    
+    nominalRiskLabel = 'SAFE';
+    thresholdTargetLabel = 'EXAM GAP TARGET';
+    activeProbabilityMatrix = 'ACTIVE SYLLABUS RISK ANALYSIS MODEL';
+    noThreatHeader = 'No Urgent Study Milestone Threats Detected';
+    noThreatReasoning = 'All revision intervals and assignment deadlines are safely structured relative to estimated study hours.';
+    noThreatMitigation = 'Maintain current study pacing. Allocate secondary focus blocks prior to exam gates.';
+    
+    awaitingScansText = 'Awaiting study alignment scans. Please trigger recalibration.';
+    awaitingVisualsText = 'Regenerating curriculum visual streams...';
+    awaitingHistoryText = 'Awaiting curriculum study telemetry.';
+    noPendingTasksText = 'No active pending study topics registered.';
+    resolvedUnitsLabel = 'Milestones';
+  } else if (role === 'developer') {
+    statusAccelerating = 'ACCELERATING VELOCITY';
+    statusStable = 'STEADY VELOCITY';
+    statusDeclining = 'BURNOUT IMMINENT';
+    statusOverloaded = 'SPRINT BOTTLENECK';
+    activeNarrativeSummary = 'AI STAFF ASSISTANT // NARRATIVE SUMMARY';
+    narrativeLoading = 'Analyzing developer tickets and formulating sprint insight...';
+    
+    nominalRiskLabel = 'NOMINAL';
+    thresholdTargetLabel = 'SPRINT SLA TARGET';
+    activeProbabilityMatrix = 'ACTIVE SPRINT INTEGRATION ANALYSIS';
+    noThreatHeader = 'No Urgent Sprint Delivery Blockers Detected';
+    noThreatReasoning = 'All sprint tickets and codebase releases are safely structured relative to available developer capacity.';
+    noThreatMitigation = 'Maintain current developer sprint velocity. Allocate secondary buffers for technical debt.';
+    
+    awaitingScansText = 'Awaiting developer sprint scans. Please trigger recalibration.';
+    awaitingVisualsText = 'Regenerating repository visual streams...';
+    awaitingHistoryText = 'Awaiting sprint commit telemetry.';
+    noPendingTasksText = 'No active pending sprint tickets registered.';
+    resolvedUnitsLabel = 'Tickets';
+  } else if (role === 'job_seeker') {
+    statusAccelerating = 'INTENSE OUTREACH';
+    statusStable = 'CONSISTENT COHORT';
+    statusDeclining = 'MOMENTUM COMPRESSION';
+    statusOverloaded = 'COGNITIVE OVERLOAD';
+    activeNarrativeSummary = 'AI CAREER COACH // NARRATIVE SUMMARY';
+    narrativeLoading = 'Analyzing pipeline progress and formulating outreach insight...';
+    
+    nominalRiskLabel = 'PENDING';
+    thresholdTargetLabel = 'APPLICATION DEADLINE TARGET';
+    activeProbabilityMatrix = 'ACTIVE OPPORTUNITY PIPELINE ANALYSIS';
+    noThreatHeader = 'No Urgent Application Deadlines Threatened';
+    noThreatReasoning = 'All interview timelines and outreach follow-ups are safely aligned with available preparation hours.';
+    noThreatMitigation = 'Maintain current submittal volume. Allocate preparation buffers for incoming loops.';
+    
+    awaitingScansText = 'Awaiting career alignment scans. Please trigger recalibration.';
+    awaitingVisualsText = 'Regenerating pipeline visual streams...';
+    awaitingHistoryText = 'Awaiting career milestone telemetry.';
+    noPendingTasksText = 'No active pending application goals registered.';
+    resolvedUnitsLabel = 'Applications';
+  } else { // professional
+    statusAccelerating = 'ACCELERATING CADENCE';
+    statusStable = 'STABLE OPERATIONS';
+    statusDeclining = 'VELOCITY COMPRESSION';
+    statusOverloaded = 'CRITICAL CONGESTION';
+    activeNarrativeSummary = 'AI CHIEF OF STAFF // NARRATIVE SUMMARY';
+    narrativeLoading = 'Analyzing operational KPI metrics and formulating SLA insight...';
+    
+    nominalRiskLabel = 'NOMINAL';
+    thresholdTargetLabel = 'SLA COMPLIANCE TARGET';
+    activeProbabilityMatrix = 'ACTIVE PERFORMANCE METRIC FORECAST';
+    noThreatHeader = 'No Urgent Deliverable SLA Threats Detected';
+    noThreatReasoning = 'All operational tasks and client delivery targets are safely structured relative to estimated labor hours.';
+    noThreatMitigation = 'Maintain current operational delivery rate. Allocate task recovery buffers where available.';
+    
+    awaitingScansText = 'Awaiting executive alignment scans. Please trigger recalibration.';
+    awaitingVisualsText = 'Regenerating operational visual streams...';
+    awaitingHistoryText = 'Awaiting operational KPI telemetry.';
+    noPendingTasksText = 'No active pending strategic milestones registered.';
+    resolvedUnitsLabel = 'SLA Objectives';
+  }
+
+  return {
+    statusAccelerating,
+    statusStable,
+    statusDeclining,
+    statusOverloaded,
+    activeNarrativeSummary,
+    narrativeLoading,
+    nominalRiskLabel,
+    thresholdTargetLabel,
+    activeProbabilityMatrix,
+    noThreatHeader,
+    noThreatReasoning,
+    noThreatMitigation,
+    awaitingScansText,
+    awaitingVisualsText,
+    awaitingHistoryText,
+    noPendingTasksText,
+    resolvedUnitsLabel,
+  };
+};
+
 export default function DailyBriefing({ briefing, momentum, tasks, loading, onRefresh, mockRole }: DailyBriefingProps) {
   const [chartTab, setChartTab] = React.useState<'velocity' | 'cadence'>('velocity');
+  const labels = getDailyBriefingLabels(mockRole);
+  const secondaryLabels = getSecondaryDailyLabels(mockRole as RoleType);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -35,28 +171,28 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
         return (
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-900/40">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            ACCELERATING CADENCE
+            {secondaryLabels.statusAccelerating}
           </div>
         );
       case 'STABLE':
         return (
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-blue-950/30 text-blue-400 border border-blue-900/30">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-            STABLE OPERATIONS
+            {secondaryLabels.statusStable}
           </div>
         );
       case 'DECLINING':
         return (
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-amber-950/40 text-amber-400 border border-amber-900/40">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-            VELOCITY COMPRESSION
+            {secondaryLabels.statusDeclining}
           </div>
         );
       case 'OVERLOADED':
         return (
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-rose-950/50 text-rose-400 border border-rose-900/40 animate-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
-            CRITICAL CONGESTION
+            {secondaryLabels.statusOverloaded}
           </div>
         );
       default:
@@ -118,6 +254,31 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
     ? 'bg-rose-950/50 text-rose-400 border border-rose-900/40 font-mono text-[9px]' 
     : 'bg-gray-905 text-gray-400 border border-gray-800 font-mono text-[9px]';
 
+  const generateNarrative = () => {
+    const r = (mockRole as RoleType) || 'professional';
+    const config = MODE_LANGUAGES[r] || MODE_LANGUAGES.professional;
+    const templates = config.narrativeTemplates;
+    if (tasks.length === 0) {
+      return templates.empty;
+    }
+    
+    const success = briefing?.successProbability ?? 85;
+    const isOverloaded = briefing?.workloadStressLevel === 'Meltdown Risk' || briefing?.workloadStressLevel === 'High' || totalEffort > 30;
+    const isWarning = success < 75 || hasHighRisk;
+
+    let template = templates.optimal;
+    if (isOverloaded) {
+      template = templates.overloaded;
+    } else if (isWarning) {
+      template = templates.warning;
+    }
+
+    return template
+      .replace('{totalEffort}', String(totalEffort))
+      .replace('{remainingCount}', String(pendingTasks.length))
+      .replace('{successProbability}', String(Math.round(success)));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#080808] p-6 rounded-xl border border-[#1A1A1A]">
@@ -127,23 +288,46 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <p className="text-[10px] font-mono text-emerald-500 tracking-wider uppercase">AI AGENT ACTIVE // @{mockRole}</p>
           </div>
           <h2 className="text-2xl font-medium font-serif italic text-white mt-1">
-            Executive Morning Briefing
+            {labels.morningBriefing}
           </h2>
           <p className="text-xs text-gray-400 mt-1 max-w-xl">
-            Real-time strategic synthesis of workspace metrics. Calibrating threat matrices and optimizing cognitive load.
+            {labels.morningBriefingDesc}
           </p>
         </div>
         
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-1.5 bg-white text-black hover:bg-gray-200 active:scale-95 text-xs font-bold rounded transition duration-150 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-1.5 bg-white text-black hover:bg-gray-200 active:scale-95 text-xs font-bold rounded transition duration-150 disabled:opacity-50 uppercase"
           id="btn-recalibrate-briefing"
         >
           <Activity className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-          RECALIBRATE BRIEFING
+          {labels.recalibrateButton}
         </button>
       </div>
+
+      {/* 🔮 DYNAMIC NARRATIVE SUMMARY BRIEFING PANEL */}
+      <motion.div 
+        initial={{ opacity: 0, y: -5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-5 bg-[#0C0C0F] border border-indigo-950/40 rounded-xl flex items-start gap-3.5 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full filter blur-xl pointer-events-none"></div>
+        <Sparkles className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-bold">
+              {secondaryLabels.activeNarrativeSummary}
+            </span>
+            <span className="px-1.5 py-0.2 text-[8px] font-mono bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 rounded uppercase tracking-wider">
+              {mockRole === 'student' ? 'Course Progress' : mockRole === 'developer' ? 'Velocity' : mockRole === 'job_seeker' ? 'Career Readiness' : 'Operational Bandwidth'}
+            </span>
+          </div>
+          <p className="text-sm text-gray-300 leading-relaxed font-serif italic">
+            {loading ? secondaryLabels.narrativeLoading : generateNarrative()}
+          </p>
+        </div>
+      </motion.div>
 
       {/* ⚠ FAILURE FORECAST HERO CARD */}
       <div className={`p-6 rounded-xl border transition-all duration-300 ${cardBg}`}>
@@ -152,11 +336,11 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           {/* Left Block: Probability score metrics */}
           <div className="space-y-2 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-[#1A1A1A] pb-5 lg:pb-0 lg:pr-6 shrink-0">
             <div className="flex items-center gap-2.5">
-              <span className={`text-[10px] font-mono tracking-[0.15em] font-semibold ${headingColor} flex items-center gap-1`}>
-                ⚠ FAILURE FORECAST
+              <span className={`text-[10px] font-mono tracking-[0.15em] font-semibold ${headingColor} flex items-center gap-1 uppercase`}>
+                ⚠ {labels.failureForecast}
               </span>
               <span className={`px-1.5 py-0.5 rounded tracking-widest uppercase text-[8px] font-bold ${badgeStyle}`}>
-                {highestRiskTask ? highestRiskTask.failureForecast?.riskLevel : 'NOMINAL'}
+                {highestRiskTask ? highestRiskTask.failureForecast?.riskLevel : secondaryLabels.nominalRiskLabel}
               </span>
             </div>
 
@@ -166,40 +350,40 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               </span>
               <div className="flex flex-col">
                 <span className="text-[9px] uppercase font-mono text-gray-500 tracking-wider leading-none">
-                  Failure Probability
+                  {labels.failureProbability}
                 </span>
                 <span className="text-[8px] font-mono text-gray-655 mt-1 uppercase tracking-widest">
-                  THRESHOLD TARGET
+                  {secondaryLabels.thresholdTargetLabel}
                 </span>
               </div>
             </div>
             
             <p className="text-[8px] font-mono text-gray-505 leading-relaxed uppercase tracking-widest pt-1">
-              {highestRiskTask ? 'ACTIVE PROBABILITY ASSESSMENT MATRIX' : 'SYSTEM CALIBRATED // SAFE FORECAST'}
+              {highestRiskTask ? secondaryLabels.activeProbabilityMatrix : labels.systemCalibrated}
             </p>
           </div>
 
           {/* Right Block: Highest Risk task particulars */}
           <div className="flex-grow space-y-4">
             <div>
-              <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block font-medium">Highest Risk Objective</span>
+              <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block font-medium">{labels.highestRiskObjective}</span>
               <h3 className="text-base font-serif italic text-white mt-1 uppercase tracking-tight">
-                {highestRiskTask ? highestRiskTask.title : 'No Urgent Scheduling Threat Detected'}
+                {highestRiskTask ? highestRiskTask.title : secondaryLabels.noThreatHeader}
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div className="p-3.5 bg-[#131313] rounded border border-[#1A1A1A]">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Critical Risk Reasoning</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">{labels.criticalRiskReasoning}</span>
                 <p className="text-xs text-[#C0C0C0] mt-1.5 leading-relaxed">
-                  {highestRiskTask ? highestRiskTask.failureForecast?.reasoning : 'All task deadlines are safely structured relative to estimated cognitive hours.'}
+                  {highestRiskTask ? highestRiskTask.failureForecast?.reasoning : secondaryLabels.noThreatReasoning}
                 </p>
               </div>
 
               <div className="p-3.5 bg-[#131313] rounded border border-[#111A13]/30 border-dashed">
-                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block">AI Mitigation Strategy</span>
+                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block">{labels.aiMitigationStrategy}</span>
                 <p className="text-xs text-indigo-200 mt-1.5 leading-relaxed font-serif italic">
-                  {highestRiskTask ? highestRiskTask.failureForecast?.recommendedIntervention : 'Maintain current delivery rate. Allocate secondary buffers where available.'}
+                  {highestRiskTask ? highestRiskTask.failureForecast?.recommendedIntervention : secondaryLabels.noThreatMitigation}
                 </p>
               </div>
             </div>
@@ -219,41 +403,41 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           <div className="md:col-span-5 border-b border-[#1A1A1A] pb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-              <p className="text-[10px] font-mono text-indigo-400 tracking-widest uppercase">CHIEF OF STAFF STRATEGIC INTEL</p>
+              <p className="text-[10px] font-mono text-indigo-400 tracking-widest uppercase">{labels.strategicIntelTitle}</p>
             </div>
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">REAL-TIME FORECAST</span>
           </div>
 
           <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block font-semibold">Strategic Focus</span>
+            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block font-semibold">{labels.strategicFocus}</span>
             <p className="text-xs font-serif italic text-white mt-1.5">
               {briefing.strategicFocusArea || 'Aligning workspace vectors.'}
             </p>
           </div>
 
           <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-rose-400 uppercase tracking-wider block font-semibold">Biggest Risk Today</span>
+            <span className="text-[9px] font-mono text-rose-400 uppercase tracking-wider block font-semibold">{labels.biggestRiskToday}</span>
             <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
               {briefing.biggestRiskToday || 'None active.'}
             </p>
           </div>
 
           <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-amber-400 uppercase tracking-wider block font-semibold">Most Important Task</span>
+            <span className="text-[9px] font-mono text-amber-400 uppercase tracking-wider block font-semibold">{labels.mostImportantTask}</span>
             <p className="text-xs text-white mt-1.5 font-sans font-medium">
               {briefing.mostImportantTask || 'Standard pacing.'}
             </p>
           </div>
 
           <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-sky-400 uppercase tracking-wider block font-semibold">Critical Bottleneck</span>
+            <span className="text-[9px] font-mono text-sky-400 uppercase tracking-wider block font-semibold">{labels.criticalBottleneck}</span>
             <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
               {briefing.criticalBottleneck || 'No operational roadblocks.'}
             </p>
           </div>
 
           <div className="md:col-span-1 p-4 bg-gradient-to-br from-[#121215] to-[#121C1C] rounded border border-emerald-950/30">
-            <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider block font-semibold">Recommended Intervention</span>
+            <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider block font-semibold">{labels.recommendedIntervention}</span>
             <p className="text-xs text-emerald-200/90 mt-1.5 font-serif italic leading-relaxed">
               {briefing.recommendedIntervention || 'Continue normal operations.'}
             </p>
@@ -269,7 +453,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full filter blur-xl pointer-events-none"></div>
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Success Probability</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.successProbability}</span>
               <ShieldCheck className="h-4.5 w-4.5 text-blue-500" />
             </div>
             <div className="mt-4 flex items-baseline gap-2">
@@ -298,7 +482,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-505/5 rounded-full filter blur-xl pointer-events-none"></div>
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Workload Stress</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.workloadStress}</span>
               <Brain className="h-4.5 w-4.5 text-indigo-400" />
             </div>
             <div className="mt-4">
@@ -307,11 +491,11 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               </span>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              Dynamically monitoring {pendingTasks.length} objectives with {totalEffort}h total estimated labor effort.
+              {labels.totalEstimatedEffortDesc}
             </p>
           </div>
           <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex items-center justify-between text-xs">
-            <span className="text-gray-500 tracking-wider">TOTAL ESTIMATED EFFORT</span>
+            <span className="text-gray-500 tracking-wider uppercase">{labels.totalEstimatedEffort}</span>
             <span className="text-white font-mono font-bold">{totalEffort}h</span>
           </div>
         </div>
@@ -323,22 +507,25 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           </div>
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Threat Matrix</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.threatMatrix}</span>
               <Flame className="h-4.5 w-4.5 text-orange-500 animate-pulse" />
             </div>
             <div className="mt-4 flex items-baseline gap-1.5">
               <span className="text-5xl font-light text-orange-500 font-sans">
                 {loading ? '--' : String(briefing?.highRiskCount ?? 0).padStart(2, '0')}
               </span>
-              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">HIGH-RISK GOALS</span>
+              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">{labels.highRiskGoals}</span>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
               Requires structural de-escalation for items near or beyond deadline borders.
             </p>
           </div>
           <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-orange-500 font-mono">
-            <span className="tracking-wider">CRITICAL BLOCKERS</span>
-            <span>{tasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length} Tasks</span>
+            <span className="tracking-wider uppercase">{labels.criticalBlockers}</span>
+            <span>
+              {tasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length}{' '}
+              {mockRole === 'student' ? 'Milestones' : mockRole === 'developer' ? 'Tickets' : mockRole === 'job_seeker' ? 'Applications' : 'Objectives'}
+            </span>
           </div>
         </div>
 
@@ -347,7 +534,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full filter blur-xl pointer-events-none"></div>
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">Completed SECURED</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.completedSecured}</span>
               <UserCheck className="h-4.5 w-4.5 text-emerald-400" />
             </div>
             <div className="mt-4 flex items-baseline gap-1.5">
@@ -357,12 +544,12 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ {tasks.length} SECURED</span>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              Secured {tasks.length > 0 ? Math.round((tasks.filter(t => t.status === 'completed').length / tasks.length) * 100) : 100}% of milestone requirements.
+              {labels.completedSecuredDesc}
             </p>
           </div>
           <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-emerald-400 font-mono">
-            <span className="tracking-wider">RESOLVED TODAY</span>
-            <span className="font-bold">{tasks.filter(t => t.status === 'completed' && t.completedAt).length} Units</span>
+            <span className="tracking-wider uppercase">{labels.resolvedToday}</span>
+            <span className="font-bold">{tasks.filter(t => t.status === 'completed' && t.completedAt).length} {secondaryLabels.resolvedUnitsLabel}</span>
           </div>
         </div>
 
@@ -377,7 +564,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <div className="flex items-center justify-between border-b border-[#1A1A1A] pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4.5 w-4.5 text-blue-500" />
-                <h4 className="text-xs font-semibold text-white tracking-widest uppercase">Executive Recommendations</h4>
+                <h4 className="text-xs font-semibold text-white tracking-widest uppercase">{labels.recommendationsTitle}</h4>
               </div>
               <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Real-Time Synthesis</span>
             </div>
@@ -411,7 +598,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                       </p>
                       <div className="flex items-center gap-2 mt-1.5 text-[10px] text-gray-500 font-mono uppercase tracking-widest">
                         <Clock className="h-3 w-3 text-gray-600" />
-                        <span>TACTICAL WORKSPACE FLOW</span>
+                        <span>{labels.recommendationsSub}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -419,7 +606,14 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               ) : (
                 <div className="p-8 text-center bg-[#131313] rounded border border-[#1A1A1A]">
                   <Lightbulb className="h-8 w-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-500">Ready for scanning. Refresh or create new tasks to initialize the intelligence matrix.</p>
+                  <p className="text-xs text-gray-500">
+                    Ready for scanning. Refresh or register new {
+                      mockRole === 'student' ? 'assignments' :
+                      mockRole === 'developer' ? 'sprint deliverables' :
+                      mockRole === 'job_seeker' ? 'job leads' :
+                      'corporate objectives'
+                    } to initialize the intelligence matrix.
+                  </p>
                 </div>
               )}
             </div>
@@ -428,7 +622,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
           <div className="mt-5 p-3.5 bg-[#131313] rounded border border-[#1A1A1A] flex items-start gap-2.5">
             <AlertTriangle className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
             <p className="text-[11px] text-[#A0A0A0] leading-relaxed font-mono">
-              <strong>COGNITIVE LOAD BALANCER:</strong> Running active workspace heuristics. All sectors report normal flow. Avoid high frequency multitasking to prevent focus degradation.
+              <strong>{labels.loadBalancerText}</strong>
             </p>
           </div>
         </div>
@@ -439,13 +633,13 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <div className="flex items-center justify-between border-b border-[#1A1A1A] pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Activity className="h-4.5 w-4.5 text-blue-500" />
-                <h4 className="text-xs font-semibold text-white tracking-widest uppercase">Workload Force Metrics</h4>
+                <h4 className="text-xs font-semibold text-white tracking-widest uppercase">{labels.workloadForceMetrics}</h4>
               </div>
               <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">BY SECTOR</span>
             </div>
 
             <p className="text-[11px] text-gray-400 mb-4 italic">
-              Real-time aggregation of estimated focus hours and computed average hazard quotients per workspace sector.
+              {labels.workloadForceMetricsDesc}
             </p>
 
             <div className="h-44 w-full">
@@ -474,8 +668,8 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-xs text-gray-500">
-                  Insufficient data. No active pending tasks exists.
+                <div className="h-full flex items-center justify-center text-xs text-gray-500 font-mono uppercase tracking-wider text-center p-4">
+                  {secondaryLabels.noPendingTasksText}
                 </div>
               )}
             </div>
@@ -483,11 +677,11 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
 
           <div className="grid grid-cols-2 gap-2 mt-4 text-center">
             <div className="bg-[#131313] p-2.5 rounded border border-[#1A1A1A]">
-              <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">Focus Hours Loaded</span>
+              <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">{labels.focusHoursLoaded}</span>
               <span className="text-lg font-bold text-blue-400 font-mono">{totalEffort}h</span>
             </div>
             <div className="bg-[#131313] p-2.5 rounded border border-[#1A1A1A]">
-              <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">Peak Hazard Quotient</span>
+              <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">{labels.peakHazardQuotient}</span>
               <span className="text-lg font-bold text-orange-500 font-mono">
                 {pendingTasks.length > 0 ? Math.max(...pendingTasks.map(t => t.riskScore || 0), 10) : 0}%
               </span>
@@ -505,11 +699,11 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
               <h3 className="text-sm font-semibold text-white tracking-widest uppercase">
-                WORKSPACE MOMENTUM INTELLIGENCE
+                {labels.momentumIntelTitle}
               </h3>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Dynamic AI analytics tracking your execution cadence, velocity score, and task lifecycle patterns.
+              {labels.momentumIntelDesc}
             </p>
           </div>
           
@@ -524,12 +718,12 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
         {/* Outer Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* LEFT: AI EXECUTIVE PERFORMANCE ANALYSIS */}
+          {/* LEFT: AI PERFORMANCE ANALYSIS */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
-                  EXECUTIVE PERFORMANCE ANALYSIS
+                  {labels.perfAnalysisTitle}
                 </span>
                 <span className="text-[9px] font-mono text-gray-600">
                   {momentum?.generatedAt ? `SYNCED // ${new Date(momentum.generatedAt).toLocaleTimeString()}` : 'SYNCED // REAL-TIME'}
@@ -547,7 +741,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                   {/* Status Badge */}
                   <div className="p-4 bg-[#141414] rounded border border-[#222222] flex items-center justify-between">
                     <div>
-                      <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest">Momentum Status</span>
+                      <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest">{labels.momentumStatus}</span>
                       <span className="text-sm font-bold tracking-tight text-white mt-0.5 block">
                         {momentum.analysis.momentumStatus}
                       </span>
@@ -559,7 +753,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                   <div className="p-4 bg-[#111] rounded border border-[#1A1A1A] space-y-1">
                     <div className="flex items-center gap-1.5 text-[9px] font-mono text-gray-400 uppercase tracking-widest">
                       <Activity className="h-3.5 w-3.5 text-blue-400" />
-                      <span>Key Observation</span>
+                      <span>{labels.keyObservation}</span>
                     </div>
                     <p className="text-xs text-[#CCCCCC] leading-relaxed font-sans">
                       {momentum.analysis.keyObservation}
@@ -570,7 +764,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                   <div className="p-4 bg-[#111] rounded border border-[#1A1A1A] space-y-1">
                     <div className="flex items-center gap-1.5 text-[9px] font-mono text-gray-400 uppercase tracking-widest">
                       <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                      <span>Risk Assessment</span>
+                      <span>{labels.riskAssessment}</span>
                     </div>
                     <p className="text-xs text-[#CCCCCC] leading-relaxed font-sans">
                       {momentum.analysis.riskAssessment}
@@ -581,7 +775,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                   <div className="p-4 bg-gradient-to-br from-[#121212] to-[#161310] rounded border border-[#2B2319] space-y-1.5">
                     <div className="flex items-center gap-1.5 text-[9px] font-mono text-amber-400 uppercase tracking-widest">
                       <Award className="h-3.5 w-3.5" />
-                      <span>Executive Recommendation</span>
+                      <span>{labels.executiveRec}</span>
                     </div>
                     <p className="text-xs text-amber-200/90 leading-relaxed font-sans">
                       {momentum.analysis.executiveRecommendation}
@@ -591,7 +785,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               ) : (
                 <div className="p-8 text-center bg-[#131313] rounded border border-[#1A1A1A]">
                   <Activity className="h-8 w-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-500">Awaiting executive alignment scans. Please trigger recalibration.</p>
+                  <p className="text-xs text-gray-500">{secondaryLabels.awaitingScansText}</p>
                 </div>
               )}
             </div>
@@ -603,25 +797,25 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             {/* Completion Ratio Indicator Section */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Completed Secured</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.completedSecured}</span>
                 <span className="text-xl font-bold text-white font-mono mt-1">
                   {momentum?.stats?.totalCompleted ?? 0}
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Created Overall</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.createdOverallStat}</span>
                 <span className="text-xl font-bold text-white font-mono mt-1">
                   {momentum?.stats?.totalCreated ?? 0}
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Completion Ratio</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.completionRatioStat}</span>
                 <span className="text-xl font-bold text-emerald-400 font-mono mt-1">
                   {momentum?.stats?.completionRatio ?? 0}%
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">Weekly Change</span>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.weeklyChangeStat}</span>
                 <div className="flex items-center gap-1.5 mt-1">
                   {(momentum?.stats?.weeklyChange ?? 0) >= 0 ? (
                     <>
@@ -646,7 +840,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <div className="bg-[#111] p-4 rounded border border-[#1A1A1A] space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
-                  {chartTab === 'velocity' ? 'PRODUCTIVITY VELOCITY SCORE (LAST 7 DAYS)' : 'TASK COMPLETION CADENCE'}
+                  {chartTab === 'velocity' ? labels.chartVelocityTitle : labels.chartCadenceTitle}
                 </span>
                 
                 <div className="flex bg-[#161616] rounded border border-[#222] p-1 gap-1">
@@ -656,7 +850,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                       chartTab === 'velocity' ? 'bg-white text-black font-semibold' : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    Velocity (Line)
+                    {labels.chartVelocityLabel}
                   </button>
                   <button
                     onClick={() => setChartTab('cadence')}
@@ -664,7 +858,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                       chartTab === 'cadence' ? 'bg-white text-black font-semibold' : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    Activity (Bar)
+                    {labels.chartCadenceLabel}
                   </button>
                 </div>
               </div>
@@ -672,7 +866,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               <div className="h-56 w-full">
                 {loading ? (
                   <div className="h-full flex items-center justify-center text-xs text-gray-500 animate-pulse font-mono">
-                    Regenerating dynamic visual streams...
+                    {secondaryLabels.awaitingVisualsText}
                   </div>
                 ) : momentum?.chartData && momentum.chartData.length > 0 ? (
                   chartTab === 'velocity' ? (
@@ -697,7 +891,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                         <Line
                           type="monotone"
                           dataKey="velocity"
-                          name="Velocity Score"
+                          name={labels.chartVelocityLabel}
                           stroke="#10B981"
                           strokeWidth={2.5}
                           dot={{ fill: '#10B981', r: 3, strokeWidth: 0 }}
@@ -716,14 +910,25 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                           labelStyle={{ color: '#fff', fontSize: '10px', fontWeight: 'bold' }}
                           itemStyle={{ fontSize: '10px' }}
                         />
-                        <Bar dataKey="created" name="Tasks Created" fill="#3B82F6" opacity={0.65} radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="completed" name="Tasks Completed" fill="#10B981" radius={[2, 2, 0, 0]} />
+                        <Bar 
+                          dataKey="created" 
+                          name={mockRole === 'student' ? "Milestones Added" : mockRole === 'developer' ? "Tickets Created" : mockRole === 'job_seeker' ? "Applications Opened" : "Objectives Logged"} 
+                          fill="#3B82F6" 
+                          opacity={0.65} 
+                          radius={[2, 2, 0, 0]} 
+                        />
+                        <Bar 
+                          dataKey="completed" 
+                          name={mockRole === 'student' ? "Milestones Completed" : mockRole === 'developer' ? "Tickets Closed" : mockRole === 'job_seeker' ? "Applications Secured" : "Objectives Delivered"} 
+                          fill="#10B981" 
+                          radius={[2, 2, 0, 0]} 
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   )
                 ) : (
                   <div className="h-full flex items-center justify-center text-xs text-gray-500 font-mono">
-                    Awaiting historic metrics telemetry.
+                    {secondaryLabels.awaitingHistoryText}
                   </div>
                 )}
               </div>
