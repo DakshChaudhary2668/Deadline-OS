@@ -1,4 +1,5 @@
 export interface ModeLanguageConfig {
+  [key: string]: any; // Allow dynamic additions for the audit
   title: string;
   subtitle: string;
   systemRole: string;
@@ -46,7 +47,12 @@ export interface ModeLanguageConfig {
     recovery: string;
     simulator: string;
   };
-  dailyBriefingLabels: {
+    simulatorLabels?: any;
+  confidenceDrivers?: string[];
+    dailyBriefingLabels: {
+    realTimeForecast?: string;
+    realTimeSynthesis?: string;
+    bySector?: string;
     morningBriefing: string;
     morningBriefingDesc: string;
     recalibrateButton: string;
@@ -214,6 +220,85 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
     },
     promptInstructions: 'You are an AI Academic Advisor. Respond using supportive, structured, academic, and encouraging language. Focus on syllabus coverage, study pacing, revision plans, exam readiness, and academic performance. Never use corporate, engineering, or executive jargon (like stakeholder, sprint, velocity, ROI, execution pipeline, deployment, etc.). Always replace generic terms like "task" or "productivity" with context-aware academic vocabulary such as "Revision Topic", "Syllabus Milestone", "Study Block", or "Academic Goal". Example style: "Complete Unit 4 revision today to stay on track for Friday\'s exam. Plan focused revision blocks to maximize your exam readiness."',
     
+        dailySecondary: {
+        chatWelcome: `Greetings. I am your Academic Advisor AI. I have consolidated your current coursework metadata, active syllabus constraints, and historical study velocity.\n\nHow should we align your study capacity today? I can help you deconstruct monolithic assignments, calculate grade trade-offs, draft emergency revision timelines, or simulate study load options.`,
+        flushTooltip: 'Flush conversational buffers',
+        wsDesc: 'Higher values indicate a healthier and more achievable revision plan.',
+        wsPoints: ["Remaining study capacity","Exam proximity pressure","Target grade probability","Syllabus conflicts","Overall study balance"],
+        bandwidthLabel: 'Course Progress',
+        unitPlural: 'Milestones',
+        unitLower: 'assignments',
+        chartAdded: 'Milestones Added',
+        chartCompleted: 'Milestones Completed',
+        taskSingularLower: 'milestone',
+        hoursLabel: 'study hours',
+        focusLabel: 'Study Hours',
+        riskLabel: 'Failure Risk %',
+    "statusAccelerating": "HIGH WORK ETHIC",
+    "statusStable": "STABLE PROGRESS",
+    "statusDeclining": "ACADEMIC FATIGUE",
+    "statusOverloaded": "ACADEMIC CRUSH",
+    "activeNarrativeSummary": "AI STUDY ADVISOR // NARRATIVE SUMMARY",
+    "narrativeLoading": "Analyzing academic syllabus metrics and formulating study insight...",
+    "nominalRiskLabel": "SAFE",
+    "thresholdTargetLabel": "EXAM GAP TARGET",
+    "activeProbabilityMatrix": "ACTIVE SYLLABUS RISK ANALYSIS MODEL",
+    "noThreatHeader": "No Urgent Study Milestone Threats Detected",
+    "noThreatReasoning": "All revision intervals and assignment deadlines are safely structured relative to estimated study hours.",
+    "noThreatMitigation": "Maintain current study pacing. Allocate secondary focus blocks prior to exam gates.",
+    "awaitingScansText": "Awaiting study alignment scans. Please trigger recalibration.",
+    "awaitingVisualsText": "Regenerating curriculum visual streams...",
+    "awaitingHistoryText": "Awaiting curriculum study telemetry.",
+    "noPendingTasksText": "No active pending study topics registered.",
+    "resolvedUnitsLabel": "Milestones"
+},
+    taskListDynamic: {
+    "catWork": "🏫 Curriculum",
+    "catStudy": "📚 Study Blocks",
+    "catCareer": "🎖️ Academic Growth",
+    "catPersonal": "👤 Personal Tasks",
+    "tabAll": "All Milestones",
+    "tabPending": "Active Study",
+    "tabOverdue": "Overdue Gates",
+    "tabCompleted": "Completed Topics",
+    "allCategories": "All Syllabus Categories"
+},
+    planningDynamic: {
+    "compilingTimeline": "COMPILING REVISION TIMELINE...",
+    "compilingRoadmap": "COMPILING REVISION ROADMAP...",
+    "scanningFocus": "Scanning study intervals...",
+    "precisionSla": "Generating high precision syllabus slots",
+    "plottingMilestones": "Plotting study milestones...",
+    "timelineTitle": "24h Syllabus Timetable",
+    "precisionBuffer": "Precision study buffers",
+    "weeklyRoadmap": "WEEKLY SYLLABUS ROADMAP",
+    "balancedAllocation": "Balanced Revision Allocation"
+},
+    recoveryDynamic: {
+    "nominalStatus": "⚠️ Study Deficit",
+    "nominalOverdue": "🛑 Lapsed Gate",
+    "planLoaded": "Curriculum Plan Loaded",
+    "laborEffort": "Study Hours",
+    "turnaroundMission": "SYLLABUS GAP ALIGNMENT PLAN",
+    "selectPending": "-- Select Study Milestone --"
+},
+    strategicDynamic: {
+        taskPlural: 'Milestones',
+        taskSingular: 'Milestone',
+        slaLabel: 'DEADLINE',
+        overdueLabel: 'OVERDUE DEADLINE',
+        slaBreachedLabel: 'Deadline Missed',
+    
+    taskStatusLabels: {"urgent":"URGENT STUDY REQUIRED","high":"HIGH VALUE SUBJECT","stable":"ON TRACK","low":"LOW PRIORITY"},
+    executiveScoreLabels: {"high":"High Priority Topic","moderate":"Moderate Confidence","low":"Exam Readiness"},
+    "awaitingIntel": "Awaiting strategic alignment scans. Please trigger AI evaluation.",
+    "noIntel": "No active strategic intelligence reports detected.",
+    "decisionHeader": "ACADEMIC DECISION MATRIX",
+    "categoryInsights": "Syllabus Insights",
+    "priorityFocus": "Primary Revision Focus",
+    "strategicMetrics": "Academic Metrics"
+},
+
     sidebarLabels: {
       briefing: "Study Brief",
       tasks: "Syllabus Matrix",
@@ -222,7 +307,14 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
       recovery: "Syllabus Recovery",
       simulator: "Grade Simulator"
     },
-    dailyBriefingLabels: {
+    
+    simulatorLabels: {"predictorPanel":"Academic Performance Predictor","title":"What-If Course Load Simulator","description":"Explore the GPA and timeline impact of skipping homeworks, delaying research milestones, or cramming extra study hours.","chooseTarget":"-- Choose Target Syllabus Goal --","originalCost":"Study Hours Required","constraintDeadline":"Submission Deadline","baselineUrgency":"Academic Weight","step1":"Step 1: Select Syllabus Target","step2":"Step 2: Hypothesize Academic Adjustments","executeButton":"RUN ACADEMIC PROJECTION","executingButton":"ANALYZING GRADE IMPACT...","outcomeHeader":"Projected Academic Standing","workspaceSuccess":"Syllabus Mastery","objectiveSuccess":"Goal Grade Success","failureRisk":"Academic Failure Risk","awaitingInput":"Awaiting Course Load Inputs","awaitingDesc":"Adjust study hours or deadlines on the left to project exam performance and grade impact.","outcomeMetricsLabel":"Outcome Model Metrics","simulatedStateLabel":"SIMULATED SYLLABUS STATE","aiConfidenceLabel":"AI CONFIDENCE:"},
+    confidenceDrivers: ["Coursework consistency","Submission certainty","Exam load volatility","Hypothesis complexity","Syllabic signal indicators"],
+dailyBriefingLabels: {
+      realTimeForecast: "REAL-TIME FORECAST",
+      realTimeSynthesis: "Real-Time Synthesis",
+      bySector: "BY COURSE",
+      
       morningBriefing: "Syllabus Assessment",
       morningBriefingDesc: "Real-time audit of grade threats, exam deadlines, and conceptual bottlenecks.",
       recalibrateButton: "RECALIBRATE ACADEMIC RUNWAY",
@@ -388,6 +480,85 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
     },
     promptInstructions: 'You are a Senior Staff Engineer. Respond using highly technical, precise, concise, and professional software engineering terminology. Focus on implementation strategies, sprint velocity, tech debt reduction, code freeze dependencies, active blockers, testing pipelines, and shipping deliverables on schedule. Avoid academic or generic language. Always replace generic terms like "task" or "productivity" with developer vocabulary such as "Sprint Ticket", "Tech Debt Item", or "Shippable Feature". Example style: "Implement core API routing and complete integration tests to ship this feature before code freeze. Address pending tech debt in the next sprint cycle."',
     
+        dailySecondary: {
+        chatWelcome: `Greetings. I am your Senior Staff Assistant AI. I have consolidated your codebase metadata, active sprint constraints, and deployment velocity records.\n\nHow should we align your sprint bandwidth today? I can help you deconstruct epic tickets, calculate tech-debt trade-offs, draft incident recovery playbooks, or simulate scope-reduction options.`,
+        flushTooltip: 'Flush conversational buffers',
+        wsDesc: 'Higher values indicate a healthier and more achievable sprint execution.',
+        wsPoints: ["Remaining developer bandwidth","Code freeze pressure","PR merge probability","Dependency conflicts","Overall sprint balance"],
+        bandwidthLabel: 'Velocity',
+        unitPlural: 'Tickets',
+        unitLower: 'sprint deliverables',
+        chartAdded: 'Tickets Created',
+        chartCompleted: 'Tickets Closed',
+        taskSingularLower: 'ticket',
+        hoursLabel: 'cognitive hours',
+        focusLabel: 'Sprint Hours',
+        riskLabel: 'Slippage Risk %',
+    "statusAccelerating": "ACCELERATING VELOCITY",
+    "statusStable": "STEADY VELOCITY",
+    "statusDeclining": "BURNOUT IMMINENT",
+    "statusOverloaded": "SPRINT BOTTLENECK",
+    "activeNarrativeSummary": "AI STAFF ASSISTANT // NARRATIVE SUMMARY",
+    "narrativeLoading": "Analyzing developer tickets and formulating sprint insight...",
+    "nominalRiskLabel": "NOMINAL",
+    "thresholdTargetLabel": "SPRINT SLA TARGET",
+    "activeProbabilityMatrix": "ACTIVE SPRINT INTEGRATION ANALYSIS",
+    "noThreatHeader": "No Urgent Sprint Delivery Blockers Detected",
+    "noThreatReasoning": "All sprint tickets and codebase releases are safely structured relative to available developer capacity.",
+    "noThreatMitigation": "Maintain current developer sprint velocity. Allocate secondary buffers for technical debt.",
+    "awaitingScansText": "Awaiting developer sprint scans. Please trigger recalibration.",
+    "awaitingVisualsText": "Regenerating repository visual streams...",
+    "awaitingHistoryText": "Awaiting sprint commit telemetry.",
+    "noPendingTasksText": "No active pending sprint tickets registered.",
+    "resolvedUnitsLabel": "Tickets"
+},
+    taskListDynamic: {
+    "catWork": "💻 Sprint Tickets",
+    "catStudy": "📚 Tech Debt / Refactoring",
+    "catCareer": "🎖️ Professional Skillup",
+    "catPersonal": "👤 Individual Tasks",
+    "tabAll": "All Tickets",
+    "tabPending": "Open Issues",
+    "tabOverdue": "Missed Sprints",
+    "tabCompleted": "Closed/Merged",
+    "allCategories": "All Repository Scope"
+},
+    planningDynamic: {
+    "compilingTimeline": "COMPILING SPRINT TIMELINE...",
+    "compilingRoadmap": "COMPILING SPRINT ROADMAP...",
+    "scanningFocus": "Scanning sprint focus blocks...",
+    "precisionSla": "Generating high precision sprint slots",
+    "plottingMilestones": "Plotting sprint tickets...",
+    "timelineTitle": "24h Sprint Timetable",
+    "precisionBuffer": "Precision incident buffers",
+    "weeklyRoadmap": "WEEKLY SPRINT ROADMAP",
+    "balancedAllocation": "Balanced Capacity Allocation"
+},
+    recoveryDynamic: {
+    "nominalStatus": "⚠️ Velocity At Risk",
+    "nominalOverdue": "🛑 Blocked Ticket",
+    "planLoaded": "Sprint Blueprint Loaded",
+    "laborEffort": "Developer Hours",
+    "turnaroundMission": "SPRINT VELOCITY RECOVERY ROADMAP",
+    "selectPending": "-- Select Sprint Ticket --"
+},
+    strategicDynamic: {
+        taskPlural: 'Tickets',
+        taskSingular: 'Ticket',
+        slaLabel: 'SPRINT',
+        overdueLabel: 'OVERDUE SPRINT',
+        slaBreachedLabel: 'Sprint Breached',
+    
+    taskStatusLabels: {"urgent":"CRITICAL BUG/BLOCKER","high":"HIGH PRIORITY TICKET","stable":"STABLE SPRINT","low":"BACKLOG"},
+    executiveScoreLabels: {"high":"High Priority Ticket","moderate":"Moderate Confidence","low":"Sprint Readiness"},
+    "awaitingIntel": "Awaiting sprint alignment scans. Please trigger AI evaluation.",
+    "noIntel": "No active sprint insights or technical reports detected.",
+    "decisionHeader": "TECHNICAL DECISION MATRIX",
+    "categoryInsights": "Repository Insights",
+    "priorityFocus": "Primary Engineering Focus",
+    "strategicMetrics": "Velocity Metrics"
+},
+
     sidebarLabels: {
       briefing: "Sprint Brief",
       tasks: "Sprint Backlog",
@@ -396,7 +567,14 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
       recovery: "Incident Recovery",
       simulator: "Sprint Simulator"
     },
-    dailyBriefingLabels: {
+    
+    simulatorLabels: {"predictorPanel":"Sprint Performance Predictor","title":"What-If Sprint Simulator","description":"Project the sprint success, code velocity, and deployment risk of delaying tickets, scaling down scope, or working overtime.","chooseTarget":"-- Choose Target Sprint Ticket --","originalCost":"Dev Effort Required","constraintDeadline":"Sprint Deadline","baselineUrgency":"Ticket Priority","step1":"Step 1: Select Backlog Ticket","step2":"Step 2: Define Sprint Intervention","executeButton":"PROJECT SPRINT IMPACT","executingButton":"RUNNING OVERTIME SIMULATION...","outcomeHeader":"Projected Sprint Metrics","workspaceSuccess":"Sprint Completion","objectiveSuccess":"Build Stability","failureRisk":"SLA Breach Risk","awaitingInput":"Awaiting Sprint Parameters","awaitingDesc":"Configure sprint adjustments to simulate code-freeze bottlenecks and delivery velocity.","outcomeMetricsLabel":"Outcome Model Metrics","simulatedStateLabel":"SIMULATED SPRINT STATE","aiConfidenceLabel":"AI CONFIDENCE:"},
+    confidenceDrivers: ["Commit history consistency","Code freeze certainty","PR/deploy volatility","Scenario complexity","Branch telemetry signals"],
+dailyBriefingLabels: {
+      realTimeForecast: "REAL-TIME FORECAST",
+      realTimeSynthesis: "Real-Time Synthesis",
+      bySector: "BY EPIC",
+      
       morningBriefing: "Sprint Performance Audit",
       morningBriefingDesc: "Real-time analysis of build blockages, delivery timelines, and technical debt indicators.",
       recalibrateButton: "RECALIBRATE SPRINT RUNWAY",
@@ -562,6 +740,85 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
     },
     promptInstructions: 'You are an AI Career Coach. Respond using motivating, supportive, and professional language centered around career development. Focus on resume tailoring, portfolio creation, internship hunting, mock interviews, LinkedIn networking, and skill development. Avoid deep software engineering implementation slang or corporate strategic planning jargon. Always replace generic terms like "task" or "productivity" with career-specific vocabulary such as "Application Step", "Career Goal", or "Interview Prep Block". Example style: "Complete your project portfolio page today and send two tailored applications. Revise core interview answers before tomorrow\'s call."',
     
+        dailySecondary: {
+        chatWelcome: `Greetings. I am your Career Placement Coach AI. I have consolidated your pipeline metadata, active interview constraints, and historical prep velocity.\n\nHow should we align your placement strategy today? I can help you deconstruct monolithic prep tasks, calculate interview trade-offs, draft emergency pipeline recovery timelines, or simulate networking outreach options.`,
+        flushTooltip: 'Flush conversational buffers',
+        wsDesc: 'Higher values indicate a healthier and more achievable hiring placement.',
+        wsPoints: ["Remaining prep capacity","Interview date pressure","Offer conversion probability","Scheduling conflicts","Overall pipeline balance"],
+        bandwidthLabel: 'Career Readiness',
+        unitPlural: 'Applications',
+        unitLower: 'job leads',
+        chartAdded: 'Applications Opened',
+        chartCompleted: 'Applications Secured',
+        taskSingularLower: 'application',
+        hoursLabel: 'preparation hours',
+        focusLabel: 'Prep Hours',
+        riskLabel: 'Rejection Risk %',
+    "statusAccelerating": "INTENSE OUTREACH",
+    "statusStable": "CONSISTENT COHORT",
+    "statusDeclining": "MOMENTUM COMPRESSION",
+    "statusOverloaded": "COGNITIVE OVERLOAD",
+    "activeNarrativeSummary": "AI CAREER COACH // NARRATIVE SUMMARY",
+    "narrativeLoading": "Analyzing pipeline progress and formulating outreach insight...",
+    "nominalRiskLabel": "PENDING",
+    "thresholdTargetLabel": "APPLICATION DEADLINE TARGET",
+    "activeProbabilityMatrix": "ACTIVE OPPORTUNITY PIPELINE ANALYSIS",
+    "noThreatHeader": "No Urgent Pipeline Attrition Detected",
+    "noThreatReasoning": "All interviews and application follow-ups are safely structured relative to preparation capacity.",
+    "noThreatMitigation": "Maintain current application velocity. Allocate secondary buffers for interview prep.",
+    "awaitingScansText": "Awaiting career alignment scans. Please trigger recalibration.",
+    "awaitingVisualsText": "Regenerating pipeline visual streams...",
+    "awaitingHistoryText": "Awaiting outreach metrics telemetry.",
+    "noPendingTasksText": "No active pending career opportunities registered.",
+    "resolvedUnitsLabel": "Offers/Leads"
+},
+    taskListDynamic: {
+    "catWork": "💼 Job Applications",
+    "catStudy": "📚 Interview Prep",
+    "catCareer": "🎖️ Networking Outreaches",
+    "catPersonal": "👤 Personal Routine",
+    "tabAll": "All Pipeline",
+    "tabPending": "Active Loops",
+    "tabOverdue": "Missed Followups",
+    "tabCompleted": "Offers Secured",
+    "allCategories": "All Pipeline Goals"
+},
+    planningDynamic: {
+    "compilingTimeline": "COMPILING CAREER AGENDA...",
+    "compilingRoadmap": "COMPILING GROWTH ROADMAP...",
+    "scanningFocus": "Scanning outreach intervals...",
+    "precisionSla": "Generating high precision outreach slots",
+    "plottingMilestones": "Plotting outreach goals...",
+    "timelineTitle": "24h Career Timetable",
+    "precisionBuffer": "Precision follow-up buffers",
+    "weeklyRoadmap": "WEEKLY CAREER TILES",
+    "balancedAllocation": "Balanced Growth Allocation"
+},
+    recoveryDynamic: {
+    "nominalStatus": "⚠️ Pipeline Stall",
+    "nominalOverdue": "🛑 Deadline Missed",
+    "planLoaded": "Pipeline Rescue Plan Loaded",
+    "laborEffort": "Prep Hours",
+    "turnaroundMission": "OPPORTUNITY CONVERSION BLUEPRINT",
+    "selectPending": "-- Select Application Goal --"
+},
+    strategicDynamic: {
+        taskPlural: 'Applications',
+        taskSingular: 'Application',
+        slaLabel: 'DUE DATE',
+        overdueLabel: 'OVERDUE ACTION',
+        slaBreachedLabel: 'Due Date Past',
+    
+    taskStatusLabels: {"urgent":"URGENT ACTION REQUIRED","high":"HIGH IMPACT","stable":"STABLE PIPELINE","low":"LOW PRIORITY"},
+    executiveScoreLabels: {"high":"High Priority Application","moderate":"Moderate Confidence","low":"Interview Readiness"},
+    "awaitingIntel": "Awaiting career alignment scans. Please trigger AI evaluation.",
+    "noIntel": "No active pipeline insights or conversion reports detected.",
+    "decisionHeader": "CAREER DECISION MATRIX",
+    "categoryInsights": "Pipeline Insights",
+    "priorityFocus": "Primary Outreach Focus",
+    "strategicMetrics": "Conversion Metrics"
+},
+
     sidebarLabels: {
       briefing: "Career Brief",
       tasks: "Application Registry",
@@ -570,7 +827,14 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
       recovery: "Milestone Recovery",
       simulator: "Placement Simulator"
     },
-    dailyBriefingLabels: {
+    
+    simulatorLabels: {"predictorPanel":"Placement Pipeline Predictor","title":"What-If Placement Simulator","description":"Evaluate the conversion probability of shifting interview dates, modifying outreach strategies, or expanding job applications.","chooseTarget":"-- Choose Target Application --","originalCost":"Prep Hours Required","constraintDeadline":"Interview Date","baselineUrgency":"Role Priority","step1":"Step 1: Select Target Opportunity","step2":"Step 2: Adjust Placement Variables","executeButton":"SIMULATE PIPELINE IMPACT","executingButton":"CALCULATING CONVERSION RATIOS...","outcomeHeader":"Projected Hiring Funnel","workspaceSuccess":"Interview Pipeline Health","objectiveSuccess":"Offer Conversion Rate","failureRisk":"Rejection Risk","awaitingInput":"Awaiting Pipeline Adjustments","awaitingDesc":"Modify target variables to generate risk and conversion models for the selected role.","outcomeMetricsLabel":"Outcome Model Metrics","simulatedStateLabel":"SIMULATED PIPELINE STATE","aiConfidenceLabel":"AI CONFIDENCE:"},
+    confidenceDrivers: ["Interview funnel consistency","Process/round certainty","Hiring wave volatility","Scenario complexity","Recruiter signal indicators"],
+dailyBriefingLabels: {
+      realTimeForecast: "REAL-TIME FORECAST",
+      realTimeSynthesis: "Real-Time Synthesis",
+      bySector: "BY STAGE",
+      
       morningBriefing: "Hiring Pipeline Assessment",
       morningBriefingDesc: "Real-time tracking of active job applications, networking outreach, and interview loops.",
       recalibrateButton: "RECALIBRATE HIRING PIPELINE",
@@ -736,6 +1000,85 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
     },
     promptInstructions: 'You are an Executive Ops Manager. Respond using concise, highly polished, confident, and direct executive communication. Focus on stakeholder alignment, target execution delivery, key metrics (KPIs), resource coordination, operational dependencies, and risk management. Sound like an experienced engineering or product manager speaking to executives. Always replace generic terms like "task" or "productivity" with executive vocabulary such as "Operational Objective", "SLA Deliverable", "Strategic Milestone", or "Key Performance Target". Example style: "Align with key stakeholders to unblock the milestone delivery. Reschedule non-essential discussions to safeguard the core project schedule."',
     
+        dailySecondary: {
+        chatWelcome: `Greetings. I am your Gemini Chief of Staff. I have consolidated your current workspace metadata, active deadline constraints, and historical velocity records.\n\nHow should we align your strategic capacity today? I can help you deconstruct monolithic deliverables, calculate high-value trade-offs, draft emergency recovery timelines, or simulate scope-reduction options.`,
+        flushTooltip: 'Flush conversational buffers',
+        wsDesc: 'Higher values indicate a healthier and more achievable execution plan.',
+        wsPoints: ["Remaining execution capacity","Deadline pressure","Task completion probability","Scheduling conflicts","Overall workload balance"],
+        bandwidthLabel: 'Operational Bandwidth',
+        unitPlural: 'Objectives',
+        unitLower: 'milestones',
+        chartAdded: 'Objectives Logged',
+        chartCompleted: 'Objectives Delivered',
+        taskSingularLower: 'objective',
+        hoursLabel: 'cognitive hours',
+        focusLabel: 'Focus Hours',
+        riskLabel: 'SLA Risk %',
+    "statusAccelerating": "ACCELERATING CADENCE",
+    "statusStable": "STABLE OPERATIONS",
+    "statusDeclining": "VELOCITY COMPRESSION",
+    "statusOverloaded": "CRITICAL CONGESTION",
+    "activeNarrativeSummary": "AI CHIEF OF STAFF // NARRATIVE SUMMARY",
+    "narrativeLoading": "Analyzing system metrics and formulating narrative insight...",
+    "nominalRiskLabel": "NOMINAL",
+    "thresholdTargetLabel": "THRESHOLD TARGET",
+    "activeProbabilityMatrix": "ACTIVE PROBABILITY ASSESSMENT MATRIX",
+    "noThreatHeader": "No Urgent Scheduling Threat Detected",
+    "noThreatReasoning": "All task deadlines are safely structured relative to estimated cognitive hours.",
+    "noThreatMitigation": "Maintain current delivery rate. Allocate secondary buffers where available.",
+    "awaitingScansText": "Awaiting executive alignment scans. Please trigger recalibration.",
+    "awaitingVisualsText": "Regenerating dynamic visual streams...",
+    "awaitingHistoryText": "Awaiting historic metrics telemetry.",
+    "noPendingTasksText": "No active pending strategic milestones registered.",
+    "resolvedUnitsLabel": "Units"
+},
+    taskListDynamic: {
+    "catWork": "💼 Operations",
+    "catStudy": "📚 Skill Acquisition",
+    "catCareer": "🎖️ Strategic Career",
+    "catPersonal": "👤 Personal Habits",
+    "tabAll": "All Deliverables",
+    "tabPending": "Pending Actions",
+    "tabOverdue": "SLA Overdue",
+    "tabCompleted": "Done/Archived",
+    "allCategories": "All Operational Domains"
+},
+    planningDynamic: {
+    "compilingTimeline": "COMPILING TIMELINE...",
+    "compilingRoadmap": "COMPILING ROADMAP...",
+    "scanningFocus": "Scanning focus blocks...",
+    "precisionSla": "Generating high precision SLA timetable slots",
+    "plottingMilestones": "Plotting weekly milestones...",
+    "timelineTitle": "24h Task Timetable",
+    "precisionBuffer": "Precision SLA buffers",
+    "weeklyRoadmap": "WEEKLY MILESTONE TILES",
+    "balancedAllocation": "Balanced Resource Allocation"
+},
+    recoveryDynamic: {
+    "nominalStatus": "⚠️ SLA Breach Risk",
+    "nominalOverdue": "🛑 Overdue SLA",
+    "planLoaded": "Action Plan Loaded",
+    "laborEffort": "Operational Hours",
+    "turnaroundMission": "CRITICAL ESCALATION ALIGNMENT",
+    "selectPending": "-- Select Escalated Objective --"
+},
+    strategicDynamic: {
+        taskPlural: 'Objectives',
+        taskSingular: 'Objective',
+        slaLabel: 'SLA',
+        overdueLabel: 'OVERDUE SLA',
+        slaBreachedLabel: 'SLA Breached',
+    
+    taskStatusLabels: {"urgent":"URGENT ACTION REQUIRED","high":"HIGH VALUE","stable":"STABLE","low":"LOW PRIORITY"},
+    executiveScoreLabels: {"high":"High Priority","moderate":"Moderate Confidence","low":"Executive Readiness"},
+    "awaitingIntel": "Awaiting executive alignment scans. Please trigger AI evaluation.",
+    "noIntel": "No active strategic intelligence reports detected.",
+    "decisionHeader": "EXECUTIVE DECISION MATRIX",
+    "categoryInsights": "Operational Insights",
+    "priorityFocus": "Primary Strategic Focus",
+    "strategicMetrics": "Performance Metrics"
+},
+
     sidebarLabels: {
       briefing: "Executive Brief",
       tasks: "SLA Initiative Matrix",
@@ -744,7 +1087,14 @@ export const MODE_LANGUAGES: Record<'student' | 'developer' | 'job_seeker' | 'pr
       recovery: "SLA Recovery Hub",
       simulator: "Decision Simulator"
     },
-    dailyBriefingLabels: {
+    
+    simulatorLabels: {"predictorPanel":"Strategic Operations Predictor","title":"What-If Executive Simulator","description":"Model the operational consequences of delaying milestones, reallocating budget, or forcing timeline accelerations.","chooseTarget":"-- Choose Target SLA Initiative --","originalCost":"Labor Hours Required","constraintDeadline":"SLA Deadline","baselineUrgency":"Strategic Priority","step1":"Step 1: Select Business Initiative","step2":"Step 2: Model Execution Adjustments","executeButton":"RUN SLA PROJECTION","executingButton":"GENERATING IMPACT MODEL...","outcomeHeader":"Projected Operational State","workspaceSuccess":"Corporate Execution","objectiveSuccess":"Initiative Success","failureRisk":"SLA Breach Risk","awaitingInput":"Awaiting Simulation Inputs","awaitingDesc":"Adjust variables on the left to project execution outcomes, risk impacts, and resource tradeoffs.","outcomeMetricsLabel":"Outcome Model Metrics","simulatedStateLabel":"SIMULATED WORKSPACE STATE","aiConfidenceLabel":"AI CONFIDENCE:"},
+    confidenceDrivers: ["Historical deliverable consistency","SLA breach certainty","Operational capacity volatility","Scenario complexity","Contextual telemetry signals"],
+dailyBriefingLabels: {
+      realTimeForecast: "REAL-TIME FORECAST",
+      realTimeSynthesis: "Real-Time Synthesis",
+      bySector: "BY SECTOR",
+      
       morningBriefing: "Operational Review",
       morningBriefingDesc: "Comprehensive executive review of target timelines, SLA compliance states, and active dependencies.",
       recalibrateButton: "RECALIBRATE STRATEGIC RUNWAY",

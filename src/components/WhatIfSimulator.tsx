@@ -20,41 +20,15 @@ import {
 import { Task, SimulationScenario, SimulationResult } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
 
+type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
+
+const getSecondaryWhatIfLabels = (role: RoleType) => {
+  const config = MODE_LANGUAGES[role] || MODE_LANGUAGES.professional;
+  return config.dailySecondary;
+};
+
 const getConfidenceDrivers = (role?: string): string[] => {
-  if (role === 'student') {
-    return [
-      'Coursework consistency',
-      'Submission certainty',
-      'Exam load volatility',
-      'Hypothesis complexity',
-      'Syllabic signal indicators'
-    ];
-  }
-  if (role === 'developer') {
-    return [
-      'Commit history consistency',
-      'Code freeze certainty',
-      'PR/deploy volatility',
-      'Scenario complexity',
-      'Branch telemetry signals'
-    ];
-  }
-  if (role === 'job_seeker') {
-    return [
-      'Interview funnel consistency',
-      'Process/round certainty',
-      'Hiring wave volatility',
-      'Scenario complexity',
-      'Recruiter signal indicators'
-    ];
-  }
-  return [
-    'Historical deliverable consistency',
-    'SLA breach certainty',
-    'Operational capacity volatility',
-    'Scenario complexity',
-    'Contextual telemetry signals'
-  ];
+  return (MODE_LANGUAGES[(role || "professional") as keyof typeof MODE_LANGUAGES] as any).confidenceDrivers || ['Historical deliverable consistency', 'SLA breach certainty', 'Operational capacity volatility', 'Scenario complexity', 'Contextual telemetry signals'];
 };
 
 interface WhatIfSimulatorProps {
@@ -319,14 +293,15 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
     }
   };
 
-  const labels = getSimulatorLabels(mockRole);
+  const labels = (MODE_LANGUAGES[(mockRole || "professional") as keyof typeof MODE_LANGUAGES] as any).simulatorLabels || getSimulatorLabels(mockRole);
+  const secondaryLabels = getSecondaryWhatIfLabels(mockRole as RoleType);
   const scenarioOptions = getScenarioOptions(mockRole);
 
   const handleRunSimulation = async () => {
     // Some scenarios require a task context
     const needsTask = ['SKIP_TASK', 'DELAY_1_DAY', 'DELAY_3_DAYS', 'REDUCE_EFFORT', 'PRIORITIZE_TASK'].includes(scenario);
     if (needsTask && !selectedTaskId) {
-      const taskLabel = mockRole === 'student' ? 'milestone' : mockRole === 'developer' ? 'ticket' : mockRole === 'job_seeker' ? 'application' : 'objective';
+      const taskLabel = secondaryLabels.taskSingularLower;
       setError(`Please choose a target ${taskLabel} to execute this scenario simulation.`);
       return;
     }
@@ -431,7 +406,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                 <div className="p-3 bg-[#131313] rounded border border-[#1C1C1C] text-[11px] space-y-1.5 font-sans">
                   <div className="flex justify-between items-center text-gray-400">
                     <span className="font-mono text-[10px] uppercase">{labels.originalCost}:</span>
-                    <span className="font-semibold text-white">{activeTask.estimatedEffort} {mockRole === 'student' ? 'study hours' : mockRole === 'job_seeker' ? 'preparation hours' : 'cognitive hours'}</span>
+                    <span className="font-semibold text-white">{activeTask.estimatedEffort} {secondaryLabels.hoursLabel}</span>
                   </div>
                   <div className="flex justify-between items-center text-gray-400">
                     <span className="font-mono text-[10px] uppercase">{labels.constraintDeadline}:</span>
@@ -525,12 +500,12 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                 <div className="flex flex-col gap-2 border-b border-[#1A1A1A] pb-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Outcome Model Metrics</span>
-                      <h3 className="text-base font-semibold text-white mt-0.5">SIMULATED WORKSPACE STATE</h3>
+                      <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{labels.outcomeMetricsLabel || "Outcome Model Metrics"}</span>
+                      <h3 className="text-base font-semibold text-white mt-0.5">{labels.simulatedStateLabel || "SIMULATED WORKSPACE STATE"}</h3>
                     </div>
 
                     <div className="flex items-center gap-2 bg-[#121212] px-3 py-1 rounded-full border border-[#222]">
-                      <span className="text-[9px] font-mono text-gray-500 uppercase">AI CONFIDENCE:</span>
+                      <span className="text-[9px] font-mono text-gray-500 uppercase">{labels.aiConfidenceLabel || "AI CONFIDENCE:"}</span>
                       <span className="text-xs font-bold font-mono text-emerald-400">{result.confidenceScore}%</span>
                     </div>
                   </div>
@@ -620,15 +595,21 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                             <div className="text-[10px] text-gray-300 space-y-1 font-sans">
                               <p className="font-semibold text-gray-400">{labels.workspaceSuccess} combines:</p>
                               <ul className="list-disc list-inside space-y-0.5 text-gray-400 text-[9px]">
-                                <li>Remaining execution capacity</li>
-                                <li>Deadline pressure</li>
-                                <li>Task completion probability</li>
-                                <li>Scheduling conflicts</li>
-                                <li>Overall workload balance</li>
+                                {(secondaryLabels as any).wsPoints?.map((point: string, idx: number) => (
+                                  <li key={idx}>{point}</li>
+                                )) || (
+                                  <>
+                                    <li>Remaining execution capacity</li>
+                                    <li>Deadline pressure</li>
+                                    <li>Task completion probability</li>
+                                    <li>Scheduling conflicts</li>
+                                    <li>Overall workload balance</li>
+                                  </>
+                                )}
                               </ul>
                             </div>
                             <p className="text-[9px] text-gray-500 italic leading-normal pt-1 border-t border-[#1C1C1C] font-sans">
-                              "Higher values indicate a healthier and more achievable execution plan."
+                              "{(secondaryLabels as any).wsDesc || 'Higher values indicate a healthier and more achievable execution plan.'}"
                             </p>
                           </div>
                         </div>

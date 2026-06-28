@@ -55,28 +55,12 @@ export default function TaskForm({ task, onSave, onClose, mockRole = 'profession
   };
 
   const getCategoryLabel = (cat: string) => {
-    switch (mockRole) {
-      case 'student':
-        if (cat === 'Work') return 'Curriculum';
-        if (cat === 'Study') return 'Study';
-        if (cat === 'Career') return 'Academic';
-        return 'Personal';
-      case 'developer':
-        if (cat === 'Work') return 'Sprint';
-        if (cat === 'Study') return 'Tech Debt';
-        if (cat === 'Career') return 'Skillup';
-        return 'Individual';
-      case 'job_seeker':
-        if (cat === 'Work') return 'Applications';
-        if (cat === 'Study') return 'Prep';
-        if (cat === 'Career') return 'Networking';
-        return 'Routine';
-      default:
-        if (cat === 'Work') return 'Operations';
-        if (cat === 'Study') return 'Skill-Up';
-        if (cat === 'Career') return 'Strategic';
-        return 'Personal';
-    }
+    const config = MODE_LANGUAGES[roleKey] || MODE_LANGUAGES.professional;
+    const d = config.taskListDynamic;
+    if (cat === 'Work') return d.catWork.replace(/[^a-zA-Z\s]/g, '').trim();
+    if (cat === 'Study') return d.catStudy.replace(/[^a-zA-Z\s]/g, '').trim();
+    if (cat === 'Career') return d.catCareer.replace(/[^a-zA-Z\s]/g, '').trim();
+    return d.catPersonal.replace(/[^a-zA-Z\s]/g, '').trim();
   };
 
   const categoriesObj = [
@@ -233,7 +217,7 @@ export default function TaskForm({ task, onSave, onClose, mockRole = 'profession
                     className={`py-1.5 rounded text-center text-[10px] font-mono border cursor-pointer transition ${
                       active 
                         ? 'bg-white text-black border-white' 
-                        : 'bg-transparent text-gray-550 border-[#1A1A1A] hover:border-gray-500 hover:text-white'
+                        : 'bg-transparent text-gray-500 border-[#1A1A1A] hover:border-gray-500 hover:text-white'
                     }`}
                   >
                     {imp.name}

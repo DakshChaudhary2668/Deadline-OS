@@ -25,44 +25,8 @@ const getRecoveryLabels = (role: RoleType) => {
 };
 
 const getSecondaryRecoveryLabels = (role: RoleType) => {
-  let nominalStatusLabel = '⚠️ Danger Target';
-  let nominalOverdueLabel = '🛑 Overdue';
-  let planLoadedText = 'Plan loaded';
-  let laborEffortPrefix = 'Labor Effort';
-  let turnaroundMissionTitle = 'TURNAROUND ALIGNMENT MISSION';
-  let selectPendingTaskOption = '-- Select Pending Task --';
-
-  if (role === 'student') {
-    nominalStatusLabel = '⚠️ Study Deficit';
-    nominalOverdueLabel = '🛑 Lapsed Gate';
-    planLoadedText = 'Curriculum Plan Loaded';
-    laborEffortPrefix = 'Study Hours';
-    turnaroundMissionTitle = 'SYLLABUS GAP ALIGNMENT PLAN';
-    selectPendingTaskOption = '-- Select Study Milestone --';
-  } else if (role === 'developer') {
-    nominalStatusLabel = '⚠️ Velocity At Risk';
-    nominalOverdueLabel = '🛑 Blocked Ticket';
-    planLoadedText = 'Sprint Blueprint Loaded';
-    laborEffortPrefix = 'Developer Hours';
-    turnaroundMissionTitle = 'SPRINT VELOCITY RECOVERY ROADMAP';
-    selectPendingTaskOption = '-- Select Sprint Ticket --';
-  } else if (role === 'job_seeker') {
-    nominalStatusLabel = '⚠️ Pipeline Stall';
-    nominalOverdueLabel = '🛑 Deadline Missed';
-    planLoadedText = 'Pipeline Rescue Plan Loaded';
-    laborEffortPrefix = 'Prep Hours';
-    turnaroundMissionTitle = 'OPPORTUNITY CONVERSION BLUEPRINT';
-    selectPendingTaskOption = '-- Select Application Goal --';
-  }
-
-  return {
-    nominalStatusLabel,
-    nominalOverdueLabel,
-    planLoadedText,
-    laborEffortPrefix,
-    turnaroundMissionTitle,
-    selectPendingTaskOption,
-  };
+  const config = MODE_LANGUAGES[role] || MODE_LANGUAGES.professional;
+  return config.recoveryDynamic;
 };
 
 interface RecoveryHubProps {

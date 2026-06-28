@@ -1,0 +1,191 @@
+// --- DB Helpers ---
+function readDB() {
+  if (!fs.existsSync(DB_FILE)) {
+    return { tasks: initialTasks };
+  }
+  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+}
+
+function writeDB(data: any) {
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+// --- Task CRUD ---
+app.get('/api/tasks', (req, res) => {
+  const db = readDB();
+  res.json(db.tasks || []);
+});
+
+app.post('/api/tasks', (req, res) => {
+  const db = readDB();
+  const task = {
+    ...req.body,
+    id: 't' + Date.now(),
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  task.priorityScore = calculatePriorityScore(task, db.tasks);
+  task.failureForecast = computeFailureForecast(task, db.tasks);
+  
+  db.tasks.push(task);
+  writeDB(db);
+  res.json(task);
+});
+
+app.put('/api/tasks/:id', (req, res) => {
+  const db = readDB();
+  const index = db.tasks.findIndex((t: any) => t.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Not found' });
+  
+  db.tasks[index] = { ...db.tasks[index], ...req.body };
+  if (db.tasks[index].status !== 'completed') {
+    db.tasks[index].priorityScore = calculatePriorityScore(db.tasks[index], db.tasks);
+    db.tasks[index].failureForecast = computeFailureForecast(db.tasks[index], db.tasks);
+  }
+  
+  writeDB(db);
+  res.json(db.tasks[index]);
+});
+
+app.delete('/api/tasks/:id', (req, res) => {
+  const db = readDB();
+  db.tasks = db.tasks.filter((t: any) => t.id !== req.params.id);
+  writeDB(db);
+  res.json({ success: true });
+});
+
+// --- AI Task Analysis ---
+app.post('/api/tasks/:id/analyze', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const task = db.tasks.find((t: any) => t.id === req.params.id);
+  if (!task) return res.status(404).json({ error: 'Not found' });
+  
+  const strategic = calculateStrategicDecision(task, db.tasks, role);
+  task.strategicDecision = strategic;
+  writeDB(db);
+  res.json(strategic);
+});
+
+app.post('/api/tasks/:id/recovery', async (req, res) => {
+  const db = readDB();
+  const task = db.tasks.find((t: any) => t.id === req.params.id);
+  if (!task) return res.status(404).json({ error: 'Not found' });
+  
+  task.recoveryStrategy = {
+    strategyText: 'Deploy immediate recovery block.',
+    suggestedNewDeadline: new Date(Date.now() + 24 * 3600000).toISOString(),
+    actionItems: ['Review dependencies', 'Reallocate hours', 'Execute'],
+    resourceReallocation: 'Reallocate 2 hours from secondary activities.',
+    scopeReduction: 'Limit verification to core requirements.',
+    priorityShifts: 'De-prioritize non-urgent modules.',
+    riskMitigation: 'Activate automatic tracking.',
+    generatedAt: new Date().toISOString()
+  };
+  writeDB(db);
+  res.json(task.recoveryStrategy);
+});
+
+// --- AI Briefing & Momentum ---
+app.get('/api/ai/briefing', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const tasks = db.tasks || [];
+  const pending = tasks.filter((t: any) => t.status !== 'completed');
+  const config = MODE_LANGUAGES[role as keyof typeof MODE_LANGUAGES] || MODE_LANGUAGES.professional;
+  const templates = config.narrativeTemplates;
+  
+  const successProbability = pending.length === 0 ? 100 : Math.max(10, 100 - (pending.length * 5));
+  const highRiskCount = pending.filter((t: any) => t.riskScore >= 60).length;
+  const totalEffort = pending.reduce((sum: number, t: any) => sum + (t.estimatedEffort || 0), 0);
+  
+  const isOverloaded = totalEffort > 30;
+  const isWarning = successProbability < 75 || highRiskCount > 0;
+
+  let activeTemplate = templates.optimal;
+  if (isOverloaded) {
+    activeTemplate = templates.overloaded;
+  } else if (isWarning) {
+    activeTemplate = templates.warning;
+  }
+
+  let successReason = activeTemplate
+    .replace('{totalEffort}', String(totalEffort))
+    .replace('{remainingCount}', String(pending.length))
+    .replace('{successProbability}', String(Math.round(successProbability)));
+
+  let strategicFocusArea = config.strategicLabels.executeLabel;
+  let recommendedActions = pending.slice(0, 3).map((t: any) => `Focus early efforts on resolving '${t.title}'.`);
+
+  res.json({
+    successProbability,
+    successReason,
+    highRiskCount,
+    recommendedActions,
+    workloadStressLevel: isOverloaded ? 'High' : 'Optimal',
+    biggestRiskToday: highRiskCount > 0 ? 'High deadline compression' : 'None',
+    mostImportantTask: pending.length > 0 ? pending[0].title : 'None',
+    criticalBottleneck: 'None',
+    recommendedIntervention: 'Proceed as scheduled',
+    strategicFocusArea
+  });
+});
+
+app.get('/api/ai/momentum', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const tasks = db.tasks || [];
+  const pending = tasks.filter((t: any) => t.status !== 'completed');
+  const completed = tasks.filter((t: any) => t.status === 'completed');
+  
+  const pendingEffort = pending.reduce((sum: number, t: any) => sum + (t.estimatedEffort || 0), 0);
+  const recentCompleted = completed.length;
+
+  let momentumStatus = 'STABLE';
+  let keyObservation = '';
+  let riskAssessment = '';
+  let executiveRecommendation = '';
+
+  const config = MODE_LANGUAGES[role as keyof typeof MODE_LANGUAGES] || MODE_LANGUAGES.professional;
+  const insights = config.momentumInsights;
+
+  if (pendingEffort > 25) {
+    momentumStatus = 'OVERLOADED';
+    keyObservation = insights.overloaded.keyObservation(pendingEffort);
+    riskAssessment = insights.overloaded.riskAssessment;
+    executiveRecommendation = insights.overloaded.executiveRecommendation;
+  } else if (recentCompleted > 2) {
+    momentumStatus = 'ACCELERATING';
+    keyObservation = insights.accelerating.keyObservation(recentCompleted);
+    riskAssessment = insights.accelerating.riskAssessment;
+    executiveRecommendation = insights.accelerating.executiveRecommendation;
+  } else if (pending.length === 0) {
+    momentumStatus = 'STABLE';
+    keyObservation = insights.stable.keyObservation;
+    riskAssessment = insights.stable.riskAssessment;
+    executiveRecommendation = insights.stable.executiveRecommendation;
+  } else {
+    momentumStatus = 'DECLINING';
+    keyObservation = insights.declining.keyObservation;
+    riskAssessment = insights.declining.riskAssessment;
+    executiveRecommendation = insights.declining.executiveRecommendation;
+  }
+
+  res.json({
+    chartData: [],
+    stats: {
+      velocityScore: 85,
+      burnRate: 1.2,
+      completionTrend: '+5%',
+      focusScore: 90
+    },
+    analysis: {
+      momentumStatus,
+      keyObservation,
+      riskAssessment,
+      executiveRecommendation
+    },
+    generatedAt: new Date().toISOString()
+  });
+});
+

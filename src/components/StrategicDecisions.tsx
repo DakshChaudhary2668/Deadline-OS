@@ -45,88 +45,17 @@ const getStrategicLabels = (role: RoleType) => {
     systemRole: config.systemRole,
     noTasks: config.emptyStateMessages.noTasks,
     adjustFilters: config.emptyStateMessages.adjustFilters,
-    taskPlural: role === 'student' ? 'Milestones' : role === 'developer' ? 'Tickets' : role === 'job_seeker' ? 'Applications' : 'Objectives',
-    taskSingular: role === 'student' ? 'Milestone' : role === 'developer' ? 'Ticket' : role === 'job_seeker' ? 'Application' : 'Objective',
-    slaLabel: role === 'student' ? 'DEADLINE' : role === 'developer' ? 'SPRINT' : role === 'job_seeker' ? 'DUE DATE' : 'SLA',
-    overdueLabel: role === 'student' ? 'OVERDUE DEADLINE' : role === 'developer' ? 'OVERDUE SPRINT' : role === 'job_seeker' ? 'OVERDUE ACTION' : 'OVERDUE SLA',
-    slaBreachedLabel: role === 'student' ? 'Deadline Missed' : role === 'developer' ? 'Sprint Breached' : role === 'job_seeker' ? 'Due Date Past' : 'SLA Breached',
+    taskPlural: config.strategicDynamic.taskPlural,
+    taskSingular: config.strategicDynamic.taskSingular,
+    slaLabel: config.strategicDynamic.slaLabel,
+    overdueLabel: config.strategicDynamic.overdueLabel,
+    slaBreachedLabel: config.strategicDynamic.slaBreachedLabel,
   };
 };
 
 const getSecondaryStrategicLabels = (role: RoleType) => {
-  let coverageTitle = 'SLA COVERAGE';
-  let coverageDesc = 'AI tracks all active objectives automatically.';
-  let workloadSubtitle = 'Total Workload';
-  let workloadDescPrefix = 'Across';
-  let workloadDescSuffix = 'pending objectives currently queued.';
-  let optimizedDesc = 'Percentage of core objectives with active time-saving recommendations.';
-  let healthDesc = 'Overall health calculated from active objectives and SLA risk metrics.';
-  let statusBadgeLabel = 'NOMINAL WORKSPACE';
-  let categoryFilterLabel = 'OPERATIONAL CONTEXT:';
-  let recommendationFilterLabel = 'STRATEGIC DECISION:';
-  let allRecommendationsOption = 'ALL DECISIONS';
-  let deadlineRiskLabel = 'DEADLINE RISK';
-  let executiveScoreLabel = 'EXECUTIVE SCORE';
-
-  if (role === 'student') {
-    coverageTitle = 'SYLLABUS COVERAGE';
-    coverageDesc = 'Curriculum tracking of all active milestone objects.';
-    workloadSubtitle = 'Total Study Hours';
-    workloadDescPrefix = 'Across';
-    workloadDescSuffix = 'active syllabus assignments.';
-    optimizedDesc = 'Percentage of curriculum objectives with optimal time-saving bypasses.';
-    healthDesc = 'Syllabus readiness calculated from active course targets.';
-    statusBadgeLabel = 'IN COURSE';
-    categoryFilterLabel = 'COURSE TOPIC:';
-    recommendationFilterLabel = 'AI DECISION TYPE:';
-    allRecommendationsOption = 'ALL STUDY PLANS';
-    deadlineRiskLabel = 'SYLLABUS RISK';
-    executiveScoreLabel = 'STUDY VALUE';
-  } else if (role === 'developer') {
-    coverageTitle = 'REPOSITORY COVERAGE';
-    coverageDesc = 'Repository indexing of all backlog issue items.';
-    workloadSubtitle = 'Sprint Labor Hours';
-    workloadDescPrefix = 'Across';
-    workloadDescSuffix = 'pending repository issues.';
-    optimizedDesc = 'Percentage of codebase features with agile acceleration overrides.';
-    healthDesc = 'Sprint health index calculated from commit load and branch metrics.';
-    statusBadgeLabel = 'SANE DEV';
-    categoryFilterLabel = 'REPOSITORY SCOPE:';
-    recommendationFilterLabel = 'AGILE DECISION TYPE:';
-    allRecommendationsOption = 'ALL REPO DECISIONS';
-    deadlineRiskLabel = 'VELOCITY RISK';
-    executiveScoreLabel = 'TECH VALUE';
-  } else if (role === 'job_seeker') {
-    coverageTitle = 'PIPELINE COVERAGE';
-    coverageDesc = 'Opportunity scoring of all core pipe stages.';
-    workloadSubtitle = 'Prep & Pipeline Hours';
-    workloadDescPrefix = 'Across';
-    workloadDescSuffix = 'active job hunting tracks.';
-    optimizedDesc = 'Percentage of application pipelines with strategic intervention loops.';
-    healthDesc = 'Pipeline success score calculated from interview conversion risk.';
-    statusBadgeLabel = 'ACTIVE HUNT';
-    categoryFilterLabel = 'PIPELINE GOAL:';
-    recommendationFilterLabel = 'CAREER ACTION TYPE:';
-    allRecommendationsOption = 'ALL JOB ACTIONS';
-    deadlineRiskLabel = 'APPLICATION RISK';
-    executiveScoreLabel = 'CAREER UPSIDE';
-  }
-
-  return {
-    coverageTitle,
-    coverageDesc,
-    workloadSubtitle,
-    workloadDescPrefix,
-    workloadDescSuffix,
-    optimizedDesc,
-    healthDesc,
-    statusBadgeLabel,
-    categoryFilterLabel,
-    recommendationFilterLabel,
-    allRecommendationsOption,
-    deadlineRiskLabel,
-    executiveScoreLabel,
-  };
+  const config = MODE_LANGUAGES[role] || MODE_LANGUAGES.professional;
+  return config.strategicDynamic;
 };
 
 interface StrategicDecisionsProps {
@@ -158,28 +87,12 @@ export function StrategicDecisions({
   const [localAnalyzingId, setLocalAnalyzingId] = useState<string | null>(null);
 
   const getCategoryLabel = (cat: string) => {
-    switch (mockRole) {
-      case 'student':
-        if (cat === 'Work') return '🏫 Curriculum';
-        if (cat === 'Study') return '📚 Study Blocks';
-        if (cat === 'Career') return '🎖️ Academic Growth';
-        return '👤 Personal Tasks';
-      case 'developer':
-        if (cat === 'Work') return '💻 Sprint Tickets';
-        if (cat === 'Study') return '📚 Tech Debt';
-        if (cat === 'Career') return '🎖️ Skillup';
-        return '👤 Individual Tasks';
-      case 'job_seeker':
-        if (cat === 'Work') return '💼 Job Applications';
-        if (cat === 'Study') return '📚 Interview Prep';
-        if (cat === 'Career') return '🎖️ Networking';
-        return '👤 Personal Routine';
-      default:
-        if (cat === 'Work') return '💼 Operations';
-        if (cat === 'Study') return '📚 Skill Acquisition';
-        if (cat === 'Career') return '🎖️ Strategic Career';
-        return '👤 Personal Habits';
-    }
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    const d = config.taskListDynamic;
+    if (cat === 'Work') return d.catWork;
+    if (cat === 'Study') return d.catStudy;
+    if (cat === 'Career') return d.catCareer;
+    return d.catPersonal;
   };
 
   // Compute active decisions and scores for all tasks (dynamic fallback ensures zero blank fields)
@@ -272,29 +185,30 @@ export function StrategicDecisions({
   };
 
   const getTaskStatusLabel = (score: number) => {
-    if (score >= 85) return 'URGENT ACTION REQUIRED';
-    if (score >= 70) return 'HIGH VALUE';
-    if (score >= 45) return 'STABLE';
-    return 'LOW PRIORITY';
+    if (score >= 85) return secondaryLabels.taskStatusLabels?.urgent || 'URGENT ACTION REQUIRED';
+    if (score >= 70) return secondaryLabels.taskStatusLabels?.high || 'HIGH VALUE';
+    if (score >= 45) return secondaryLabels.taskStatusLabels?.stable || 'STABLE';
+    return secondaryLabels.taskStatusLabels?.low || 'LOW PRIORITY';
   };
 
   const getRiskLabelAndBadge = (probability: number) => {
+    const riskTerms = (MODE_LANGUAGES[mockRole as keyof typeof MODE_LANGUAGES] || MODE_LANGUAGES.professional).riskTerminology;
     if (probability >= 75) {
-      return { label: 'Critical', text: '🔴 Critical', color: 'text-rose-450 bg-rose-950/45 border-rose-900/40' };
+      return { label: riskTerms.critical, text: '🔴 ' + riskTerms.critical, color: 'text-rose-450 bg-rose-950/45 border-rose-900/40' };
     }
     if (probability >= 50) {
-      return { label: 'High', text: '🟠 High', color: 'text-orange-400 bg-orange-950/45 border-orange-900/40' };
+      return { label: riskTerms.high, text: '🟠 ' + riskTerms.high, color: 'text-orange-400 bg-orange-950/45 border-orange-900/40' };
     }
     if (probability >= 30) {
-      return { label: 'Moderate', text: '🟡 Moderate', color: 'text-amber-400 bg-amber-950/45 border-amber-900/40' };
+      return { label: riskTerms.moderate, text: '🟡 ' + riskTerms.moderate, color: 'text-amber-400 bg-amber-950/45 border-amber-900/40' };
     }
-    return { label: 'Low', text: '🟢 Low', color: 'text-emerald-400 bg-emerald-950/45 border-emerald-900/40' };
+    return { label: riskTerms.low, text: '🟢 ' + riskTerms.low, color: 'text-emerald-400 bg-emerald-950/45 border-emerald-900/40' };
   };
 
   const getExecutiveScoreLabel = (score: number) => {
-    if (score >= 85) return 'High Priority';
-    if (score >= 70) return 'Moderate Confidence';
-    return 'Executive Readiness';
+    if (score >= 85) return secondaryLabels.executiveScoreLabels?.high || 'High Priority';
+    if (score >= 70) return secondaryLabels.executiveScoreLabels?.moderate || 'Moderate Confidence';
+    return secondaryLabels.executiveScoreLabels?.low || 'Executive Readiness';
   };
 
   return (
@@ -331,10 +245,10 @@ export function StrategicDecisions({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">{secondaryLabels.coverageTitle}</span>
+              <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">{secondaryLabels.coverageTitle || 'AI Coverage'}</span>
             </div>
             <p className="text-xl font-bold text-white mt-3 font-mono">{tasks.length} / {tasks.length} {labels.taskPlural} Analyzed</p>
-            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.coverageDesc}</p>
+            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.coverageDesc || 'All items evaluated by engine'}</p>
           </div>
           <div className="mt-4 bg-zinc-900/60 p-2 border border-zinc-800/50 rounded text-[10px] font-mono text-zinc-400">
             {labels.engineTag}
@@ -347,9 +261,9 @@ export function StrategicDecisions({
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.workspacePressure}</span>
             <div className="flex items-baseline gap-2 mt-3">
               <p className="text-2xl font-bold text-zinc-100 font-mono">{totalPendingEffort}h</p>
-              <span className="text-xs text-zinc-500">{secondaryLabels.workloadSubtitle}</span>
+              <span className="text-xs text-zinc-500">{secondaryLabels.workloadSubtitle || 'Est. effort'}</span>
             </div>
-            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.workloadDescPrefix} {pendingTasks.length} {secondaryLabels.workloadDescSuffix}</p>
+            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.workloadDescPrefix || 'Across'} {pendingTasks.length} {secondaryLabels.workloadDescSuffix || 'pending items'}</p>
           </div>
           <div className="w-full bg-zinc-900 h-1.5 rounded-full mt-4 overflow-hidden">
             <div 
@@ -364,7 +278,7 @@ export function StrategicDecisions({
           <div>
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.tasksImproved}</span>
             <p className="text-2xl font-bold text-amber-400 mt-3 font-mono">{tasksOptimizedRate}%</p>
-            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.optimizedDesc}</p>
+            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.optimizedDesc || 'Workload reduced via optimization'}</p>
           </div>
           <p className="text-[10px] text-zinc-500 font-mono mt-4 uppercase">
             Optimized: {((decisionCounts['DEFER'] || 0) + (decisionCounts['DROP'] || 0) + (decisionCounts['SCOPE REDUCE'] || 0))} {labels.taskPlural.toUpperCase()}
@@ -378,11 +292,11 @@ export function StrategicDecisions({
             <p className="text-2xl font-bold text-white mt-3 font-mono">
               {averageAIScore}<span className="text-xs text-zinc-500 font-normal font-sans">/100</span>
             </p>
-            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.healthDesc}</p>
+            <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.healthDesc || 'Average strategic readiness'}</p>
           </div>
           <div className="flex gap-2 items-center mt-4">
             <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[11px] font-mono text-emerald-400 uppercase font-semibold">{secondaryLabels.statusBadgeLabel}</span>
+            <span className="text-[11px] font-mono text-emerald-400 uppercase font-semibold">{secondaryLabels.statusBadgeLabel || 'OPTIMAL'}</span>
           </div>
         </div>
       </div>
@@ -390,7 +304,7 @@ export function StrategicDecisions({
       {/* 3. Filtering & Sorting Controls */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-zinc-900/60 p-3 border border-zinc-800 rounded-lg">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-zinc-400 font-mono mr-1">{secondaryLabels.categoryFilterLabel}</span>
+          <span className="text-xs text-zinc-400 font-mono mr-1">{secondaryLabels.categoryFilterLabel || 'FILTER:'}</span>
           {['ALL', 'Work', 'Study', 'Career', 'Personal'].map(cat => (
             <button
               key={cat}
@@ -407,13 +321,13 @@ export function StrategicDecisions({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-400 font-mono whitespace-nowrap">{secondaryLabels.recommendationFilterLabel}</span>
+          <span className="text-xs text-zinc-400 font-mono whitespace-nowrap">{secondaryLabels.recommendationFilterLabel || 'ACTION:'}</span>
           <select
             value={decisionFilter}
             onChange={(e) => setDecisionFilter(e.target.value)}
             className="bg-zinc-950 border border-zinc-800 text-zinc-300 px-3 py-1 text-xs rounded font-mono focus:border-emerald-500 focus:outline-none cursor-pointer"
           >
-            <option value="ALL">{secondaryLabels.allRecommendationsOption}</option>
+            <option value="ALL">{secondaryLabels.allRecommendationsOption || 'ALL'}</option>
             <option value="ACCELERATE">ACCELERATE</option>
             <option value="FOCUS">FOCUS</option>
             <option value="CONTINUE">CONTINUE</option>
@@ -500,7 +414,7 @@ export function StrategicDecisions({
                   <div className="flex flex-wrap items-center gap-4 sm:gap-6 shrink-0 font-mono">
                     {/* Urgency Indicators */}
                     <div className="hidden sm:block text-right">
-                      <p className="text-[10px] text-zinc-500 uppercase">{secondaryLabels.deadlineRiskLabel}</p>
+                      <p className="text-[10px] text-zinc-500 uppercase">{secondaryLabels.deadlineRiskLabel || 'DEADLINE RISK'}</p>
                       <p className="text-xs text-zinc-300 mt-0.5 flex items-center gap-1 justify-end">
                         <Clock className="w-3 h-3 text-zinc-400" />
                         <span>
@@ -514,7 +428,7 @@ export function StrategicDecisions({
                     {/* AI Score */}
                     <div className="flex items-center gap-3 bg-zinc-900/40 border border-zinc-800 px-3 py-1.5 rounded min-w-[125px]">
                       <div className="text-right flex-1">
-                        <p className="text-[9px] text-zinc-500 uppercase">{secondaryLabels.executiveScoreLabel}</p>
+                        <p className="text-[9px] text-zinc-500 uppercase">{secondaryLabels.executiveScoreLabel || 'EXECUTIVE SCORE'}</p>
                         <p className={`text-xs font-bold ${getScoreColor(d.executiveScore || 0)}`}>
                           {d.executiveScore || 0}/100
                         </p>

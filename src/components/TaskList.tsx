@@ -69,28 +69,12 @@ export default function TaskList({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const getCategoryLabel = (cat: string) => {
-    switch (mockRole) {
-      case 'student':
-        if (cat === 'Work') return '🏫 Curriculum';
-        if (cat === 'Study') return '📚 Study Blocks';
-        if (cat === 'Career') return '🎖️ Academic Growth';
-        return '👤 Personal Tasks';
-      case 'developer':
-        if (cat === 'Work') return '💻 Sprint Tickets';
-        if (cat === 'Study') return '📚 Tech Debt / Refactoring';
-        if (cat === 'Career') return '🎖️ Professional Skillup';
-        return '👤 Individual Tasks';
-      case 'job_seeker':
-        if (cat === 'Work') return '💼 Job Applications';
-        if (cat === 'Study') return '📚 Interview Prep';
-        if (cat === 'Career') return '🎖️ Networking Outreaches';
-        return '👤 Personal Routine';
-      default:
-        if (cat === 'Work') return '💼 Operations';
-        if (cat === 'Study') return '📚 Skill Acquisition';
-        if (cat === 'Career') return '🎖️ Strategic Career';
-        return '👤 Personal Habits';
-    }
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    const d = config.taskListDynamic;
+    if (cat === 'Work') return d.catWork;
+    if (cat === 'Study') return d.catStudy;
+    if (cat === 'Career') return d.catCareer;
+    return d.catPersonal;
   };
 
   const getRiskLabelAndBadge = (probability: number) => {
@@ -103,7 +87,7 @@ export default function TaskList({
     if (probability >= 30) {
       return { label: 'Moderate', text: '🟡 Moderate', color: 'text-amber-400 bg-amber-950/40 border-amber-900/30' };
     }
-    return { label: 'Low', text: '🟢 Low', color: 'text-emerald-450 bg-emerald-950/40 border-emerald-900/30' };
+    return { label: 'Low', text: '🟢 Low', color: 'text-emerald-400 bg-emerald-950/40 border-emerald-900/30' };
   };
 
   // Relative deadline calculator
@@ -115,7 +99,7 @@ export default function TaskList({
     const diffDays = Math.floor(diffHrs / 24);
 
     if (status === 'completed') {
-      return { text: 'Completed', color: 'text-emerald-450 bg-emerald-500/10 border-emerald-500/20' };
+      return { text: 'Completed', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
     }
 
     if (diffMs < 0) {
@@ -163,70 +147,27 @@ export default function TaskList({
   };
 
   const getTabLabel = (tab: 'all' | 'pending' | 'overdue' | 'completed') => {
-    switch (mockRole) {
-      case 'student':
-        if (tab === 'all') return 'All Milestones';
-        if (tab === 'pending') return 'Active Study';
-        if (tab === 'overdue') return 'Overdue Gates';
-        return 'Completed Topics';
-      case 'developer':
-        if (tab === 'all') return 'All Tickets';
-        if (tab === 'pending') return 'Open Issues';
-        if (tab === 'overdue') return 'Missed Sprints';
-        return 'Closed/Merged';
-      case 'job_seeker':
-        if (tab === 'all') return 'All Pipeline';
-        if (tab === 'pending') return 'Active Loops';
-        if (tab === 'overdue') return 'Missed Followups';
-        return 'Offers Secured';
-      default:
-        if (tab === 'all') return 'All Deliverables';
-        if (tab === 'pending') return 'Pending Actions';
-        if (tab === 'overdue') return 'SLA Overdue';
-        return 'Done/Archived';
-    }
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    const d = config.taskListDynamic;
+    if (tab === 'all') return d.tabAll;
+    if (tab === 'pending') return d.tabPending;
+    if (tab === 'overdue') return d.tabOverdue;
+    return d.tabCompleted;
   };
 
   const getAllCategoriesLabel = () => {
-    switch (mockRole) {
-      case 'student': return 'All Syllabus Categories';
-      case 'developer': return 'All Repository Scope';
-      case 'job_seeker': return 'All Pipeline Goals';
-      default: return 'All Operational Domains';
-    }
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    return config.taskListDynamic.allCategories;
   };
 
   const getSectionLabels = () => {
-    switch (mockRole) {
-      case 'student':
-        return {
-          benefits: 'Strategic Impact',
-          considerations: 'Opportunity Cost',
-          why: 'Syllabus Risk',
-          nextAction: 'Recommended Step',
-        };
-      case 'developer':
-        return {
-          benefits: 'Technical Value',
-          considerations: 'Technical Tradeoffs',
-          why: 'Codebase Risk',
-          nextAction: 'Mitigation Step',
-        };
-      case 'job_seeker':
-        return {
-          benefits: 'Career Upside',
-          considerations: 'Preparation Overhead',
-          why: 'Application Risk',
-          nextAction: 'Intervention Loop',
-        };
-      default:
-        return {
-          benefits: 'Expected Benefit',
-          considerations: 'Opportunity Cost',
-          why: 'SLA Risk',
-          nextAction: 'Next Action',
-        };
-    }
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    return {
+      benefits: config.strategicLabels.benefitsHeader,
+      considerations: config.strategicLabels.considerationsHeader,
+      why: config.strategicLabels.whyHeader,
+      nextAction: config.strategicLabels.nextActionHeader
+    };
   };
 
   const sectionLabels = getSectionLabels();

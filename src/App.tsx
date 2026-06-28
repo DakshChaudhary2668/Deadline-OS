@@ -27,6 +27,7 @@ import PlanningAgent from './components/PlanningAgent';
 import RecoveryHub from './components/RecoveryHub';
 import WhatIfSimulator from './components/WhatIfSimulator';
 import { StrategicDecisions } from './components/StrategicDecisions';
+import AIChat from './components/AIChat';
 import { MODE_LANGUAGES } from './utils/modeLanguage';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
@@ -39,7 +40,7 @@ export default function App() {
   const [weekPlan, setWeekPlan] = useState<WeekPlan | null>(null);
   
   // Navigation
-  const [activeView, setActiveView] = useState<'briefing' | 'tasks' | 'strategic' | 'plans' | 'recovery' | 'simulator'>('briefing');
+  const [activeView, setActiveView] = useState<'briefing' | 'tasks' | 'strategic' | 'plans' | 'recovery' | 'simulator' | 'chat'>('briefing');
   
   // Mock Role Context (Academic, Dev, Job, etc.)
   const [mockRole, setMockRole] = useState<RoleType>('developer');
@@ -274,11 +275,12 @@ export default function App() {
   };
 
   const getRoleNameAndSymbol = (role: RoleType) => {
+    const label = MODE_LANGUAGES[role]?.title || 'Mode';
     switch (role) {
-      case 'student': return { label: 'Academic Mode', color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' };
-      case 'developer': return { label: 'Engineering Mode', color: 'text-indigo-405 bg-indigo-500/10 border-indigo-500/20' };
-      case 'job_seeker': return { label: 'Careers Mode', color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
-      case 'professional': return { label: 'Corporate Mode', color: 'text-teal-400 bg-teal-500/10 border-teal-500/20' };
+      case 'student': return { label, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' };
+      case 'developer': return { label, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' };
+      case 'job_seeker': return { label, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
+      case 'professional': return { label, color: 'text-teal-400 bg-teal-500/10 border-teal-500/20' };
     }
   };
 
@@ -303,7 +305,7 @@ export default function App() {
         <div className="flex-grow overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* ROLE SWITCHER */}
           <div className="p-4 border-b border-[#1A1A1A]">
-            <span className="text-[9px] font-mono text-gray-505 uppercase block tracking-widest mb-2.5">Context Profile</span>
+            <span className="text-[9px] font-mono text-gray-500 uppercase block tracking-widest mb-2.5">Context Profile</span>
             <div className="space-y-1">
               {([
                 { key: 'developer', icon: Briefcase, label: 'Engineering Mode' },
@@ -430,6 +432,21 @@ export default function App() {
               <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
 
+            <button
+              onClick={() => setActiveView('chat')}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded text-xs font-mono font-medium cursor-pointer transition ${
+                activeView === 'chat' 
+                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                  : 'text-gray-400 hover:text-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles className={`h-3.5 w-3.5 ${activeView === 'chat' ? 'text-emerald-400 font-bold' : 'text-gray-500'}`} />
+                <span>AI Chief of Staff</span>
+              </div>
+              <ChevronRight className="h-3 w-3 opacity-50" />
+            </button>
+
           </nav>
         </div>
 
@@ -470,6 +487,7 @@ export default function App() {
               <option value="plans">{MODE_LANGUAGES[mockRole]?.sidebarLabels.plans}</option>
               <option value="recovery">{MODE_LANGUAGES[mockRole]?.sidebarLabels.recovery}</option>
               <option value="simulator">{MODE_LANGUAGES[mockRole]?.sidebarLabels.simulator}</option>
+              <option value="chat">AI Chief of Staff</option>
             </select>
 
             <select
@@ -622,6 +640,18 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <WhatIfSimulator tasks={tasks} mockRole={mockRole} />
+              </motion.div>
+            )}
+
+            {activeView === 'chat' && (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AIChat tasks={tasks} mockRole={mockRole} />
               </motion.div>
             )}
           </AnimatePresence>

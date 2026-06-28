@@ -37,172 +37,44 @@ const getDailyBriefingLabels = (role: string) => {
 };
 
 const getSecondaryDailyLabels = (role: RoleType) => {
-  let statusAccelerating = 'ACCELERATING CADENCE';
-  let statusStable = 'STABLE OPERATIONS';
-  let statusDeclining = 'VELOCITY COMPRESSION';
-  let statusOverloaded = 'CRITICAL CONGESTION';
-  let activeNarrativeSummary = 'AI CHIEF OF STAFF // NARRATIVE SUMMARY';
-  let narrativeLoading = 'Analyzing system metrics and formulating narrative insight...';
-  
-  let nominalRiskLabel = 'NOMINAL';
-  let thresholdTargetLabel = 'THRESHOLD TARGET';
-  let activeProbabilityMatrix = 'ACTIVE PROBABILITY ASSESSMENT MATRIX';
-  let noThreatHeader = 'No Urgent Scheduling Threat Detected';
-  let noThreatReasoning = 'All task deadlines are safely structured relative to estimated cognitive hours.';
-  let noThreatMitigation = 'Maintain current delivery rate. Allocate secondary buffers where available.';
-  
-  let awaitingScansText = 'Awaiting executive alignment scans. Please trigger recalibration.';
-  let awaitingVisualsText = 'Regenerating dynamic visual streams...';
-  let awaitingHistoryText = 'Awaiting historic metrics telemetry.';
-  let noPendingTasksText = 'No active pending strategic milestones registered.';
-  let resolvedUnitsLabel = 'Units';
-
-  if (role === 'student') {
-    statusAccelerating = 'HIGH WORK ETHIC';
-    statusStable = 'STABLE PROGRESS';
-    statusDeclining = 'ACADEMIC FATIGUE';
-    statusOverloaded = 'ACADEMIC CRUSH';
-    activeNarrativeSummary = 'AI STUDY ADVISOR // NARRATIVE SUMMARY';
-    narrativeLoading = 'Analyzing academic syllabus metrics and formulating study insight...';
-    
-    nominalRiskLabel = 'SAFE';
-    thresholdTargetLabel = 'EXAM GAP TARGET';
-    activeProbabilityMatrix = 'ACTIVE SYLLABUS RISK ANALYSIS MODEL';
-    noThreatHeader = 'No Urgent Study Milestone Threats Detected';
-    noThreatReasoning = 'All revision intervals and assignment deadlines are safely structured relative to estimated study hours.';
-    noThreatMitigation = 'Maintain current study pacing. Allocate secondary focus blocks prior to exam gates.';
-    
-    awaitingScansText = 'Awaiting study alignment scans. Please trigger recalibration.';
-    awaitingVisualsText = 'Regenerating curriculum visual streams...';
-    awaitingHistoryText = 'Awaiting curriculum study telemetry.';
-    noPendingTasksText = 'No active pending study topics registered.';
-    resolvedUnitsLabel = 'Milestones';
-  } else if (role === 'developer') {
-    statusAccelerating = 'ACCELERATING VELOCITY';
-    statusStable = 'STEADY VELOCITY';
-    statusDeclining = 'BURNOUT IMMINENT';
-    statusOverloaded = 'SPRINT BOTTLENECK';
-    activeNarrativeSummary = 'AI STAFF ASSISTANT // NARRATIVE SUMMARY';
-    narrativeLoading = 'Analyzing developer tickets and formulating sprint insight...';
-    
-    nominalRiskLabel = 'NOMINAL';
-    thresholdTargetLabel = 'SPRINT SLA TARGET';
-    activeProbabilityMatrix = 'ACTIVE SPRINT INTEGRATION ANALYSIS';
-    noThreatHeader = 'No Urgent Sprint Delivery Blockers Detected';
-    noThreatReasoning = 'All sprint tickets and codebase releases are safely structured relative to available developer capacity.';
-    noThreatMitigation = 'Maintain current developer sprint velocity. Allocate secondary buffers for technical debt.';
-    
-    awaitingScansText = 'Awaiting developer sprint scans. Please trigger recalibration.';
-    awaitingVisualsText = 'Regenerating repository visual streams...';
-    awaitingHistoryText = 'Awaiting sprint commit telemetry.';
-    noPendingTasksText = 'No active pending sprint tickets registered.';
-    resolvedUnitsLabel = 'Tickets';
-  } else if (role === 'job_seeker') {
-    statusAccelerating = 'INTENSE OUTREACH';
-    statusStable = 'CONSISTENT COHORT';
-    statusDeclining = 'MOMENTUM COMPRESSION';
-    statusOverloaded = 'COGNITIVE OVERLOAD';
-    activeNarrativeSummary = 'AI CAREER COACH // NARRATIVE SUMMARY';
-    narrativeLoading = 'Analyzing pipeline progress and formulating outreach insight...';
-    
-    nominalRiskLabel = 'PENDING';
-    thresholdTargetLabel = 'APPLICATION DEADLINE TARGET';
-    activeProbabilityMatrix = 'ACTIVE OPPORTUNITY PIPELINE ANALYSIS';
-    noThreatHeader = 'No Urgent Application Deadlines Threatened';
-    noThreatReasoning = 'All interview timelines and outreach follow-ups are safely aligned with available preparation hours.';
-    noThreatMitigation = 'Maintain current submittal volume. Allocate preparation buffers for incoming loops.';
-    
-    awaitingScansText = 'Awaiting career alignment scans. Please trigger recalibration.';
-    awaitingVisualsText = 'Regenerating pipeline visual streams...';
-    awaitingHistoryText = 'Awaiting career milestone telemetry.';
-    noPendingTasksText = 'No active pending application goals registered.';
-    resolvedUnitsLabel = 'Applications';
-  } else { // professional
-    statusAccelerating = 'ACCELERATING CADENCE';
-    statusStable = 'STABLE OPERATIONS';
-    statusDeclining = 'VELOCITY COMPRESSION';
-    statusOverloaded = 'CRITICAL CONGESTION';
-    activeNarrativeSummary = 'AI CHIEF OF STAFF // NARRATIVE SUMMARY';
-    narrativeLoading = 'Analyzing operational KPI metrics and formulating SLA insight...';
-    
-    nominalRiskLabel = 'NOMINAL';
-    thresholdTargetLabel = 'SLA COMPLIANCE TARGET';
-    activeProbabilityMatrix = 'ACTIVE PERFORMANCE METRIC FORECAST';
-    noThreatHeader = 'No Urgent Deliverable SLA Threats Detected';
-    noThreatReasoning = 'All operational tasks and client delivery targets are safely structured relative to estimated labor hours.';
-    noThreatMitigation = 'Maintain current operational delivery rate. Allocate task recovery buffers where available.';
-    
-    awaitingScansText = 'Awaiting executive alignment scans. Please trigger recalibration.';
-    awaitingVisualsText = 'Regenerating operational visual streams...';
-    awaitingHistoryText = 'Awaiting operational KPI telemetry.';
-    noPendingTasksText = 'No active pending strategic milestones registered.';
-    resolvedUnitsLabel = 'SLA Objectives';
-  }
-
-  return {
-    statusAccelerating,
-    statusStable,
-    statusDeclining,
-    statusOverloaded,
-    activeNarrativeSummary,
-    narrativeLoading,
-    nominalRiskLabel,
-    thresholdTargetLabel,
-    activeProbabilityMatrix,
-    noThreatHeader,
-    noThreatReasoning,
-    noThreatMitigation,
-    awaitingScansText,
-    awaitingVisualsText,
-    awaitingHistoryText,
-    noPendingTasksText,
-    resolvedUnitsLabel,
-  };
+  const config = MODE_LANGUAGES[role] || MODE_LANGUAGES.professional;
+  return config.dailySecondary;
 };
 
-export default function DailyBriefing({ briefing, momentum, tasks, loading, onRefresh, mockRole }: DailyBriefingProps) {
+export default function DailyBriefing({ 
+  briefing, 
+  momentum,
+  tasks, 
+  loading,
+  onRefresh,
+  mockRole
+}: DailyBriefingProps) {
   const [chartTab, setChartTab] = React.useState<'velocity' | 'cadence'>('velocity');
   const labels = getDailyBriefingLabels(mockRole);
   const secondaryLabels = getSecondaryDailyLabels(mockRole as RoleType);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'ACCELERATING':
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-emerald-950/40 text-emerald-400 border border-emerald-900/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            {secondaryLabels.statusAccelerating}
-          </div>
-        );
-      case 'STABLE':
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-blue-950/30 text-blue-400 border border-blue-900/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-            {secondaryLabels.statusStable}
-          </div>
-        );
-      case 'DECLINING':
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-amber-950/40 text-amber-400 border border-amber-900/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-            {secondaryLabels.statusDeclining}
-          </div>
-        );
-      case 'OVERLOADED':
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono tracking-wider bg-rose-950/50 text-rose-400 border border-rose-900/40 animate-pulse">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
-            {secondaryLabels.statusOverloaded}
-          </div>
-        );
-      default:
-        return null;
+      case 'ACCELERATING': return <TrendingUp className="h-5 w-5 text-emerald-400" />;
+      case 'STABLE': return <Activity className="h-5 w-5 text-blue-400" />;
+      case 'DECLINING': return <TrendingDown className="h-5 w-5 text-amber-500" />;
+      case 'OVERLOADED': return <Flame className="h-5 w-5 text-rose-500" />;
+      default: return <Sparkles className="h-5 w-5 text-indigo-400" />;
     }
   };
 
   const pendingTasks = tasks.filter(t => t.status !== 'completed');
   const totalEffort = pendingTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
   
+  const getCategoryLabel = (cat: string) => {
+    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
+    const d = config.taskListDynamic;
+    if (cat === 'Work') return d.catWork.replace(/[^a-zA-Z\s]/g, '').trim();
+    if (cat === 'Study') return d.catStudy.replace(/[^a-zA-Z\s]/g, '').trim();
+    if (cat === 'Career') return d.catCareer.replace(/[^a-zA-Z\s]/g, '').trim();
+    return d.catPersonal.replace(/[^a-zA-Z\s]/g, '').trim();
+  };
+
   // Calculate category distribution for the mini analytics chart
   const categories = ['Work', 'Study', 'Career', 'Personal'] as const;
   const chartData = categories.map(cat => {
@@ -212,9 +84,9 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
       ? Math.round(catTasks.reduce((sum, t) => sum + (t.riskScore || 0), 0) / catTasks.length)
       : 0;
     return {
-      name: cat,
-      'Focus Hours': effort,
-      'Risk %': avgRisk || 15,
+      name: getCategoryLabel(cat),
+      effort: effort,
+      risk: avgRisk || 15,
     };
   });
 
@@ -320,7 +192,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               {secondaryLabels.activeNarrativeSummary}
             </span>
             <span className="px-1.5 py-0.2 text-[8px] font-mono bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 rounded uppercase tracking-wider">
-              {mockRole === 'student' ? 'Course Progress' : mockRole === 'developer' ? 'Velocity' : mockRole === 'job_seeker' ? 'Career Readiness' : 'Operational Bandwidth'}
+              {secondaryLabels.bandwidthLabel}
             </span>
           </div>
           <p className="text-sm text-gray-300 leading-relaxed font-serif italic">
@@ -358,7 +230,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               </div>
             </div>
             
-            <p className="text-[8px] font-mono text-gray-505 leading-relaxed uppercase tracking-widest pt-1">
+            <p className="text-[8px] font-mono text-gray-500 leading-relaxed uppercase tracking-widest pt-1">
               {highestRiskTask ? secondaryLabels.activeProbabilityMatrix : labels.systemCalibrated}
             </p>
           </div>
@@ -405,13 +277,13 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
               <p className="text-[10px] font-mono text-indigo-400 tracking-widest uppercase">{labels.strategicIntelTitle}</p>
             </div>
-            <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">REAL-TIME FORECAST</span>
+            <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{labels.realTimeForecast || "REAL-TIME FORECAST"}</span>
           </div>
 
           <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
             <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block font-semibold">{labels.strategicFocus}</span>
             <p className="text-xs font-serif italic text-white mt-1.5">
-              {briefing.strategicFocusArea || 'Aligning workspace vectors.'}
+              {briefing.strategicFocusArea || secondaryLabels.awaitingScansText || 'Aligning workspace vectors.'}
             </p>
           </div>
 
@@ -524,7 +396,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
             <span className="tracking-wider uppercase">{labels.criticalBlockers}</span>
             <span>
               {tasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length}{' '}
-              {mockRole === 'student' ? 'Milestones' : mockRole === 'developer' ? 'Tickets' : mockRole === 'job_seeker' ? 'Applications' : 'Objectives'}
+              {secondaryLabels.unitPlural}
             </span>
           </div>
         </div>
@@ -566,7 +438,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                 <Sparkles className="h-4.5 w-4.5 text-blue-500" />
                 <h4 className="text-xs font-semibold text-white tracking-widest uppercase">{labels.recommendationsTitle}</h4>
               </div>
-              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">Real-Time Synthesis</span>
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{labels.realTimeSynthesis || "Real-Time Synthesis"}</span>
             </div>
 
             <div className="space-y-3">
@@ -607,12 +479,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                 <div className="p-8 text-center bg-[#131313] rounded border border-[#1A1A1A]">
                   <Lightbulb className="h-8 w-8 text-gray-700 mx-auto mb-2" />
                   <p className="text-xs text-gray-500">
-                    Ready for scanning. Refresh or register new {
-                      mockRole === 'student' ? 'assignments' :
-                      mockRole === 'developer' ? 'sprint deliverables' :
-                      mockRole === 'job_seeker' ? 'job leads' :
-                      'corporate objectives'
-                    } to initialize the intelligence matrix.
+                    Ready for scanning. Refresh or register new {secondaryLabels.unitLower} to initialize the intelligence matrix.
                   </p>
                 </div>
               )}
@@ -635,7 +502,7 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                 <Activity className="h-4.5 w-4.5 text-blue-500" />
                 <h4 className="text-xs font-semibold text-white tracking-widest uppercase">{labels.workloadForceMetrics}</h4>
               </div>
-              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">BY SECTOR</span>
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{labels.bySector || "BY SECTOR"}</span>
             </div>
 
             <p className="text-[11px] text-gray-400 mb-4 italic">
@@ -663,8 +530,8 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                       labelStyle={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}
                       itemStyle={{ fontSize: '11px' }}
                     />
-                    <Area type="monotone" dataKey="Focus Hours" stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
-                    <Area type="monotone" dataKey="Risk %" stroke="#F97316" strokeWidth={1.5} strokeDasharray="3 3" fillOpacity={1} fill="url(#colorRisk)" />
+                    <Area type="monotone" dataKey="effort" name={secondaryLabels.focusLabel} stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
+                    <Area type="monotone" dataKey="risk" name={secondaryLabels.riskLabel} stroke="#F97316" strokeWidth={1.5} strokeDasharray="3 3" fillOpacity={1} fill="url(#colorRisk)" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
@@ -743,7 +610,11 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                     <div>
                       <span className="block text-[9px] font-mono text-gray-500 uppercase tracking-widest">{labels.momentumStatus}</span>
                       <span className="text-sm font-bold tracking-tight text-white mt-0.5 block">
-                        {momentum.analysis.momentumStatus}
+                        {momentum.analysis.momentumStatus === 'ACCELERATING' ? secondaryLabels.statusAccelerating :
+                         momentum.analysis.momentumStatus === 'STABLE' ? secondaryLabels.statusStable :
+                         momentum.analysis.momentumStatus === 'DECLINING' ? secondaryLabels.statusDeclining :
+                         momentum.analysis.momentumStatus === 'OVERLOADED' ? secondaryLabels.statusOverloaded :
+                         momentum.analysis.momentumStatus}
                       </span>
                     </div>
                     {getStatusBadge(momentum.analysis.momentumStatus)}
@@ -912,14 +783,14 @@ export default function DailyBriefing({ briefing, momentum, tasks, loading, onRe
                         />
                         <Bar 
                           dataKey="created" 
-                          name={mockRole === 'student' ? "Milestones Added" : mockRole === 'developer' ? "Tickets Created" : mockRole === 'job_seeker' ? "Applications Opened" : "Objectives Logged"} 
+                          name={secondaryLabels.chartAdded} 
                           fill="#3B82F6" 
                           opacity={0.65} 
                           radius={[2, 2, 0, 0]} 
                         />
                         <Bar 
                           dataKey="completed" 
-                          name={mockRole === 'student' ? "Milestones Completed" : mockRole === 'developer' ? "Tickets Closed" : mockRole === 'job_seeker' ? "Applications Secured" : "Objectives Delivered"} 
+                          name={secondaryLabels.chartCompleted} 
                           fill="#10B981" 
                           radius={[2, 2, 0, 0]} 
                         />
