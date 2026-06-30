@@ -8,7 +8,7 @@
 [![Database: Local_JSON](https://img.shields.io/badge/Database-Local_JSON--Persistence-000000.svg?style=flat-square&colorA=111111&colorB=222222)](database.json)
 
 <p align="center">
-  <img src="assets/github-banner.png" alt="DeadlineOS Banner">
+  <img src="hero img.png" alt="DeadlineOS Banner">
 </p>
 
 ---
