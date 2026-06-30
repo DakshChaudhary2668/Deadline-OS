@@ -297,7 +297,7 @@ To run DeadlineOS in a local development environment with hot-reload support:
    This boots the backend Express.js server and mounts the Vite middleware on [http://localhost:3000](http://localhost:3000).
 
 ### Production Build
-To compile the client bundle and bundle the server script for local or bare-metal production environments:
+To compile the client bundle and bundle the server script for local or bare-metal production:
 
 1. **Build Client and Server Bundle**:
    ```bash

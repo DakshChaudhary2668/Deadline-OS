@@ -666,7 +666,7 @@ export default function App() {
       </aside>
 
       {/* CORE DISPLAY WINDOW */}
-      <main className="flex-grow flex flex-col min-w-0 h-full relative z-0 overflow-y-auto">
+      <main className="flex-grow flex flex-col min-w-0 min-h-0 h-full relative z-0 overflow-y-auto">
         
         {/* TOP COMPACT NAV BAR FOR MOBILE */}
         <header className="flex lg:hidden flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#0E0E0E] border-b border-[#1A1A1A] shrink-0">
@@ -737,7 +737,7 @@ export default function App() {
         )}
 
         {/* COMPONENT SPACE */}
-        <section className="flex-grow p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <section className="flex-grow p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6 min-w-0 min-h-0">
           <AnimatePresence mode="wait">
             {activeView === 'briefing' && (
               <motion.div

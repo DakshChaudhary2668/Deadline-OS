@@ -34,6 +34,45 @@ interface DailyBriefingProps {
   mockRole: string;
 }
 
+interface MeasurableChartContainerProps {
+  heightClass: string;
+  minHeightPx: number;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+function MeasurableChartContainer({
+  heightClass,
+  minHeightPx,
+  children,
+  fallback
+}: MeasurableChartContainerProps) {
+  const [size, setSize] = React.useState({ width: 0, height: 0 });
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setSize({ width, height });
+      }
+    });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div 
+      ref={ref} 
+      className={`w-full ${heightClass}`} 
+      style={{ minHeight: `${minHeightPx}px` }}
+    >
+      {size.width > 0 && size.height > 0 ? children : fallback}
+    </div>
+  );
+}
+
 const getDailyBriefingLabels = (role: string) => {
   const r = (role as RoleType) || 'professional';
   const config = MODE_LANGUAGES[r] || MODE_LANGUAGES.professional;
@@ -513,7 +552,7 @@ export default function DailyBriefing({
         </div>
 
         {/* WORKLOAD FORCE DIAGRAMS */}
-        <div className="lg:col-span-5 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A] flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A] flex flex-col justify-between min-w-0 min-h-0">
           <div>
             <div className="flex items-center justify-between border-b border-[#1A1A1A] pb-3 mb-4">
               <div className="flex items-center gap-2">
@@ -527,7 +566,15 @@ export default function DailyBriefing({
               {labels.workloadForceMetricsDesc}
             </p>
 
-            <div className="h-44 w-full">
+            <MeasurableChartContainer 
+              heightClass="h-44" 
+              minHeightPx={176}
+              fallback={
+                <div className="h-full flex items-center justify-center text-xs text-gray-500 font-mono uppercase tracking-wider text-center p-4">
+                  {secondaryLabels.awaitingVisualsText || "INITIALIZING INTELLIGENCE MATRIX..."}
+                </div>
+              }
+            >
               {pendingTasks.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
@@ -557,7 +604,7 @@ export default function DailyBriefing({
                   {secondaryLabels.noPendingTasksText}
                 </div>
               )}
-            </div>
+            </MeasurableChartContainer>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mt-4 text-center">
@@ -683,7 +730,7 @@ export default function DailyBriefing({
           </div>
 
           {/* RIGHT: VISUALIZATIONS & METRICS */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-6 min-w-0 min-h-0">
             
             {/* Completion Ratio Indicator Section */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -728,7 +775,7 @@ export default function DailyBriefing({
             </div>
 
             {/* Charts Container */}
-            <div className="bg-[#111] p-4 rounded border border-[#1A1A1A] space-y-4">
+            <div className="bg-[#111] p-4 rounded border border-[#1A1A1A] space-y-4 min-w-0 min-h-0">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest">
                   {chartTab === 'velocity' ? labels.chartVelocityTitle : labels.chartCadenceTitle}
@@ -754,7 +801,15 @@ export default function DailyBriefing({
                 </div>
               </div>
 
-              <div className="h-56 w-full">
+              <MeasurableChartContainer
+                heightClass="h-56"
+                minHeightPx={224}
+                fallback={
+                  <div className="h-full flex items-center justify-center text-xs text-gray-500 animate-pulse font-mono">
+                    {secondaryLabels.awaitingVisualsText}
+                  </div>
+                }
+              >
                 {loading ? (
                   <div className="h-full flex items-center justify-center text-xs text-gray-500 animate-pulse font-mono">
                     {secondaryLabels.awaitingVisualsText}
@@ -822,7 +877,7 @@ export default function DailyBriefing({
                     {secondaryLabels.awaitingHistoryText}
                   </div>
                 )}
-              </div>
+              </MeasurableChartContainer>
             </div>
 
           </div>
