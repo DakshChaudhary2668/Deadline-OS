@@ -1,4 +1,5 @@
 # DeadlineOS ── AI Chief of Staff
+
 > *A high-fidelity Cognitive Operating System designed to predict execution risks, simulate strategic decisions, optimize schedules, and orchestrate automated recovery protocols.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square&colorA=111111&colorB=222222)](LICENSE)
@@ -6,38 +7,66 @@
 [![Runtime: Node.js](https://img.shields.io/badge/Runtime-Node.js_v20+-000000.svg?style=flat-square&colorA=111111&colorB=222222)](https://nodejs.org/)
 [![Database: Local_JSON](https://img.shields.io/badge/Database-Local_JSON--Persistence-000000.svg?style=flat-square&colorA=111111&colorB=222222)](database.json)
 
----
-
-## ✦ Large Hero Section
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                                                                        │
-│   ██████╗ ███████╗ █████╗ ██████╗ ██╗     ██╗███╗   ██╗███████╗ ██████╗│
-│   ██╔══██╗██╔════╝██╔══██╗██╔══██╗██║     ██║████╗  ██║██╔════╝██╔═══██╗│
-│   ██║  ██║█████╗  ███████║██║  ██║██║     ██║██╔██╗ ██║█████╗  ██║   ██║│
-│   ██║  ██║██╔══╝  ██╔══██║██║  ██║██║     ██║██║╚██╗██║██╔══╝  ██║   ██║│
-│   ██████╔╝███████╗██║  ██║██████╔╝███████╗██║██║ ╚████║███████╗╚██████╔╝│
-│   ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝ ╚═════╝ │
-│                                                                        │
-│                      [   C H I E F   O F   S T A F F   ]               │
-│                                                                        │
-└────────────────────────────────────────────────────────────────────────┘
-```
+<p align="center">
+  <img src="./assets/hero-img.png" alt="DeadlineOS Hero" width="100%">
+</p>
 
 ---
 
-## ✦ Project Description
+## Project Status
+
+| Dimension | Attribute |
+| :--- | :--- |
+| **Current Release** | `v1.0.0-RC1` (Stable Release Phase) |
+| **Status** | Production Ready & Stable |
+| **Primary Deployment Target** | Google Cloud Run (Containerized Node.js Environment) |
+| **AI Processing Unit** | Gemini 2.5 Flash via `@google/genai` TypeScript SDK |
+| **PDF Generation** | Available (High-Fidelity Executive Grade Reports) |
+| **Responsiveness** | Desktop, Tablet, and Mobile Optimized |
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Why DeadlineOS?](#why-deadlineos)
+- [Project Status](#project-status)
+- [Key Features](#key-features)
+- [Project Highlights](#project-highlights)
+- [Why I Built DeadlineOS](#why-i-built-deadlineos)
+- [Workspace Modes](#workspace-modes)
+- [AI Intelligence Pipeline](#ai-intelligence-pipeline)
+- [System Architecture](#system-architecture)
+- [Project Folder Structure](#project-folder-structure)
+- [Technology Stack](#technology-stack)
+- [Installation & Deployment](#installation--deployment)
+  - [Environment Variables](#environment-variables)
+  - [Development Setup](#development-setup)
+  - [Production Build](#production-build)
+  - [Docker Containerization](#docker-containerization)
+  - [Google Cloud Run Deployment](#google-cloud-run-deployment)
+- [REST API Overview](#rest-api-overview)
+- [AI Engine Architecture](#ai-engine-architecture)
+- [Executive PDF Export](#executive-pdf-export)
+- [Screenshots & Diagrams](#screenshots--diagrams)
+- [Future Roadmap](#future-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#executive-contact--author)
+
+---
+
+## Overview
 
 **DeadlineOS** is a next-generation **AI Chief of Staff** rather than a passive task organizer. 
 
 Traditional task managers log deadlines and wait for you to miss them. **DeadlineOS** acts as an active, cognitive partner. It runs sophisticated, continuous intelligence models that analyze active tasks, calculate resource constraints, simulate execution risks, and automatically build dynamic contingency and SLA recovery plans.
 
-By integrating structured, specialized decision layers with the **Gemini 3.5 API**, DeadlineOS is built to help professionals, developers, students, and job-seekers manage their most constrained resource: **Time**.
+By integrating structured, specialized decision layers with the **Gemini 2.5 API**, DeadlineOS is built to help professionals, developers, students, and job-seekers manage their most constrained resource: **Time**.
 
 ---
 
-## ✦ Why DeadlineOS?
+## Why DeadlineOS?
 
 Modern work doesn't suffer from a lack of task lists; it suffers from **cognitive overload** and **poor decision intelligence**. When deadlines crash together, standard productivity software gives you a red flag and a notification. 
 
@@ -51,7 +80,7 @@ DeadlineOS evaluates:
 | Core Capabilities | Traditional Task Managers (Jira, Todoist) | DeadlineOS AI Chief of Staff |
 | :--- | :---: | :---: |
 | **Data Paradigm** | Static tables and checklists | Live kinetic model of active bandwidth |
-| **Notification style** | Passive banners & alert fatigue | Proactive strategic brief & intervention alerts |
+| **Notification Style** | Passive banners & alert fatigue | Proactive strategic brief & intervention alerts |
 | **Risk Assessment** | Static manual priority tags | Real-time stochastically calculated risk indices (0-100) |
 | **Slippage Handling** | Overdue tasks pile up silently | Automated SLA Recovery protocols triggered immediately |
 | **Strategic Modeling** | None | Interactive "What-If" scenario simulator |
@@ -59,7 +88,51 @@ DeadlineOS evaluates:
 
 ---
 
-## ✦ Specialized Workspace Context Profiles
+## Key Features
+
+* **AI Executive Briefings**: Personalized morning assessments that deliver high-value action metrics and reasoning from your AI Chief of Staff.
+* **Dynamic Timeline Planner**: Fully automated daily (24h) and weekly schedules structured using outstanding task parameters, remaining focus hours, and difficulty metrics.
+* **Recovery Intelligence**: Immediate SLA recovery playbooks designed to autonomously deconstruct slipping tasks and recommend actionable contingency steps.
+* **What-If Simulator**: Interactive playground to simulate key changes in capacity, scope, and deadlines, instantly visualizing updated risk topographies.
+* **Career Planning (Job Search)**: Dedicated job-seeker pipeline workspace prioritizing interview prep, networking outreach, and ATS-tailored resume submissions.
+* **Student Planning**: Academic optimization module designed to align study blocks with coursework weights, stress boundaries, and grade-impact metrics.
+* **Developer Sprint Planning**: High-throughput development workspace built to streamline release milestones, refactoring tasks, and technical debt.
+* **Executive PDF Reports**: Single-click compilation of high-fidelity PDF documents detailing diagnostics, recovery paths, and complete action plans.
+* **Interactive Dashboard**: Modern, high-density HUD including animated metrics, risk forecasts, and custom priority tables with zero visual clutter.
+* **Offline AI Fallback**: Self-contained local fallback heuristics that calculate risk indices, balance schedules, and run mock simulators when no network or API keys are available.
+
+---
+
+## Project Highlights
+
+| Component | Technical Selection |
+| :--- | :--- |
+| **Frontend** | React 18 + Vite + Tailwind CSS |
+| **Backend** | Express + TypeScript (`tsx` + `esbuild`) |
+| **AI Processing** | Google Gemini 2.5 Flash via `@google/genai` |
+| **Workspace Profiles** | 4 Specialized Contexts (Developer, Student, Career, Professional) |
+| **PDF Reporting** | High-Fidelity Executive Grade Compiler (`jspdf` integration) |
+| **Offline Capabilities** | Supported via native fallback algorithms |
+| **Interactive Charts** | Recharts & Custom SVG Indicators |
+| **Visual Architecture** | Executive Dark Mode cockpit dashboard |
+
+---
+
+## Why I Built DeadlineOS
+
+Traditional productivity tools are essentially databases with calendar views. They require the user to perform all the cognitive labor: identifying which task is slipping, figuring out how to rebalance the week, and guessing what the downstream impact of a delay will be. As modern workflows become faster and more complex, these static boards lead to alarm fatigue, missed deadlines, and severe burnout.
+
+I built DeadlineOS to flip this paradigm. Instead of asking "What tasks are on my list?", DeadlineOS answers the critical executive question: *"Given my current velocity, remaining focus hours, and incoming deadlines, am I actually on track to deliver, and if not, exactly what decisions do I need to make right now to recover?"*
+
+At its core, DeadlineOS is built on the philosophy of **Decision Intelligence**. By calculating a real-time risk index for every deliverable, it turns subjective stress into objective, actionable data. If a project enters a warning state, the system doesn't just send a generic notification; it actively drafts a tactical recovery playbook, breaking the milestone into atomic tasks and shifting lower-priority items back.
+
+This is the true role of a Chief of Staff: filtering out the noise, summarizing critical metrics, anticipating bottlenecks before they occur, and presenting clear, structured trade-offs. 
+
+Whether you are an engineer managing complex sprint releases, a student balancing heavy coursework, a candidate maintaining an active job-search pipeline, or an executive running operations, DeadlineOS provides a clean, native cockpit designed to protect your most valuable and exhaustible asset—your cognitive bandwidth.
+
+---
+
+## Workspace Modes
 
 DeadlineOS alters its entire linguistic model, priority weights, and UI configuration depending on the active **Workspace Context Profile**.
 
@@ -89,7 +162,7 @@ The default enterprise operating system profile.
 
 ---
 
-## ✦ AI Intelligence Pipeline
+## AI Intelligence Pipeline
 
 ```
   ┌───────────────────────────────────────────────────────────────┐
@@ -125,7 +198,7 @@ The default enterprise operating system profile.
 
 ---
 
-## ✦ System Architecture
+## System Architecture
 
 DeadlineOS is built as a full-stack, real-time application:
 
@@ -136,7 +209,7 @@ DeadlineOS is built as a full-stack, real-time application:
 
 ---
 
-## ✦ Project Folder Structure
+## Project Folder Structure
 
 ```
 .
@@ -174,7 +247,7 @@ DeadlineOS is built as a full-stack, real-time application:
 
 ---
 
-## ✦ Technology Stack
+## Technology Stack
 
 ### Frontend
 * **Core Framework**: React 18+ (TypeScript) with Vite
@@ -195,7 +268,7 @@ DeadlineOS is built as a full-stack, real-time application:
 
 ---
 
-## ✦ Deployment & Installation
+## Installation & Deployment
 
 ### Environment Variables
 
@@ -210,7 +283,7 @@ NODE_ENV=production
 
 > **Note**: If `GEMINI_API_KEY` is omitted, the system will automatically activate **Offline fallback heuristics**. It will continue performing accurate deterministic calculations, schedule optimizations, and mockup scenario simulations. Full contextualized AI dialogue and custom strategy creation will become active once the key is provided.
 
-### Running Locally
+### Development Setup
 
 1. **Clone the repository**:
    ```bash
@@ -246,13 +319,9 @@ To run the production build locally:
 npm start
 ```
 
-### Cloud Deployment (Google Cloud Run)
+### Docker Containerization
 
-Because DeadlineOS compiles into a self-contained single-file Node.js server, it is fully optimized for containerized cloud deployment.
-
-#### Deployment via Docker
-
-1. Create a `Dockerfile` at the root:
+1. Create a `Dockerfile` at the root of the project to package the application:
    ```dockerfile
    FROM node:20-slim
    WORKDIR /app
@@ -265,15 +334,45 @@ Because DeadlineOS compiles into a self-contained single-file Node.js server, it
    CMD ["node", "dist/server.cjs"]
    ```
 
-2. Build and deploy to Google Artifact Registry and Cloud Run:
+2. Build the Docker image locally:
    ```bash
-   gcloud builds submit --tag gcr.io/your-project-id/deadlineos
-   gcloud run deploy deadlineos --image gcr.io/your-project-id/deadlineos --platform managed --port 3000 --allow-unauthenticated --set-env-vars GEMINI_API_KEY=your_key_here
+   docker build -t deadlineos:latest .
    ```
+
+3. Run the container locally:
+   ```bash
+   docker run -p 3000:3000 --env GEMINI_API_KEY=your_key_here deadlineos:latest
+   ```
+
+### Google Cloud Run Deployment
+
+Because DeadlineOS compiles into a self-contained single-file Node.js server, it is fully optimized for containerized cloud deployment.
+
+#### Prerequisites
+* [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed and authenticated.
+* A GCP project with billing enabled.
+* Google Cloud Build and Cloud Run APIs enabled.
+
+#### Step 1: Configure Artifact Registry & Cloud Build
+Submit your local build directory directly to Google Cloud Build to produce a production image in Google Artifact Registry:
+```bash
+gcloud builds submit --tag gcr.io/your-project-id/deadlineos:latest
+```
+
+#### Step 2: Deploy to Google Cloud Run
+Deploy the registry-hosted image directly to Cloud Run:
+```bash
+gcloud run deploy deadlineos \
+  --image gcr.io/your-project-id/deadlineos:latest \
+  --platform managed \
+  --port 3000 \
+  --allow-unauthenticated \
+  --set-env-vars GEMINI_API_KEY=your_key_here,NODE_ENV=production
+```
 
 ---
 
-## ✦ REST API Overview
+## REST API Overview
 
 DeadlineOS exposes a series of highly functional REST endpoints, structured for fast integrations:
 
@@ -331,7 +430,7 @@ DeadlineOS exposes a series of highly functional REST endpoints, structured for 
 
 ---
 
-## ✦ AI Engine Architecture
+## AI Engine Architecture
 
 DeadlineOS structures its intelligence pipeline into **Five Cognitive Engines**:
 
@@ -356,9 +455,42 @@ An interactive tool that lets you alter workspace conditions (e.g., reallocating
 
 ---
 
-## ✦ System Screenshots & Diagrams
+## Executive PDF Export
 
-### Core Desktop Workspace
+DeadlineOS includes an enterprise-grade high-fidelity PDF report compilation engine. Designed for interviews, productivity reviews, academic review boards, and portfolio demonstrations, the generator compiles several key strategic sections:
+
+* **Executive Summary**: High-level diagnostic summary from your AI Chief of Staff.
+* **AI Diagnostics**: Comprehensive telemetry breakdown including risk indices, focus categories, and bottleneck forecasts.
+* **Recovery Timeline**: Step-by-step contingency timeline detailing recommended SLA recoveries and alternative options.
+* **Task Appendix**: Full, transparent inventory of all tasks, complete with priority weights, remaining effort hours, and status indicators.
+* **Risk Analysis Grids**: Beautifully formatted tables framing risk topographies and resource balances.
+* **Professional Formatting**: Styled strictly using high-contrast corporate palettes, custom typography margins, and clear structural headers.
+* **Executive Footer**: Includes generation timestamps and metadata signatures to verify the report's diagnostic integrity.
+
+---
+
+## Screenshots & Diagrams
+
+### Core Workspace Layouts
+
+| Main Landing & Boot Screen | System Core Dashboard |
+| --- | --- |
+| ![](assets/screenshots/landing.png) | ![](assets/screenshots/dashboard.png) |
+
+| Developer Mode Workspace | Student Mode Workspace |
+| --- | --- |
+| ![](assets/screenshots/developer.png) | ![](assets/screenshots/student.png) |
+
+| Career Mode Pipeline | Professional Mode HUD |
+| --- | --- |
+| ![](assets/screenshots/career.png) | ![](assets/screenshots/professional.png) |
+
+| What-If Capacity Simulation | Executive PDF Export Interface |
+| --- | --- |
+| ![](assets/screenshots/simulation.png) | ![](assets/screenshots/pdf_export.png) |
+
+### Core Desktop Workspace Terminal
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │ [≡] DEADLINEOS // CHIEF OF STAFF                    [User: daksh]      │
@@ -380,7 +512,7 @@ An interactive tool that lets you alter workspace conditions (e.g., reallocating
 
 ---
 
-## ✦ Future Roadmap
+## Future Roadmap
 
 ### Phase 1: Current Release (v1.0.0-RC1)
 * Fully functional high-contrast workspace context engines.
@@ -399,7 +531,7 @@ An interactive tool that lets you alter workspace conditions (e.g., reallocating
 
 ---
 
-## ✦ Contributing
+## Contributing
 
 We welcome professional, architecture-respecting contributions.
 
@@ -420,13 +552,13 @@ We welcome professional, architecture-respecting contributions.
 
 ---
 
-## ✦ License
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for details.
 
 ---
 
-## ✦ Executive Contact & Author
+## Executive Contact & Author
 
 * **Strategic Architect**: Daksh Chaudhary
 * **Project Repository**: [https://github.com/dakshchaudhary/deadlineos](https://github.com/dakshchaudhary/deadlineos)
