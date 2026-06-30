@@ -8,7 +8,7 @@
 [![Database: Local_JSON](https://img.shields.io/badge/Database-Local_JSON--Persistence-000000.svg?style=flat-square&colorA=111111&colorB=222222)](database.json)
 
 <p align="center">
-  <img src="./assets/hero-img.png" alt="DeadlineOS Hero" width="100%">
+  <img src="assets/github-banner.png" alt="DeadlineOS Banner">
 </p>
 
 ---
@@ -30,7 +30,6 @@
 
 - [Overview](#overview)
 - [Why DeadlineOS?](#why-deadlineos)
-- [Project Status](#project-status)
 - [Key Features](#key-features)
 - [Project Highlights](#project-highlights)
 - [Why I Built DeadlineOS](#why-i-built-deadlineos)
@@ -39,20 +38,15 @@
 - [System Architecture](#system-architecture)
 - [Project Folder Structure](#project-folder-structure)
 - [Technology Stack](#technology-stack)
-- [Installation & Deployment](#installation--deployment)
-  - [Environment Variables](#environment-variables)
-  - [Development Setup](#development-setup)
-  - [Production Build](#production-build)
-  - [Docker Containerization](#docker-containerization)
-  - [Google Cloud Run Deployment](#google-cloud-run-deployment)
+- [Installation](#installation)
+- [Deployment](#deployment)
 - [REST API Overview](#rest-api-overview)
 - [AI Engine Architecture](#ai-engine-architecture)
 - [Executive PDF Export](#executive-pdf-export)
-- [Screenshots & Diagrams](#screenshots--diagrams)
 - [Future Roadmap](#future-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
-- [Contact](#executive-contact--author)
+- [Executive Contact & Author](#executive-contact--author)
 
 ---
 
@@ -268,11 +262,10 @@ DeadlineOS is built as a full-stack, real-time application:
 
 ---
 
-## Installation & Deployment
+## Installation
 
 ### Environment Variables
-
-Before launching, declare required secrets in your `.env` file (copied from `.env.example`):
+Before running the application, configure your `.env` file (copied from `.env.example`) to establish the required system variables:
 
 ```env
 # Server-side secrets. Never exposed to browser.
@@ -284,44 +277,51 @@ NODE_ENV=production
 > **Note**: If `GEMINI_API_KEY` is omitted, the system will automatically activate **Offline fallback heuristics**. It will continue performing accurate deterministic calculations, schedule optimizations, and mockup scenario simulations. Full contextualized AI dialogue and custom strategy creation will become active once the key is provided.
 
 ### Development Setup
+To run DeadlineOS in a local development environment with hot-reload support:
 
-1. **Clone the repository**:
+1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/deadlineos.git
+   git clone https://github.com/dakshchaudhary/deadlineos.git
    cd deadlineos
    ```
 
-2. **Install all dependencies**:
+2. **Install Dependencies**:
    ```bash
    npm install
    ```
 
-3. **Run in development mode**:
+3. **Start the Dev Server**:
    ```bash
    npm run dev
    ```
-   The application will boot, starting both the backend API server and the Vite asset builder on [http://localhost:3000](http://localhost:3000).
+   This boots the backend Express.js server and mounts the Vite middleware on [http://localhost:3000](http://localhost:3000).
 
 ### Production Build
+To compile the client bundle and bundle the server script for local or bare-metal production environments:
 
-Compile the client bundle and build the server script for deployment:
+1. **Build Client and Server Bundle**:
+   ```bash
+   npm run build
+   ```
+   This executes a multi-stage compilation:
+   - Compiles Vite client assets into high-performance static files in `/dist`.
+   - Bundles the complete backend TypeScript server into a self-contained, single-file `/dist/server.cjs` script using `esbuild`.
 
-```bash
-npm run build
-```
+2. **Launch Production Server**:
+   ```bash
+   npm start
+   ```
+   This directly executes `node dist/server.cjs` on port `3000`.
 
-This executes a multi-stage production compile:
-1. `vite build` to bundle, tree-shake, and optimize client assets into standard static files inside `/dist`.
-2. `esbuild server.ts ...` to bundle the complete backend TypeScript server into a self-contained, high-performance, single-file `/dist/server.cjs` file, completely avoiding ES Module relative path issues in production node.
+---
 
-To run the production build locally:
-```bash
-npm start
-```
+## Deployment
 
 ### Docker Containerization
+DeadlineOS is fully optimized to run in a stateless containerized runtime.
 
-1. Create a `Dockerfile` at the root of the project to package the application:
+1. **Dockerfile Configuration**:
+   Create a `Dockerfile` at the root of the project to package the compiled code:
    ```dockerfile
    FROM node:20-slim
    WORKDIR /app
@@ -334,36 +334,45 @@ npm start
    CMD ["node", "dist/server.cjs"]
    ```
 
-2. Build the Docker image locally:
+2. **Build the Container Image**:
    ```bash
    docker build -t deadlineos:latest .
    ```
 
-3. Run the container locally:
+3. **Run the Container Locally**:
    ```bash
    docker run -p 3000:3000 --env GEMINI_API_KEY=your_key_here deadlineos:latest
    ```
 
 ### Google Cloud Run Deployment
+DeadlineOS compiles into a single, light-weight, highly efficient production server, making it a perfect fit for **Google Cloud Run**.
 
-Because DeadlineOS compiles into a self-contained single-file Node.js server, it is fully optimized for containerized cloud deployment.
-
-#### Prerequisites
-* [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) installed and authenticated.
-* A GCP project with billing enabled.
-* Google Cloud Build and Cloud Run APIs enabled.
-
-#### Step 1: Configure Artifact Registry & Cloud Build
-Submit your local build directory directly to Google Cloud Build to produce a production image in Google Artifact Registry:
+#### Step 1: Authentication & Prerequisites
+Ensure you have the Google Cloud SDK installed, initialized, and linked to a Google Cloud Platform (GCP) project with active billing:
 ```bash
-gcloud builds submit --tag gcr.io/your-project-id/deadlineos:latest
+# Log in to your Google Account
+gcloud auth login
+
+# Set active project
+gcloud config set project YOUR_GCP_PROJECT_ID
+
+# Enable required Google APIs
+gcloud services enable run.googleapis.com \
+                       cloudbuild.googleapis.com \
+                       artifactregistry.googleapis.com
 ```
 
-#### Step 2: Deploy to Google Cloud Run
-Deploy the registry-hosted image directly to Cloud Run:
+#### Step 2: Build Image via Google Cloud Build & Artifact Registry
+Submit your source directory directly to Google Cloud Build. This securely compiles the codebase and pushes the final container image to Google Artifact Registry:
+```bash
+gcloud builds submit --tag gcr.io/YOUR_GCP_PROJECT_ID/deadlineos:latest
+```
+
+#### Step 3: Deploy to Google Cloud Run
+Once the image is ready in Artifact Registry, deploy it to a managed Cloud Run instance. Cloud Run will host the server on a secure, public HTTPS URL and automatically scale down to zero when idle to conserve resources:
 ```bash
 gcloud run deploy deadlineos \
-  --image gcr.io/your-project-id/deadlineos:latest \
+  --image gcr.io/YOUR_GCP_PROJECT_ID/deadlineos:latest \
   --platform managed \
   --port 3000 \
   --allow-unauthenticated \
@@ -466,49 +475,6 @@ DeadlineOS includes an enterprise-grade high-fidelity PDF report compilation eng
 * **Risk Analysis Grids**: Beautifully formatted tables framing risk topographies and resource balances.
 * **Professional Formatting**: Styled strictly using high-contrast corporate palettes, custom typography margins, and clear structural headers.
 * **Executive Footer**: Includes generation timestamps and metadata signatures to verify the report's diagnostic integrity.
-
----
-
-## Screenshots & Diagrams
-
-### Core Workspace Layouts
-
-| Main Landing & Boot Screen | System Core Dashboard |
-| --- | --- |
-| ![](assets/screenshots/landing.png) | ![](assets/screenshots/dashboard.png) |
-
-| Developer Mode Workspace | Student Mode Workspace |
-| --- | --- |
-| ![](assets/screenshots/developer.png) | ![](assets/screenshots/student.png) |
-
-| Career Mode Pipeline | Professional Mode HUD |
-| --- | --- |
-| ![](assets/screenshots/career.png) | ![](assets/screenshots/professional.png) |
-
-| What-If Capacity Simulation | Executive PDF Export Interface |
-| --- | --- |
-| ![](assets/screenshots/simulation.png) | ![](assets/screenshots/pdf_export.png) |
-
-### Core Desktop Workspace Terminal
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ [≡] DEADLINEOS // CHIEF OF STAFF                    [User: daksh]      │
-├──────────────────────┬─────────────────────────────────────────────────┤
-│ Context Profile      │  DAILY briefing                                 │
-│  ● Developer Mode    │  "Your Sprint velocity is highly stable..."     │
-│  ○ Student Mode      │                                                 │
-│  ○ Career Mode       │  WORKSPACE METRICS                              │
-│  ○ Professional Mode │  [ Risk Index: 24% ]  [ Unresolved Hours: 14h ]  │
-├──────────────────────┼─────────────────────────────────────────────────┤
-│ Control Bay          │  Strategic DECISIONS                            │
-│  - Daily Brief       │  > Postgre Audit Tradeoff                       │
-│  - Milestones        │    "Reallocate 2 hours to avoid SLA breach."    │
-│  - Decisions         │                                                 │
-│  - Recovery Center   │  TEMPORAL scheduler                             │
-│                      │  [ 09:00 - 11:00 ] Database Schema Audit        │
-└──────────────────────┴─────────────────────────────────────────────────┘
-```
 
 ---
 
