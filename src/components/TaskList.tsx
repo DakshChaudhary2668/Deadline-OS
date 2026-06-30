@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Task } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
+import { WORKSPACE_CATEGORIES } from '../utils/categories';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
@@ -43,6 +44,7 @@ const getTaskListLabels = (role: RoleType) => {
 };
 
 interface TaskListProps {
+  key?: any;
   tasks: Task[];
   onToggleComplete: (task: Task) => void;
   onEdit: (task: Task) => void;
@@ -68,14 +70,11 @@ export default function TaskList({
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'overdue' | 'completed'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
-  const getCategoryLabel = (cat: string) => {
-    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
-    const d = config.taskListDynamic;
-    if (cat === 'Work') return d.catWork;
-    if (cat === 'Study') return d.catStudy;
-    if (cat === 'Career') return d.catCareer;
-    return d.catPersonal;
-  };
+  const categoriesList = WORKSPACE_CATEGORIES[mockRole as RoleType] || WORKSPACE_CATEGORIES.professional;
+
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
 
   const getRiskLabelAndBadge = (probability: number) => {
     if (probability >= 75) {
@@ -173,9 +172,9 @@ export default function TaskList({
   const sectionLabels = getSectionLabels();
 
   // Filtering criteria logical map
-  const filteredTasks = tasks.filter(t => {
-    const titleMatch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       t.description.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredTasks = roleTasks.filter(t => {
+    const titleMatch = (t.title || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+                       (t.description || '').toLowerCase().includes((searchTerm || '').toLowerCase());
     
     let statusMatch = true;
     if (statusFilter === 'pending') statusMatch = t.status === 'pending';
@@ -229,10 +228,9 @@ export default function TaskList({
             className="px-3 py-1.5 bg-[#0E0E0E] border border-[#1A1A1A] rounded text-xs text-[#E0E0E0] focus:outline-none focus:border-gray-600 cursor-pointer [color-scheme:dark]"
           >
             <option value="all">{getAllCategoriesLabel()}</option>
-            <option value="Work">{getCategoryLabel('Work')}</option>
-            <option value="Study">{getCategoryLabel('Study')}</option>
-            <option value="Career">{getCategoryLabel('Career')}</option>
-            <option value="Personal">{getCategoryLabel('Personal')}</option>
+            {categoriesList.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
           </select>
 
           <button
@@ -289,7 +287,7 @@ export default function TaskList({
                     <div className="space-y-2 flex-grow">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[10px] font-mono text-slate-400 select-none bg-[#131313] px-2 py-0.5 rounded border border-[#1A1A1A]">
-                          {getCategoryLabel(t.category)}
+                          {t.category}
                         </span>
                         
                         <span className={`px-2 py-0.5 rounded border text-[9px] uppercase font-mono tracking-wider ${getImportanceBadge(t.importance)}`}>
@@ -493,7 +491,10 @@ export default function TaskList({
                         <Edit3 className="h-3.5 w-3.5" />
                       </button>
                       <button 
-                        onClick={() => onDelete(t.id)}
+                        onClick={() => {
+                          console.log("DELETE BUTTON CLICKED", t.id);
+                          onDelete(t.id);
+                        }}
                         className="p-1.5 text-gray-500 hover:text-rose-400 rounded hover:bg-rose-950/20 transition"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -65,10 +65,15 @@ export default function App() {
   const fetchTasks = async () => {
     setLoadingTasks(true);
     try {
-      const res = await fetch('/api/tasks');
+      const res = await fetch(`/api/tasks?role=${mockRole}`);
       if (!res.ok) throw new Error('Could not pull database index');
       const data = await res.json();
-      setTasks(data);
+      const sortedData = data.sort((a: any, b: any) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      setTasks(sortedData);
     } catch (err: any) {
       console.error(err);
       setBackendError('Error communicating with DeadlineOS server core.');
@@ -110,7 +115,7 @@ export default function App() {
   // Fetch cached daily / weekly schedules
   const fetchPlans = async () => {
     try {
-      const res = await fetch('/api/ai/plans');
+      const res = await fetch(`/api/ai/plans?role=${mockRole}`);
       if (res.ok) {
         const { dayPlan: dp, weekPlan: wp } = await res.json();
         setDayPlan(dp);
@@ -125,15 +130,13 @@ export default function App() {
   useEffect(() => {
     fetchTasks();
     fetchPlans();
-  }, []);
+  }, [mockRole]);
 
   // Sync Briefing when task count or completion shifts
   useEffect(() => {
-    if (tasks.length > 0) {
-      fetchBriefing();
-      fetchMomentum();
-    }
-  }, [tasks.length, tasks.filter(t => t.status === 'completed').length]);
+    fetchBriefing();
+    fetchMomentum();
+  }, [tasks.length, tasks.filter(t => t.status === 'completed').length, mockRole]);
 
   // Recalibrate briefing explicitly
   const handleRecalibrateBriefing = async () => {
@@ -144,14 +147,24 @@ export default function App() {
   const handleToggleComplete = async (task: Task) => {
     const updatedStatus = task.status === 'completed' ? 'pending' : 'completed';
     try {
-      const res = await fetch(`/api/tasks/${task.id}`, {
+      const res = await fetch(`/api/tasks/${task.id}?role=${mockRole}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: updatedStatus }),
       });
       if (!res.ok) throw new Error('Status rewrite rejected');
       const updated = await res.json();
-      setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+      setTasks(prev => {
+        const next = prev.map(t => t.id === task.id ? updated : t);
+        return [...next].sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+      });
+      fetchPlans();
+      fetchBriefing();
+      fetchMomentum();
     } catch (err: any) {
       alert(err.message);
     }
@@ -162,27 +175,44 @@ export default function App() {
     try {
       if (editingTask) {
         // Edit Mode
-        const res = await fetch(`/api/tasks/${editingTask.id}`, {
+        const res = await fetch(`/api/tasks/${editingTask.id}?role=${mockRole}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData),
+          body: JSON.stringify({ ...taskData, profile: mockRole }),
         });
         if (!res.ok) throw new Error('Task update rejected');
         const updated = await res.json();
-        setTasks(prev => prev.map(t => t.id === editingTask.id ? updated : t));
+        setTasks(prev => {
+          const next = prev.map(t => t.id === editingTask.id ? updated : t);
+          return [...next].sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeB - timeA;
+          });
+        });
       } else {
         // Create Mode
-        const res = await fetch('/api/tasks', {
+        const res = await fetch(`/api/tasks?role=${mockRole}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(taskData),
+          body: JSON.stringify({ ...taskData, profile: mockRole }),
         });
         if (!res.ok) throw new Error('Milestone registration rejected');
         const added = await res.json();
-        setTasks(prev => [...prev, added]);
+        setTasks(prev => {
+          const next = [added, ...prev];
+          return [...next].sort((a, b) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeB - timeA;
+          });
+        });
       }
       setIsFormOpen(false);
       setEditingTask(null);
+      fetchPlans();
+      fetchBriefing();
+      fetchMomentum();
     } catch (err: any) {
       alert(err.message);
     }
@@ -190,13 +220,20 @@ export default function App() {
 
   // Delete task completely
   const handleDeleteTask = async (id: string) => {
-    if (!confirm('Are you certain you want to erase this deadline constraint?')) return;
+    console.log("DELETE BUTTON CLICKED");
+    console.log("handleDeleteTask invoked", id);
+    const url = `/api/tasks/${id}?role=${mockRole}`;
+    console.log("Sending DELETE request", url);
     try {
-      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      const res = await fetch(url, { method: 'DELETE' });
+      console.log("DELETE response", res.status);
       if (!res.ok) throw new Error('De-registration rejected');
       setTasks(prev => prev.filter(t => t.id !== id));
+      fetchPlans();
+      fetchBriefing();
+      fetchMomentum();
     } catch (err: any) {
-      alert(err.message);
+      console.error(err.message);
     }
   };
 
@@ -262,9 +299,8 @@ export default function App() {
 
   // Clear cached schedules
   const handleResetPlans = async () => {
-    if (!confirm('Recalibrate schedules? Stored daily/weekly plans will be wiped.')) return;
     try {
-      const res = await fetch('/api/ai/plans/reset', { method: 'POST' });
+      const res = await fetch(`/api/ai/plans/reset?role=${mockRole}`, { method: 'POST' });
       if (res.ok) {
         setDayPlan(null);
         setWeekPlan(null);
@@ -442,7 +478,7 @@ export default function App() {
             >
               <div className="flex items-center gap-2.5">
                 <Sparkles className={`h-3.5 w-3.5 ${activeView === 'chat' ? 'text-emerald-400 font-bold' : 'text-gray-500'}`} />
-                <span>AI Chief of Staff</span>
+                <span>{MODE_LANGUAGES[mockRole]?.sidebarLabels.chat || MODE_LANGUAGES[mockRole]?.systemRole || 'AI Agent'}</span>
               </div>
               <ChevronRight className="h-3 w-3 opacity-50" />
             </button>
@@ -487,7 +523,7 @@ export default function App() {
               <option value="plans">{MODE_LANGUAGES[mockRole]?.sidebarLabels.plans}</option>
               <option value="recovery">{MODE_LANGUAGES[mockRole]?.sidebarLabels.recovery}</option>
               <option value="simulator">{MODE_LANGUAGES[mockRole]?.sidebarLabels.simulator}</option>
-              <option value="chat">AI Chief of Staff</option>
+              <option value="chat">{MODE_LANGUAGES[mockRole]?.sidebarLabels.chat || MODE_LANGUAGES[mockRole]?.systemRole || 'AI Agent'}</option>
             </select>
 
             <select
@@ -528,6 +564,7 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <DailyBriefing 
+                  key={mockRole}
                   briefing={briefing}
                   momentum={momentum}
                   tasks={tasks}
@@ -547,6 +584,7 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <TaskList 
+                  key={mockRole}
                   tasks={tasks}
                   onToggleComplete={handleToggleComplete}
                   onEdit={(task) => {
@@ -574,7 +612,9 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <StrategicDecisions 
+                  key={mockRole}
                   tasks={tasks}
+                  briefing={briefing}
                   onToggleComplete={handleToggleComplete}
                   onEdit={(task) => {
                     setEditingTask(task);
@@ -601,6 +641,7 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <PlanningAgent 
+                  key={mockRole}
                   dayPlan={dayPlan}
                   weekPlan={weekPlan}
                   tasks={tasks}
@@ -610,6 +651,7 @@ export default function App() {
                   onGenerateWeek={handleGenerateWeekPlan}
                   onResetPlans={handleResetPlans}
                   mockRole={mockRole}
+                  briefing={briefing}
                 />
               </motion.div>
             )}
@@ -623,6 +665,7 @@ export default function App() {
                 transition={{ duration: 0.2 }}
               >
                 <RecoveryHub 
+                  key={mockRole}
                   tasks={tasks}
                   onGenerateRecovery={handleGenerateRecoveryPlan}
                   generatingId={recoveringTaskId}
@@ -639,7 +682,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <WhatIfSimulator tasks={tasks} mockRole={mockRole} />
+                <WhatIfSimulator key={mockRole} tasks={tasks} mockRole={mockRole} />
               </motion.div>
             )}
 
@@ -651,7 +694,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <AIChat tasks={tasks} mockRole={mockRole} />
+                <AIChat key={mockRole} tasks={tasks} mockRole={mockRole} />
               </motion.div>
             )}
           </AnimatePresence>

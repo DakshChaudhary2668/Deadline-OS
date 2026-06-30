@@ -21,6 +21,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
+import { WORKSPACE_CATEGORIES } from '../utils/categories';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
@@ -59,6 +60,7 @@ const getSecondaryStrategicLabels = (role: RoleType) => {
 };
 
 interface StrategicDecisionsProps {
+  key?: any;
   tasks: Task[];
   onToggleComplete: (task: Task) => void;
   onEdit: (task: Task) => void;
@@ -67,6 +69,7 @@ interface StrategicDecisionsProps {
   analyzingId: string | null;
   onOpenForm: () => void;
   mockRole?: string;
+  briefing?: any;
 }
 
 export function StrategicDecisions({
@@ -77,7 +80,8 @@ export function StrategicDecisions({
   onAnalyzePriority,
   analyzingId,
   onOpenForm,
-  mockRole = 'professional'
+  mockRole = 'professional',
+  briefing
 }: StrategicDecisionsProps) {
   const labels = getStrategicLabels(mockRole as RoleType);
   const secondaryLabels = getSecondaryStrategicLabels(mockRole as RoleType);
@@ -86,18 +90,15 @@ export function StrategicDecisions({
   const [decisionFilter, setDecisionFilter] = useState<string>('ALL');
   const [localAnalyzingId, setLocalAnalyzingId] = useState<string | null>(null);
 
-  const getCategoryLabel = (cat: string) => {
-    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
-    const d = config.taskListDynamic;
-    if (cat === 'Work') return d.catWork;
-    if (cat === 'Study') return d.catStudy;
-    if (cat === 'Career') return d.catCareer;
-    return d.catPersonal;
-  };
+  const categoriesList = WORKSPACE_CATEGORIES[mockRole as RoleType] || WORKSPACE_CATEGORIES.professional;
+
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
 
   // Compute active decisions and scores for all tasks (dynamic fallback ensures zero blank fields)
-  const enrichedTasks = tasks.map(task => {
-    const decision = task.strategicDecision || calculateStrategicDecision(task, tasks, mockRole);
+  const enrichedTasks = roleTasks.map(task => {
+    const decision = task.strategicDecision || calculateStrategicDecision(task, roleTasks, mockRole);
     return {
       ...task,
       computedDecision: decision
@@ -247,7 +248,7 @@ export function StrategicDecisions({
               </span>
               <span className="text-xs font-mono text-emerald-400 uppercase tracking-widest">{secondaryLabels.coverageTitle || 'AI Coverage'}</span>
             </div>
-            <p className="text-xl font-bold text-white mt-3 font-mono">{tasks.length} / {tasks.length} {labels.taskPlural} Analyzed</p>
+            <p className="text-xl font-bold text-white mt-3 font-mono">{roleTasks.length} / {roleTasks.length} {labels.taskPlural} Analyzed</p>
             <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.coverageDesc || 'All items evaluated by engine'}</p>
           </div>
           <div className="mt-4 bg-zinc-900/60 p-2 border border-zinc-800/50 rounded text-[10px] font-mono text-zinc-400">
@@ -290,13 +291,15 @@ export function StrategicDecisions({
           <div>
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.workspaceHealth}</span>
             <p className="text-2xl font-bold text-white mt-3 font-mono">
-              {averageAIScore}<span className="text-xs text-zinc-500 font-normal font-sans">/100</span>
+              {briefing?.executiveScore ?? briefing?.codebaseStability ?? averageAIScore}<span className="text-xs text-zinc-500 font-normal font-sans">/100</span>
             </p>
             <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.healthDesc || 'Average strategic readiness'}</p>
           </div>
           <div className="flex gap-2 items-center mt-4">
             <Gauge className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[11px] font-mono text-emerald-400 uppercase font-semibold">{secondaryLabels.statusBadgeLabel || 'OPTIMAL'}</span>
+            <span className="text-[11px] font-mono text-emerald-400 uppercase font-semibold">
+              {briefing?.workloadStressLevel ? briefing.workloadStressLevel.toUpperCase() : (secondaryLabels.statusBadgeLabel || 'OPTIMAL')}
+            </span>
           </div>
         </div>
       </div>
@@ -305,7 +308,7 @@ export function StrategicDecisions({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-zinc-900/60 p-3 border border-zinc-800 rounded-lg">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-zinc-400 font-mono mr-1">{secondaryLabels.categoryFilterLabel || 'FILTER:'}</span>
-          {['ALL', 'Work', 'Study', 'Career', 'Personal'].map(cat => (
+          {['ALL', ...categoriesList].map(cat => (
             <button
               key={cat}
               onClick={() => setCategoryFilter(cat)}
@@ -315,7 +318,7 @@ export function StrategicDecisions({
                   : 'bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              {cat === 'ALL' ? 'ALL' : getCategoryLabel(cat).toUpperCase()}
+              {cat.toUpperCase()}
             </button>
           ))}
         </div>
@@ -391,7 +394,7 @@ export function StrategicDecisions({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-zinc-400 uppercase">
-                          {getCategoryLabel(task.category)}
+                          {task.category}
                         </span>
                         {task.status === 'overdue' && (
                           <span className="text-[10px] font-mono px-2 py-0.5 bg-red-950/40 border border-red-900/60 text-red-400 rounded">

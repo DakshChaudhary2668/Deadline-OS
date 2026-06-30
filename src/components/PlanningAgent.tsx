@@ -21,55 +21,8 @@ type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
 const getPlanningLabels = (role: RoleType) => {
   const config = MODE_LANGUAGES[role] || MODE_LANGUAGES.professional;
+  const d = config.planningLabels || (MODE_LANGUAGES.professional as any).planningLabels;
   
-  const data = {
-    student: {
-      headerTitle: "AI Study Planner", intelligenceCore: "Academic Intelligence Core", dailyAlignment: "Daily Study Alignment",
-      weeklyAlignment: "Weekly Curriculum Alignment", forecastBrief: "Academic Advisor Brief", subtitle: "Leverages study hours, exam countdowns, and homework importance to map a personalized high-mastery revision plan.",
-      dailyDesc: "Generates timed revision intervals mapped against available study hours. It slots high-difficulty concepts early while leaving buffer blocks to prevent study fatigue.",
-      paramPendingLabel: "Pending Syllabus Goals:", paramEffortLabel: "Aggregate Study Hours:", dailyTimelineTab: "Study Timeline",
-      weeklyScheduleTab: "Weekly Syllabus", timelineParamsLabel: "Revision Parameters", hoursUnit: "study hours", timestampLabel: "Plan Stamped:", actionTargetBadge: "Study Target", timetableInactiveHeader: "Study plan inactive", timetableInactiveDesc: "Run the temporal intelligence analyzer to schedule study blocks across outstanding syllabus goals.",
-      systemsChecklist: "Study Checklist", burnoutLabel: "Study fatigue mapping", resourceDispersal: "Balanced syllabus dispersal",
-      weeklyPlanInactiveHeader: "Weekly plan inactive", weeklyPlanInactiveDesc: "Run the weekly planner to map revision weights across outstanding study targets.",
-      weeklyPlanDesc: "Assembles a high-level academic syllabus roadmap for the week, dividing course topics into manageable day blocks to eliminate exam pressure.",
-      balanceEngineText: "Balancing exam preparation weights", strategicSectorLabel: "Study Domain", coreObjectiveLabel: "Course Goal:", allocatedActionsLabel: "Assigned Milestones"
-    },
-    developer: {
-      headerTitle: "AI Sprint Planner", intelligenceCore: "Sprint Intelligence Core", dailyAlignment: "Daily Sprint Alignment",
-      weeklyAlignment: "Weekly Sprint Roadmap", forecastBrief: "Senior Staff Engineer Brief", subtitle: "Leverages sprint capacity, technical debt blockers, and PR priorities to schedule balanced developer workflows.",
-      dailyDesc: "Generates timed sprint focus blocks mapped against available coding bandwidth. It slots core ship objectives early while leaving buffer sectors to manage incident responses.",
-      paramPendingLabel: "Active Sprint Tickets:", paramEffortLabel: "Sprint Bandwidth Needed:", dailyTimelineTab: "Sprint Timeline",
-      weeklyScheduleTab: "Weekly Roadmap", timelineParamsLabel: "Sprint Parameters", hoursUnit: "story hours", timestampLabel: "Deploy Stamped:", actionTargetBadge: "Deploy Target", timetableInactiveHeader: "Sprint plan inactive", timetableInactiveDesc: "Run the temporal intelligence analyzer to schedule sprint blocks across outstanding tickets.",
-      systemsChecklist: "CI/CD Checklist", burnoutLabel: "Developer fatigue mapping", resourceDispersal: "Balanced repository dispersal",
-      weeklyPlanInactiveHeader: "Weekly plan inactive", weeklyPlanInactiveDesc: "Run the weekly planner to map capacity weights across outstanding sprint tickets.",
-      weeklyPlanDesc: "Assembles a high-level technical sprint roadmap for the week, dividing epic requirements into manageable deployment blocks.",
-      balanceEngineText: "Balancing repository deployment weights", strategicSectorLabel: "Repository Scope", coreObjectiveLabel: "PR Goal:", allocatedActionsLabel: "Assigned Tickets"
-    },
-    job_seeker: {
-      headerTitle: "AI Career Planner", intelligenceCore: "Career Intelligence Core", dailyAlignment: "Daily Application Alignment",
-      weeklyAlignment: "Weekly Outreach Alignment", forecastBrief: "AI Career Coach Brief", subtitle: "Leverages prep hours, interview countdowns, and networking importance to map a personalized high-conversion outreach plan.",
-      dailyDesc: "Generates timed networking intervals mapped against available prep hours. It slots high-impact interviews early while leaving buffer blocks to prevent fatigue.",
-      paramPendingLabel: "Pending Applications:", paramEffortLabel: "Aggregate Prep Hours:", dailyTimelineTab: "Outreach Timeline",
-      weeklyScheduleTab: "Weekly Pipeline", timelineParamsLabel: "Pipeline Parameters", hoursUnit: "prep hours", timestampLabel: "Pipeline Stamped:", actionTargetBadge: "Career Target", timetableInactiveHeader: "Outreach plan inactive", timetableInactiveDesc: "Run the temporal intelligence analyzer to schedule outreach blocks across outstanding applications.",
-      systemsChecklist: "Pipeline Checklist", burnoutLabel: "Outreach fatigue mapping", resourceDispersal: "Balanced network dispersal",
-      weeklyPlanInactiveHeader: "Weekly plan inactive", weeklyPlanInactiveDesc: "Run the weekly planner to map outreach weights across outstanding applications.",
-      weeklyPlanDesc: "Assembles a high-level career growth roadmap for the week, dividing networking tasks into manageable day blocks to eliminate job search pressure.",
-      balanceEngineText: "Balancing interview preparation weights", strategicSectorLabel: "Career Pathway", coreObjectiveLabel: "Outreach Goal:", allocatedActionsLabel: "Assigned Actions"
-    },
-    professional: {
-      headerTitle: "Temporal Planner", intelligenceCore: "Temporal Intelligence Core", dailyAlignment: "Daily Temporal Alignment",
-      weeklyAlignment: "Weekly Strategic Alignment", forecastBrief: "Chief of Staff Brief", subtitle: "Leverages task efforts, SLA priorities, and deadline countdown metrics to outline customized balanced timetables.",
-      dailyDesc: "Generates timed focus blocks mapped against available hours. It slots high-cognitive objectives early while leaving buffer sectors to manage incident responses.",
-      paramPendingLabel: "Pending Goals:", paramEffortLabel: "Aggregate Effort Hours:", dailyTimelineTab: "Daily Timeline",
-      weeklyScheduleTab: "Weekly Schedule", timelineParamsLabel: "Timeline Parameters", hoursUnit: "hours", timestampLabel: "Generated Timestamp:", actionTargetBadge: "Action Target", timetableInactiveHeader: "Timetable inactive", timetableInactiveDesc: "Run the temporal intelligence analyzer to schedule focus blocks across outstanding milestones.",
-      systemsChecklist: "Systems Checklist", burnoutLabel: "Burnout threshold mapping", resourceDispersal: "Balanced resource dispersal",
-      weeklyPlanInactiveHeader: "Weekly plan inactive", weeklyPlanInactiveDesc: "Run the weekly planner to map focus weights across outstanding milestones.",
-      weeklyPlanDesc: "Assembles a high-level strategic canvas for the week, allocating specific workspace modules to designated days. Prevents burnout while guaranteeing target accomplishment.",
-      balanceEngineText: "Running calendar balance engines", strategicSectorLabel: "Strategic Sector", coreObjectiveLabel: "Core Objective:", allocatedActionsLabel: "Allocated Actions"
-    }
-  };
-
-  const d = data[role as keyof typeof data] || data.professional;
   return {
     ...d,
     directiveTitle: `AI ${config.systemRole} Directive`,
@@ -81,6 +34,7 @@ const getPlanningLabels = (role: RoleType) => {
 };
 
 interface PlanningAgentProps {
+  key?: any;
   dayPlan: DayPlan | null;
   weekPlan: WeekPlan | null;
   tasks: Task[];
@@ -90,6 +44,7 @@ interface PlanningAgentProps {
   onGenerateWeek: () => void;
   onResetPlans: () => void;
   mockRole?: string;
+  briefing?: any;
 }
 
 export default function PlanningAgent({
@@ -101,10 +56,122 @@ export default function PlanningAgent({
   onGenerateDay,
   onGenerateWeek,
   onResetPlans,
-  mockRole = 'professional'
+  mockRole = 'professional',
+  briefing
 }: PlanningAgentProps) {
   const labels = getPlanningLabels(mockRole as RoleType);
   const [activeTab, setActiveTab] = useState<'day' | 'week'>('day');
+
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
+
+  // Compute real-time analytics for the roadmap view
+  const metrics = React.useMemo(() => {
+    const pending = roleTasks.filter(t => t.status !== 'completed');
+    const completed = roleTasks.filter(t => t.status === 'completed');
+    
+    const sortedPending = [...pending].sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0));
+    const todayFocus = sortedPending[0]?.title || 'No active pending tasks';
+    
+    const deepWorkHours = briefing?.pendingEffort !== undefined
+      ? briefing.pendingEffort
+      : pending.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
+    
+    const maxFailureRisk = briefing?.threatIndex !== undefined
+      ? briefing.threatIndex
+      : pending.reduce((max, t) => {
+          const risk = t.failureForecast?.failureProbability ?? t.riskScore ?? 0;
+          return risk > max ? risk : max;
+        }, 0);
+    
+    let confidence = briefing?.successProbability !== undefined
+      ? briefing.successProbability
+      : 100;
+      
+    if (briefing?.successProbability === undefined) {
+      if (roleTasks.length > 0) {
+        const completedRatio = completed.length / roleTasks.length;
+        confidence = 45 + completedRatio * 55;
+        const overdue = pending.filter(t => t.status === 'overdue').length;
+        const critical = pending.filter(t => t.importance === 'Critical' || t.importance === 'High').length;
+        confidence -= overdue * 12;
+        confidence -= critical * 4;
+        if (deepWorkHours > 30) confidence -= 10;
+        confidence = Math.max(12, Math.min(100, Math.round(confidence)));
+      } else {
+        confidence = 100;
+      }
+    }
+    
+    let burnout = briefing?.burnoutIndex !== undefined
+      ? briefing.burnoutIndex
+      : 10;
+      
+    if (briefing?.burnoutIndex === undefined) {
+      if (deepWorkHours > 35) burnout = 90;
+      else if (deepWorkHours > 25) burnout = 70;
+      else if (deepWorkHours > 15) burnout = 45;
+      else if (deepWorkHours > 5) burnout = 25;
+    }
+    
+    const overdueCount = briefing?.overdueCount !== undefined
+      ? briefing.overdueCount
+      : pending.filter(t => t.status === 'overdue').length;
+    
+    return {
+      todayFocus,
+      deepWorkHours,
+      maxFailureRisk,
+      confidence,
+      burnout,
+      overdueCount
+    };
+  }, [roleTasks, briefing]);
+
+  const roadmapAnalyticsLabels = React.useMemo(() => {
+    if (mockRole === 'student') {
+      return {
+        cardTitle: "ACADEMIC ROADMAP ANALYTICS",
+        focusLabel: "Today's Study Focus",
+        effortLabel: "Study Effort Required",
+        confidenceLabel: "Exam Prep Confidence",
+        riskLabel: "Curriculum Slip Risk",
+        burnoutLabel: "Cognitive Burnout",
+        debtLabel: "Academic Debt"
+      };
+    } else if (mockRole === 'developer') {
+      return {
+        cardTitle: "SPRINT ROADMAP ANALYTICS",
+        focusLabel: "Today's Focus Ticket",
+        effortLabel: "Deep Work Hours",
+        confidenceLabel: "Sprint Delivery Confidence",
+        riskLabel: "SLA Breach Risk",
+        burnoutLabel: "Overtime Burnout",
+        debtLabel: "Technical Debt"
+      };
+    } else if (mockRole === 'job_seeker') {
+      return {
+        cardTitle: "PLACEMENT PIPELINE ANALYTICS",
+        focusLabel: "Today's Dream Focus",
+        effortLabel: "Preparation Effort",
+        confidenceLabel: "Placement Probability",
+        riskLabel: "Funnel Attrition Risk",
+        burnoutLabel: "Job Hunt Fatigue",
+        debtLabel: "Application Debt"
+      };
+    } else {
+      return {
+        cardTitle: "STRATEGIC ROADMAP ANALYTICS",
+        focusLabel: "Today's Strategic Focus",
+        effortLabel: "FTE Focus Hours",
+        confidenceLabel: "SLA Compliance Confidence",
+        riskLabel: "SLA Violation Risk",
+        burnoutLabel: "Capacity Burnout",
+        debtLabel: "Operational Debt"
+      };
+    }
+  }, [mockRole]);
 
   const getCompilingTimelineText = () => {
     const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
@@ -212,12 +279,12 @@ export default function PlanningAgent({
               <ul className="mt-4 space-y-2.5 text-xs text-slate-400">
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2">
                   <span>{labels.paramPendingLabel}</span>
-                  <span className="text-white font-mono font-semibold">{tasks.filter(t => t.status !== 'completed').length}</span>
+                  <span className="text-white font-mono font-semibold">{roleTasks.filter(t => t.status !== 'completed').length}</span>
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2">
                   <span>{labels.paramEffortLabel}</span>
                   <span className="text-white font-mono font-semibold">
-                    {tasks.filter(t => t.status !== 'completed').reduce((sum, t) => sum + t.estimatedEffort, 0)} {labels.hoursUnit}
+                    {roleTasks.filter(t => t.status !== 'completed').reduce((sum, t) => sum + t.estimatedEffort, 0)} {labels.hoursUnit}
                   </span>
                 </li>
                 {dayPlan && (
@@ -345,18 +412,59 @@ export default function PlanningAgent({
               <ul className="mt-4 space-y-2.5 text-xs text-slate-400 font-mono">
                 <li className="flex items-center gap-2 border-b border-[#1A1A1A]/55 pb-2">
                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-455"></div>
-                  <span>{labels.burnoutLabel}: True</span>
+                  <span>{labels.burnoutLabel}: {labels.trueLabel}</span>
                 </li>
                 <li className="flex items-center gap-2 border-b border-[#1A1A1A]/55 pb-2 border-dashed">
                   <div className="h-1.5 w-1.5 rounded-full bg-indigo-500"></div>
-                  <span>{labels.resourceDispersal}: True</span>
+                  <span>{labels.resourceDispersal}: {labels.trueLabel}</span>
                 </li>
                 {weekPlan && (
                   <li className="flex items-center gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-white"></div>
-                    <span className="text-white font-sans">Weekly alignment: Completed</span>
+                    <span className="text-white font-sans">{labels.weeklyAlignmentCompleted}</span>
                   </li>
                 )}
+              </ul>
+            </div>
+
+            {/* REAL-TIME ROADMAP ANALYTICS PANEL */}
+            <div className="bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A] space-y-4">
+              <span className="text-[10px] font-mono text-gray-500 uppercase block tracking-wider font-semibold">
+                {roadmapAnalyticsLabels.cardTitle}
+              </span>
+              <ul className="mt-4 space-y-3.5 text-xs font-mono">
+                <li className="flex flex-col gap-1 border-b border-[#1A1A1A]/55 pb-2.5">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.focusLabel}</span>
+                  <span className="text-white font-sans font-medium italic truncate" title={metrics.todayFocus}>{metrics.todayFocus}</span>
+                </li>
+                <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.effortLabel}</span>
+                  <span className="text-white font-bold">{metrics.deepWorkHours}h</span>
+                </li>
+                <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.confidenceLabel}</span>
+                  <span className={`font-bold ${metrics.confidence >= 75 ? 'text-emerald-400' : metrics.confidence >= 50 ? 'text-amber-400' : 'text-rose-500'}`}>
+                    {metrics.confidence}%
+                  </span>
+                </li>
+                <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.riskLabel}</span>
+                  <span className={`font-bold ${metrics.maxFailureRisk >= 70 ? 'text-rose-500 animate-pulse' : metrics.maxFailureRisk >= 40 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {metrics.maxFailureRisk}%
+                  </span>
+                </li>
+                <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.burnoutLabel}</span>
+                  <span className={`font-bold ${metrics.burnout >= 70 ? 'text-rose-400 animate-pulse' : metrics.burnout >= 45 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    {metrics.burnout}%
+                  </span>
+                </li>
+                <li className="flex items-center justify-between pb-1">
+                  <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.debtLabel}</span>
+                  <span className={`font-bold ${metrics.overdueCount > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
+                    {metrics.overdueCount} {metrics.overdueCount === 1 ? 'item' : 'items'} overdue
+                  </span>
+                </li>
               </ul>
             </div>
           </div>

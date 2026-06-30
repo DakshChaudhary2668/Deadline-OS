@@ -7,6 +7,11 @@ import dotenv from 'dotenv';
 import { Task, DayPlan, WeekPlan, DashboardBriefing } from './src/types';
 import { MODE_LANGUAGES } from './src/utils/modeLanguage';
 import { calculateStrategicDecision as calculateStrategicDecisionImported } from './src/utils/strategicEngine';
+import { getRecoveryStrategy } from './src/utils/aiRecovery';
+import { calculateBriefing, calculateMomentum } from './src/utils/aiEngines';
+import { calculateWorkspaceAnalytics } from './src/utils/sharedAnalytics';
+import { generateDayPlan, generateWeekPlan } from './src/utils/aiPlanning';
+import { computeSimulation } from './src/utils/aiSimulation';
 
 dotenv.config();
 
@@ -98,80 +103,25 @@ function getModeInstructions(role: string) {
 
 // Seed default tasks if database is empty or doesn't exist
 const initialTasks: Task[] = [
-  {
-    id: 't1',
-    title: 'Prototype Cloud Microservices Integration',
-    description: 'Establish the core database connector, clean up error-handling, and deploy standard RPC middlewares.',
-    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // Tomorrow
-    estimatedEffort: 6,
-    category: 'Work',
-    importance: 'High',
-    status: 'pending',
-    priorityScore: 82,
-    riskScore: 35,
-    aiAnalysisReason: 'Critical workflow dependencies exist. Delaying will block front-end integrations planned for early next week.',
-    riskFactors: ['Short visual testing window', 'External authorization dependency'],
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
-  },
-  {
-    id: 't2',
-    title: 'Prep for Systems Architecture Final Exam',
-    description: 'Read chapters on distributed replication consensus protocols (Paxos, Raft) and partition strategies.',
-    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // 3 days
-    estimatedEffort: 12,
-    category: 'Study',
-    importance: 'High',
-    status: 'pending',
-    priorityScore: 75,
-    riskScore: 60,
-    aiAnalysisReason: 'High cognitive effort required. Needs dedicated blocks to parse consensus theorems effectively.',
-    riskFactors: ['High conceptual density', 'Extended continuous focus is essential'],
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() // 3 days ago
-  },
-  {
-    id: 't3',
-    title: 'Tailor Resume for Staff Engineer Roles',
-    description: 'Update metrics highlighting performance optimizations, system cost mitigations, and cross-team leadership outcomes.',
-    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // 7 days
-    estimatedEffort: 4,
-    category: 'Career',
-    importance: 'Medium',
-    status: 'pending',
-    priorityScore: 48,
-    riskScore: 15,
-    aiAnalysisReason: 'Generous time window. Safe to schedule in secondary low-energy focus zones.',
-    riskFactors: ['Self-guided pacing risk'],
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days ago
-  },
-  {
-    id: 't4',
-    title: 'Submit Federal Freelance Quarterly Taxes',
-    description: 'Compute total earnings across invoice indexes, fill document forms, and initiate standard account transfer.',
-    deadline: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // Overdue 2 days
-    estimatedEffort: 3,
-    category: 'Personal',
-    importance: 'Critical',
-    status: 'overdue',
-    priorityScore: 99,
-    riskScore: 95,
-    aiAnalysisReason: 'DEADLINE BREACHED. Legal liabilities or payment fees may accumulate if immediate recovery strategy is not deployed.',
-    riskFactors: ['Compounding penalty liability', 'Bureaucracy delays'],
-    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), // 6 days ago
-    recoveryStrategy: {
-      strategyText: 'Deploy immediate 1.5-hour tax triage block now. Execute payment online. Secure previous receipt logs.',
-      suggestedNewDeadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      actionItems: [
-        'Open transaction register & run sum calculation',
-        'Authenticate directly through secure portal to execute direct draft',
-        'Save PDF receipt directly to audit folders'
-      ],
-      resourceReallocation: 'Reallocate 2 hours from auxiliary research activities to focus exclusively on this tax form filing.',
-      scopeReduction: 'Limit verification to current quarterly figures; defer comprehensive annual reconciliations.',
-      priorityShifts: 'De-prioritize non-urgent learning modules scheduled for this evening.',
-      riskMitigation: 'Activate automatic calendar notifications 10 days in advance for subsequent quarterly schedule indices.',
-      generatedAt: new Date().toISOString()
-    }
-  }
+  // Developer Workspace
+  { id: 'd1', profile: 'developer', title: 'Build OAuth Flow', description: 'Implement JWT based auth', deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16), estimatedEffort: 5, category: 'Sprint', importance: 'High', status: 'pending', priorityScore: 90, riskScore: 40, createdAt: new Date().toISOString() },
+  { id: 'd2', profile: 'developer', title: 'Refactor Payment API', description: 'Move stripe webhooks to new worker', deadline: new Date(Date.now() + 172800000).toISOString().slice(0, 16), estimatedEffort: 8, category: 'Refactor', importance: 'Critical', status: 'pending', priorityScore: 95, riskScore: 60, createdAt: new Date().toISOString() },
+  { id: 'd3', profile: 'developer', title: 'Fix Memory Leak', description: 'Identify loop in background job', deadline: new Date(Date.now() - 86400000).toISOString().slice(0, 16), estimatedEffort: 4, category: 'Bug', importance: 'High', status: 'overdue', priorityScore: 99, riskScore: 90, createdAt: new Date().toISOString() },
+  
+  // Student Workspace
+  { id: 's1', profile: 'student', title: 'DBMS Assignment', description: 'Complete SQL queries for lab 4', deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16), estimatedEffort: 3, category: 'Assignment', importance: 'Medium', status: 'pending', priorityScore: 70, riskScore: 20, createdAt: new Date().toISOString() },
+  { id: 's2', profile: 'student', title: 'Operating System Revision', description: 'Read chapters 5 and 6', deadline: new Date(Date.now() + 259200000).toISOString().slice(0, 16), estimatedEffort: 6, category: 'Revision', importance: 'High', status: 'pending', priorityScore: 85, riskScore: 50, createdAt: new Date().toISOString() },
+  { id: 's3', profile: 'student', title: 'Java Practical File', description: 'Write down lab codes', deadline: new Date(Date.now() - 86400000).toISOString().slice(0, 16), estimatedEffort: 2, category: 'Practical', importance: 'High', status: 'overdue', priorityScore: 90, riskScore: 80, createdAt: new Date().toISOString() },
+  
+  // Careers Workspace
+  { id: 'c1', profile: 'job_seeker', title: 'Update Resume', description: 'Add latest React projects', deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16), estimatedEffort: 2, category: 'Resume', importance: 'High', status: 'pending', priorityScore: 80, riskScore: 30, createdAt: new Date().toISOString() },
+  { id: 'c2', profile: 'job_seeker', title: 'Solve Leetcode', description: 'Do 5 dynamic programming questions', deadline: new Date(Date.now() + 172800000).toISOString().slice(0, 16), estimatedEffort: 4, category: 'Interviews', importance: 'Medium', status: 'pending', priorityScore: 60, riskScore: 20, createdAt: new Date().toISOString() },
+  { id: 'c3', profile: 'job_seeker', title: 'LinkedIn Outreach', description: 'Message 10 recruiters', deadline: new Date(Date.now() - 86400000).toISOString().slice(0, 16), estimatedEffort: 1, category: 'Networking', importance: 'High', status: 'overdue', priorityScore: 90, riskScore: 75, createdAt: new Date().toISOString() },
+
+  // Corporate Workspace
+  { id: 'p1', profile: 'professional', title: 'Client Presentation', description: 'Q3 results for Acme Corp', deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16), estimatedEffort: 4, category: 'Client', importance: 'Critical', status: 'pending', priorityScore: 95, riskScore: 50, createdAt: new Date().toISOString() },
+  { id: 'p2', profile: 'professional', title: 'Budget Planning', description: 'Draft Q4 departmental budget', deadline: new Date(Date.now() + 259200000).toISOString().slice(0, 16), estimatedEffort: 8, category: 'Finance', importance: 'High', status: 'pending', priorityScore: 80, riskScore: 30, createdAt: new Date().toISOString() },
+  { id: 'p3', profile: 'professional', title: 'SLA Review', description: 'Review monthly SLA compliance', deadline: new Date(Date.now() - 86400000).toISOString().slice(0, 16), estimatedEffort: 2, category: 'Operations', importance: 'High', status: 'overdue', priorityScore: 90, riskScore: 80, createdAt: new Date().toISOString() }
 ];
 
 function computeFailureForecast(task: Task, allTasks: Task[]): any {
@@ -267,34 +217,95 @@ function computeFailureForecast(task: Task, allTasks: Task[]): any {
   let reasoning = '';
   let recommendedIntervention = '';
 
+  const r = (task.profile || 'professional') as 'student' | 'developer' | 'job_seeker' | 'professional';
+
   if (daysRemaining <= 0) {
-    reasoning = `The deadline of ${new Date(task.deadline).toLocaleDateString()} has elapsed. This milestone has breached standard SLA timelines.`;
-    recommendedIntervention = 'Immediately deploy the Recovery Hub protocol to reschedule this breach with a realistic recovery effort.';
+    if (r === 'student') {
+      reasoning = `The exam or submission deadline of ${new Date(task.deadline).toLocaleDateString()} has elapsed. This academic milestone has breached curriculum timelines.`;
+      recommendedIntervention = 'Immediately deploy the Syllabus Recovery protocol to reschedule this topic and safeguard study balance.';
+    } else if (r === 'developer') {
+      reasoning = `The sprint cut-off/code freeze of ${new Date(task.deadline).toLocaleDateString()} has elapsed. This backlog ticket has breached sprint commitments.`;
+      recommendedIntervention = 'Immediately deploy the Sprint Recovery Hub protocol to resolve technical debt and unblock the release train.';
+    } else if (r === 'job_seeker') {
+      reasoning = `The application or interview date of ${new Date(task.deadline).toLocaleDateString()} has elapsed. This pipeline milestone is overdue.`;
+      recommendedIntervention = 'Immediately deploy the Career Recovery protocol to follow up with recruiters and restore funnel health.';
+    } else {
+      reasoning = `The SLA or milestone deadline of ${new Date(task.deadline).toLocaleDateString()} has elapsed. This corporate objective has breached operational SLA commitments.`;
+      recommendedIntervention = 'Immediately deploy the SLA Recovery Hub protocol to reschedule this breach with a realistic recovery effort.';
+    }
   } else {
     const daysText = daysRemaining.toFixed(1);
-    reasoning = `${task.estimatedEffort} hours of effort remain while only ${daysText} days are available before the deadline.`;
-    
-    if (totalPendingEffort > 15) {
-      reasoning += ` Dynamic workload is heavily congested with ${pendingCount} other pending objectives totaling ${totalPendingEffort}h.`;
+    if (r === 'student') {
+      reasoning = `${task.estimatedEffort} study hours remain while only ${daysText} days are available before the exam deadline.`;
+      if (totalPendingEffort > 15) {
+        reasoning += ` Dynamic learning load is heavily congested with ${pendingCount} other pending assignments totaling ${totalPendingEffort}h of cognitive effort.`;
+      }
+    } else if (r === 'developer') {
+      reasoning = `${task.estimatedEffort} story points (hours) remain while only ${daysText} days are available before the sprint code freeze.`;
+      if (totalPendingEffort > 15) {
+        reasoning += ` Dynamic sprint backlog is heavily congested with ${pendingCount} other pending tickets totaling ${totalPendingEffort} hours of engineering bandwidth.`;
+      }
+    } else if (r === 'job_seeker') {
+      reasoning = `${task.estimatedEffort} hours of preparation remain while only ${daysText} days are available before the opportunity deadline.`;
+      if (totalPendingEffort > 15) {
+        reasoning += ` Job hunt pipeline is heavily congested with ${pendingCount} other application milestones totaling ${totalPendingEffort} hours of prep bandwidth.`;
+      }
+    } else {
+      reasoning = `${task.estimatedEffort} operational hours remain while only ${daysText} days are available before the SLA deadline.`;
+      if (totalPendingEffort > 15) {
+        reasoning += ` Dynamic workload is heavily congested with ${pendingCount} other pending objectives totaling ${totalPendingEffort}h of operational capacity.`;
+      }
     }
 
     if (task.title.toLowerCase().includes('systems architecture')) {
-      reasoning = `22 hours of effort remain while only 2 days are available.`;
+      reasoning = `22 hours of effort remain while only 2 days are available before the Distributed Replication Exam.`;
     }
 
     // Intervention selection
-    if (prob >= 80) {
-      recommendedIntervention = `Schedule 3 deep-work sessions today and defer low-priority ${task.category === 'Career' ? 'personal' : 'career'} tasks.`;
-    } else if (prob >= 65) {
-      recommendedIntervention = `Timebox ${Math.ceil(task.estimatedEffort / 2)} hours of intensive sprint blocks immediately. Shut off communication loops.`;
-    } else if (prob >= 35) {
-      recommendedIntervention = `Allocate a 2-hour daily focus slot. Delegate lower-priority personal actions.`;
+    if (r === 'student') {
+      if (prob >= 80) {
+        recommendedIntervention = `Schedule 3 focused study blocks today and defer lower-priority tasks to protect Exam Readiness.`;
+      } else if (prob >= 65) {
+        recommendedIntervention = `Timebox ${Math.ceil(task.estimatedEffort / 2)} hours of intensive concept revision immediately. Disconnect from external distractions.`;
+      } else if (prob >= 35) {
+        recommendedIntervention = `Allocate a 2-hour daily revision block. Delegate minor coursework assignments.`;
+      } else {
+        recommendedIntervention = `Maintain casual spaced repetition. Standard revision pacing is sufficient to secure high syllabus mastery.`;
+      }
+    } else if (r === 'developer') {
+      if (prob >= 80) {
+        recommendedIntervention = `Schedule 3 deep-work coding blocks today and defer low-priority tasks to maintain Sprint Velocity.`;
+      } else if (prob >= 65) {
+        recommendedIntervention = `Timebox ${Math.ceil(task.estimatedEffort / 2)} hours of intensive implementation and test coverage blocks immediately. Freeze feature scope.`;
+      } else if (prob >= 35) {
+        recommendedIntervention = `Allocate a 2-hour daily development slot. De-prioritize non-blocking refactoring pull requests.`;
+      } else {
+        recommendedIntervention = `Maintain standard review cycles. Implementation pacing is sufficient to secure code freeze compliance.`;
+      }
+    } else if (r === 'job_seeker') {
+      if (prob >= 80) {
+        recommendedIntervention = `Schedule 3 intensive mock interview preparation sessions today and defer low-priority tasks to secure Interview Pipeline.`;
+      } else if (prob >= 65) {
+        recommendedIntervention = `Timebox ${Math.ceil(task.estimatedEffort / 2)} hours of portfolio polish and recruiter follow-ups immediately. Optimize ATS matching.`;
+      } else if (prob >= 35) {
+        recommendedIntervention = `Allocate a 2-hour daily outreach slot. Automate basic application submissions.`;
+      } else {
+        recommendedIntervention = `Maintain active networking. Current pipeline health is sufficient to generate consistent interview callbacks.`;
+      }
     } else {
-      recommendedIntervention = `Maintain casual tracking. Standard effort pacing is sufficient to secure successful closure.`;
+      if (prob >= 80) {
+        recommendedIntervention = `Schedule 3 executive alignment sessions today and defer lower-priority tasks to ensure SLA Compliance.`;
+      } else if (prob >= 65) {
+        recommendedIntervention = `Timebox ${Math.ceil(task.estimatedEffort / 2)} hours of dedicated milestone execution immediately. Escalate active blockers.`;
+      } else if (prob >= 35) {
+        recommendedIntervention = `Allocate a 2-hour daily stakeholder alignment slot. Delegate secondary deliverables.`;
+      } else {
+        recommendedIntervention = `Maintain standard tracking. Execution pacing is nominal to meet stakeholder commitments.`;
+      }
     }
 
     if (task.title.toLowerCase().includes('systems architecture')) {
-      recommendedIntervention = 'Schedule 3 deep-work sessions today and defer low-priority career tasks.';
+      recommendedIntervention = 'Schedule 3 deep-work study blocks today and defer low-priority tasks to maximize Exam Readiness.';
     }
   }
 
@@ -333,20 +344,72 @@ function calculateStrategicDecision(task: any, allTasks: any[], role?: string): 
 
 // --- DB Helpers ---
 function readDB() {
+  let db: any;
   if (!fs.existsSync(DB_FILE)) {
-    return { tasks: initialTasks };
+    db = { tasks: initialTasks };
+  } else {
+    try {
+      db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    } catch (e) {
+      db = { tasks: initialTasks };
+    }
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+
+  if (!db.tasks) db.tasks = [];
+
+  let changed = false;
+  db.tasks.forEach((t: any) => {
+    const role = t.profile || 'professional';
+    const roleTasks = db.tasks.filter((x: any) => (x.profile || 'professional') === role);
+    if (t.priorityScore === undefined || t.priorityScore === null) {
+      t.priorityScore = calculatePriorityScore(t, roleTasks);
+      changed = true;
+    }
+    if (!t.failureForecast) {
+      t.failureForecast = computeFailureForecast(t, roleTasks);
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+  }
+
+  return db;
 }
 
 function writeDB(data: any) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
+// --- Plan Sync Helper ---
+function autoUpdatePlans(db: any, role: string) {
+  const plansKey = `${role}_plans`;
+  if (db[plansKey]) {
+    const roleTasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+    if (db[plansKey].dayPlan) {
+      db[plansKey].dayPlan = generateDayPlan(roleTasks, role);
+    }
+    if (db[plansKey].weekPlan) {
+      db[plansKey].weekPlan = generateWeekPlan(roleTasks, role);
+    }
+  }
+}
+
 // --- Task CRUD ---
 app.get('/api/tasks', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
   const db = readDB();
-  res.json(db.tasks || []);
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  
+  // Sort tasks by createdAt descending (newest first)
+  tasks.sort((a: any, b: any) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return timeB - timeA;
+  });
+  
+  res.json(tasks);
 });
 
 app.post('/api/tasks', (req, res) => {
@@ -357,10 +420,15 @@ app.post('/api/tasks', (req, res) => {
     status: 'pending',
     createdAt: new Date().toISOString()
   };
-  task.priorityScore = calculatePriorityScore(task, db.tasks);
-  task.failureForecast = computeFailureForecast(task, db.tasks);
   
-  db.tasks.push(task);
+  const role = task.profile || 'professional';
+  const roleTasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  
+  task.priorityScore = calculatePriorityScore(task, roleTasks);
+  task.failureForecast = computeFailureForecast(task, roleTasks);
+  
+  db.tasks.unshift(task); // Prepend to store at top
+  autoUpdatePlans(db, role);
   writeDB(db);
   res.json(task);
 });
@@ -371,18 +439,27 @@ app.put('/api/tasks/:id', (req, res) => {
   if (index === -1) return res.status(404).json({ error: 'Not found' });
   
   db.tasks[index] = { ...db.tasks[index], ...req.body };
-  if (db.tasks[index].status !== 'completed') {
-    db.tasks[index].priorityScore = calculatePriorityScore(db.tasks[index], db.tasks);
-    db.tasks[index].failureForecast = computeFailureForecast(db.tasks[index], db.tasks);
-  }
   
+  const role = db.tasks[index].profile || 'professional';
+  const roleTasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  
+  db.tasks[index].priorityScore = calculatePriorityScore(db.tasks[index], roleTasks);
+  db.tasks[index].failureForecast = computeFailureForecast(db.tasks[index], roleTasks);
+  
+  autoUpdatePlans(db, role);
   writeDB(db);
   res.json(db.tasks[index]);
 });
 
 app.delete('/api/tasks/:id', (req, res) => {
   const db = readDB();
-  db.tasks = db.tasks.filter((t: any) => t.id !== req.params.id);
+  const index = db.tasks.findIndex((t: any) => t.id === req.params.id);
+  if (index === -1) return res.status(404).json({ error: 'Not found' });
+  
+  const role = db.tasks[index].profile || 'professional';
+  db.tasks.splice(index, 1); // Remove the task cleanly
+  
+  autoUpdatePlans(db, role);
   writeDB(db);
   res.json({ success: true });
 });
@@ -394,49 +471,121 @@ app.post('/api/tasks/:id/analyze', (req, res) => {
   const task = db.tasks.find((t: any) => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: 'Not found' });
   
-  const strategic = calculateStrategicDecision(task, db.tasks, role);
+  const roleTasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  const strategic = calculateStrategicDecision(task, roleTasks, role);
   task.strategicDecision = strategic;
+  
+  autoUpdatePlans(db, role);
   writeDB(db);
   res.json(strategic);
 });
 
 
-import { getRecoveryStrategy } from './src/utils/aiRecovery';
+app.get('/api/ai/recovery/dashboard', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const analytics = calculateWorkspaceAnalytics(db.tasks || [], role);
+
+  const SUGGESTED_STRATEGIES = [
+    'Immediate Recovery',
+    'Resource Reallocation',
+    'Scope Reduction',
+    'Priority Reset',
+    'Weekend Sprint',
+    'Stakeholder Escalation',
+    'Deadline Extension',
+    'Risk Containment',
+    'Focus Mode',
+    'Emergency Execution Plan'
+  ];
+
+  res.json({
+    threatScore: analytics.threatIndex,
+    threatLevel: analytics.threatLevel,
+    rootCause: analytics.rootCause,
+    recommendedStrategy: analytics.recommendedStrategy,
+    suggestedStrategies: SUGGESTED_STRATEGIES,
+    recommendedActions: analytics.recommendedActions,
+    recoveryConfidence: analytics.recoveryConfidence,
+    estimatedRecoveryDuration: analytics.estimatedRecoveryTime,
+    metrics: {
+      blockedTasks: analytics.blockedCount,
+      overdueTasks: analytics.overdueCount,
+      criticalTasks: analytics.criticalCount,
+      remainingWorkload: analytics.pendingEffort,
+      completionVelocity: analytics.completionVelocity,
+      recoveryConfidence: analytics.recoveryConfidence,
+      estimatedRecoveryTime: analytics.estimatedRecoveryTime
+    }
+  });
+});
+
 
 app.post('/api/tasks/:id/recovery', async (req, res) => {
   const role = (req.query.role as string) || 'professional';
+  const strategy = (req.query.strategy as string);
   const db = readDB();
   const task = db.tasks.find((t: any) => t.id === req.params.id);
   if (!task) return res.status(404).json({ error: 'Not found' });
   
-  task.recoveryStrategy = getRecoveryStrategy(role);
+  const roleTasks = db.tasks ? db.tasks.filter((t: any) => (t.profile || 'professional') === role) : [];
+  
+  // Generate the dynamic recovery strategy using task details
+  task.recoveryStrategy = getRecoveryStrategy(role, task, roleTasks, strategy);
+  
+  // Simulate execution of recovery strategy:
+  // 1. Extend the task deadline to the suggested new deadline
+  if (task.recoveryStrategy.suggestedNewDeadline) {
+    task.deadline = task.recoveryStrategy.suggestedNewDeadline;
+  }
+  
+  // 2. Reduce estimated remaining effort to simulate scope reduction or swarm reallocation
+  task.estimatedEffort = Math.max(1, Math.round(task.estimatedEffort * 0.6));
+  
+  // 3. Reset risk score and failure probability to nominal low
+  task.riskScore = 15;
+  if (task.failureForecast) {
+    task.failureForecast.failureProbability = 15;
+    task.failureForecast.riskLevel = 'Low';
+    task.failureForecast.recommendedIntervention = 'Recovery routine active. Target tracking safely under buffer thresholds.';
+  }
+  
+  // 4. Reset overdue status to pending since the deadline was successfully extended and rescheduled
+  if (task.status === 'overdue') {
+    task.status = 'pending';
+  }
+  
+  // Also auto-update other relevant states
+  autoUpdatePlans(db, role);
   writeDB(db);
-  res.json(task.recoveryStrategy);
+  
+  // Return the complete updated task so that the frontend's setTasks updates it correctly!
+  res.json(task);
 });
 
 // --- AI Briefing & Momentum ---
 
-import { calculateBriefing, calculateMomentum } from './src/utils/aiEngines';
-
 app.get('/api/ai/briefing', (req, res) => {
   const role = (req.query.role as string) || 'professional';
   const db = readDB();
-  const tasks = db.tasks || [];
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
   const pending = tasks.filter((t: any) => t.status !== 'completed');
   
+  const analytics = calculateWorkspaceAnalytics(db.tasks || [], role);
   const { successReason, strategicFocusArea } = calculateBriefing(pending, role);
   
   res.json({
     dateLabel: new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }),
     successReason,
-    strategicFocusArea
+    strategicFocusArea,
+    ...analytics
   });
 });
 
 app.get('/api/ai/momentum', (req, res) => {
   const role = (req.query.role as string) || 'professional';
   const db = readDB();
-  const tasks = db.tasks || [];
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
   const pending = tasks.filter((t: any) => t.status !== 'completed');
   const completed = tasks.filter((t: any) => t.status === 'completed');
   
@@ -464,20 +613,57 @@ app.get('/api/ai/momentum', (req, res) => {
   });
 });
 
-app.get('/api/ai/plans', (req, res) => {
+app.post('/api/ai/plan/day', async (req, res) => {
+  const role = (req.query.role as string) || 'professional';
   const db = readDB();
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  
+  const dayPlan = generateDayPlan(tasks, role);
+  
+  const plansKey = `${role}_plans`;
+  if (!db[plansKey]) db[plansKey] = {};
+  db[plansKey].dayPlan = dayPlan;
+  writeDB(db);
+  
+  res.json(dayPlan);
+});
+
+app.post('/api/ai/plan/week', async (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  
+  const weekPlan = generateWeekPlan(tasks, role);
+  
+  const plansKey = `${role}_plans`;
+  if (!db[plansKey]) db[plansKey] = {};
+  db[plansKey].weekPlan = weekPlan;
+  writeDB(db);
+  
+  res.json(weekPlan);
+});
+
+app.get('/api/ai/plans', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
+  const db = readDB();
+  const plansKey = `${role}_plans`;
+  const plans = db[plansKey] || { dayPlan: null, weekPlan: null };
   res.json({
-    dayPlan: db.dayPlan || null,
-    weekPlan: db.weekPlan || null
+    dayPlan: plans.dayPlan || null,
+    weekPlan: plans.weekPlan || null
   });
 });
 
 // Cleanup cached plans
 app.post('/api/ai/plans/reset', (req, res) => {
+  const role = (req.query.role as string) || 'professional';
   const db = readDB();
-  delete db.dayPlan;
-  delete db.weekPlan;
-  writeDB(db);
+  const plansKey = `${role}_plans`;
+  if (db[plansKey]) {
+    db[plansKey].dayPlan = null;
+    db[plansKey].weekPlan = null;
+    writeDB(db);
+  }
   res.json({ success: true });
 });
 
@@ -548,19 +734,18 @@ function classifyTask(task: Task): ClassifiedCategory {
 
 // Helper for local offline backup simulation calculations
 
-import { computeSimulation } from './src/utils/aiSimulation';
 function computeLocalSimulation(task: any, scenario: string, pending: any[], tasks: any[], role: string) {
   return computeSimulation(task, scenario, pending, tasks, role);
 }
 
 app.post('/api/ai/simulate', async (req, res) => {
   const { taskId, scenario } = req.body;
-  const db = readDB();
-  const tasks = db.tasks;
-  const pending = tasks.filter(t => t.status !== 'completed');
-  const selectedTask = tasks.find(t => t.id === taskId);
-
   const role = (req.query.role || req.headers['x-role'] || 'developer') as string;
+  const db = readDB();
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === role) : [];
+  const pending = tasks.filter((t: any) => t.status !== 'completed');
+  const selectedTask = tasks.find((t: any) => t.id === taskId);
+
   const modeInfo = getModeInstructions(role);
 
   // Run the deterministic simulation first to secure accurate forecasting numbers
@@ -693,12 +878,12 @@ Output exactly as JSON.`;
 // AI Chief of Staff Chat Endpoint
 app.post('/api/ai/chat', async (req, res) => {
   const { messages, role } = req.body;
+  const r = (role || 'developer') as string;
   const db = readDB();
-  const tasks = db.tasks;
+  const tasks = db.tasks ? db.tasks.filter((t: any) => t.profile === r) : [];
   const pending = tasks.filter(t => t.status !== 'completed');
   const completed = tasks.filter(t => t.status === 'completed');
 
-  const r = (role || 'developer') as string;
   const modeInfo = getModeInstructions(r);
 
   const fallbackResponses: Record<string, string> = {

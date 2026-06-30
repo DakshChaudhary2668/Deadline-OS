@@ -7,11 +7,12 @@ export interface FailureForecast {
 
 export interface Task {
   id: string;
+  profile: "developer" | "student" | "job_seeker" | "professional";
   title: string;
   description: string;
   deadline: string; // ISO date string (YYYY-MM-DDTHH:mm)
   estimatedEffort: number; // hours
-  category: 'Work' | 'Study' | 'Career' | 'Personal';
+  category: string;
   importance: 'Low' | 'Medium' | 'High' | 'Critical';
   status: 'pending' | 'completed' | 'overdue';
   completedAt?: string;

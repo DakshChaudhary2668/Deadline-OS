@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, BookOpen, User, Briefcase, Award, Zap } from 'lucide-react';
 import { Task } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
+import { WORKSPACE_CATEGORIES } from '../utils/categories';
 
 interface TaskFormProps {
   task: Task | null; // If null, we are in Create mode
@@ -11,14 +12,16 @@ interface TaskFormProps {
 }
 
 export default function TaskForm({ task, onSave, onClose, mockRole = 'professional' }: TaskFormProps) {
+  const roleKey = mockRole as 'student' | 'developer' | 'job_seeker' | 'professional';
+  const categoriesList = WORKSPACE_CATEGORIES[roleKey] || WORKSPACE_CATEGORIES.professional;
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState('');
   const [estimatedEffort, setEstimatedEffort] = useState(2);
-  const [category, setCategory] = useState<Task['category']>('Work');
+  const [category, setCategory] = useState<Task['category']>(categoriesList[0]);
   const [importance, setImportance] = useState<Task['importance']>('Medium');
 
-  const roleKey = mockRole as 'student' | 'developer' | 'job_seeker' | 'professional';
   const config = MODE_LANGUAGES[roleKey] || MODE_LANGUAGES.professional;
   const labels = config.taskFormLabels;
 
@@ -53,22 +56,6 @@ export default function TaskForm({ task, onSave, onClose, mockRole = 'profession
       importance,
     });
   };
-
-  const getCategoryLabel = (cat: string) => {
-    const config = MODE_LANGUAGES[roleKey] || MODE_LANGUAGES.professional;
-    const d = config.taskListDynamic;
-    if (cat === 'Work') return d.catWork.replace(/[^a-zA-Z\s]/g, '').trim();
-    if (cat === 'Study') return d.catStudy.replace(/[^a-zA-Z\s]/g, '').trim();
-    if (cat === 'Career') return d.catCareer.replace(/[^a-zA-Z\s]/g, '').trim();
-    return d.catPersonal.replace(/[^a-zA-Z\s]/g, '').trim();
-  };
-
-  const categoriesObj = [
-    { name: 'Work', icon: Briefcase, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
-    { name: 'Study', icon: BookOpen, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' },
-    { name: 'Career', icon: Award, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-    { name: 'Personal', icon: User, color: 'text-teal-400 bg-teal-500/10 border-teal-500/20' },
-  ];
 
   const importanceObj = [
     { name: 'Low', color: 'bg-slate-800 text-slate-400 border-slate-700/60' },
@@ -180,23 +167,21 @@ export default function TaskForm({ task, onSave, onClose, mockRole = 'profession
           {/* CATEGORY (GRID CHOICE) */}
           <div className="space-y-2">
             <label className="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">{labels.workspaceCategory}</label>
-            <div className="grid grid-cols-4 gap-2">
-              {categoriesObj.map(cat => {
-                const Icon = cat.icon;
-                const active = category === cat.name;
+            <div className="grid grid-cols-5 gap-2">
+              {categoriesList.map(cat => {
+                const active = category === cat;
                 return (
                   <button
-                    key={cat.name}
+                    key={cat}
                     type="button"
-                    onClick={() => setCategory(cat.name as Task['category'])}
-                    className={`flex flex-col items-center gap-1 p-2 rounded border text-[10px] font-mono cursor-pointer transition ${
+                    onClick={() => setCategory(cat)}
+                    className={`flex flex-col items-center justify-center p-2 rounded border text-[10px] font-mono cursor-pointer transition ${
                       active 
                         ? 'border-white text-white bg-[#1A1A1A]' 
                         : 'border-[#1A1A1A] text-gray-500 hover:text-white hover:bg-[#131313]'
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span className="mt-0.5">{getCategoryLabel(cat.name)}</span>
+                    <span className="mt-0.5 break-all text-center leading-tight">{cat}</span>
                   </button>
                 );
               })}

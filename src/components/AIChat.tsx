@@ -23,6 +23,7 @@ interface Message {
 }
 
 interface AIChatProps {
+  key?: any;
   tasks: Task[];
   mockRole: 'student' | 'developer' | 'job_seeker' | 'professional';
 }
@@ -30,6 +31,10 @@ interface AIChatProps {
 export default function AIChat({ tasks, mockRole }: AIChatProps) {
   const config = MODE_LANGUAGES[mockRole] || MODE_LANGUAGES.professional;
   const secondaryLabels = config.dailySecondary as any;
+
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -43,7 +48,7 @@ export default function AIChat({ tasks, mockRole }: AIChatProps) {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  const pendingTasks = roleTasks.filter(t => t.status !== 'completed');
 
   // Suggested Prompts based on Active Persona
   const getSuggestions = () => {
@@ -143,16 +148,14 @@ export default function AIChat({ tasks, mockRole }: AIChatProps) {
   };
 
   const handleClearHistory = () => {
-    if (confirm('Clear conversational logs?')) {
-      setMessages([
-        {
-          id: 'welcome',
-          sender: 'assistant',
-          text: `Conversational buffers flushed. Gemini Chief of Staff initialized. I have fully indexed your current tasks database (${pendingTasks.length} pending items).\n\nWhat high-level trade-offs are we evaluating?`,
-          timestamp: new Date()
-        }
-      ]);
-    }
+    setMessages([
+      {
+        id: 'welcome',
+        sender: 'assistant',
+        text: `Conversational buffers flushed. Gemini Chief of Staff initialized. I have fully indexed your current tasks database (${pendingTasks.length} pending items).\n\nWhat high-level trade-offs are we evaluating?`,
+        timestamp: new Date()
+      }
+    ]);
   };
 
   // Render markdown text beautifully

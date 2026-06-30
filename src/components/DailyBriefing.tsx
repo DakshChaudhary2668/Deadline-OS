@@ -18,10 +18,12 @@ import {
 import { Task, DashboardBriefing, MomentumIntelligence } from '../types';
 
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
+import { WORKSPACE_CATEGORIES } from '../utils/categories';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
 interface DailyBriefingProps {
+  key?: any;
   briefing: DashboardBriefing | null;
   momentum: MomentumIntelligence | null;
   tasks: Task[];
@@ -53,6 +55,10 @@ export default function DailyBriefing({
   const labels = getDailyBriefingLabels(mockRole);
   const secondaryLabels = getSecondaryDailyLabels(mockRole as RoleType);
 
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACCELERATING': return <TrendingUp className="h-5 w-5 text-emerald-400" />;
@@ -63,28 +69,21 @@ export default function DailyBriefing({
     }
   };
 
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  const pendingTasks = roleTasks.filter(t => t.status !== 'completed');
   const totalEffort = pendingTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
   
-  const getCategoryLabel = (cat: string) => {
-    const config = MODE_LANGUAGES[mockRole as 'professional'] || MODE_LANGUAGES.professional;
-    const d = config.taskListDynamic;
-    if (cat === 'Work') return d.catWork.replace(/[^a-zA-Z\s]/g, '').trim();
-    if (cat === 'Study') return d.catStudy.replace(/[^a-zA-Z\s]/g, '').trim();
-    if (cat === 'Career') return d.catCareer.replace(/[^a-zA-Z\s]/g, '').trim();
-    return d.catPersonal.replace(/[^a-zA-Z\s]/g, '').trim();
-  };
+  const roleKey = mockRole as 'student' | 'developer' | 'job_seeker' | 'professional';
+  const categoriesList = WORKSPACE_CATEGORIES[roleKey] || WORKSPACE_CATEGORIES.professional;
 
   // Calculate category distribution for the mini analytics chart
-  const categories = ['Work', 'Study', 'Career', 'Personal'] as const;
-  const chartData = categories.map(cat => {
+  const chartData = categoriesList.map(cat => {
     const catTasks = pendingTasks.filter(t => t.category === cat);
     const effort = catTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
     const avgRisk = catTasks.length > 0
       ? Math.round(catTasks.reduce((sum, t) => sum + (t.riskScore || 0), 0) / catTasks.length)
       : 0;
     return {
-      name: getCategoryLabel(cat),
+      name: cat,
       effort: effort,
       risk: avgRisk || 15,
     };
@@ -130,7 +129,7 @@ export default function DailyBriefing({
     const r = (mockRole as RoleType) || 'professional';
     const config = MODE_LANGUAGES[r] || MODE_LANGUAGES.professional;
     const templates = config.narrativeTemplates;
-    if (tasks.length === 0) {
+    if (roleTasks.length === 0) {
       return templates.empty;
     }
     
@@ -395,7 +394,7 @@ export default function DailyBriefing({
           <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-orange-500 font-mono">
             <span className="tracking-wider uppercase">{labels.criticalBlockers}</span>
             <span>
-              {tasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length}{' '}
+              {roleTasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length}{' '}
               {secondaryLabels.unitPlural}
             </span>
           </div>
@@ -411,9 +410,9 @@ export default function DailyBriefing({
             </div>
             <div className="mt-4 flex items-baseline gap-1.5">
               <span className="text-5xl font-light text-white font-sans">
-                {String(tasks.filter(t => t.status === 'completed').length).padStart(2, '0')}
+                {String(roleTasks.filter(t => t.status === 'completed').length).padStart(2, '0')}
               </span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ {tasks.length} SECURED</span>
+              <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ {roleTasks.length} SECURED</span>
             </div>
             <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
               {labels.completedSecuredDesc}
@@ -421,7 +420,7 @@ export default function DailyBriefing({
           </div>
           <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-emerald-400 font-mono">
             <span className="tracking-wider uppercase">{labels.resolvedToday}</span>
-            <span className="font-bold">{tasks.filter(t => t.status === 'completed' && t.completedAt).length} {secondaryLabels.resolvedUnitsLabel}</span>
+            <span className="font-bold">{roleTasks.filter(t => t.status === 'completed' && t.completedAt).length} {secondaryLabels.resolvedUnitsLabel}</span>
           </div>
         </div>
 

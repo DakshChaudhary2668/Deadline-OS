@@ -32,12 +32,17 @@ const getConfidenceDrivers = (role?: string): string[] => {
 };
 
 interface WhatIfSimulatorProps {
+  key?: any;
   tasks: Task[];
   mockRole?: string;
 }
 
 export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProps) {
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  const roleTasks = React.useMemo(() => {
+    return tasks.filter(t => t.profile === mockRole);
+  }, [tasks, mockRole]);
+
+  const pendingTasks = roleTasks.filter(t => t.status !== 'completed');
   
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [scenario, setScenario] = useState<SimulationScenario>('SKIP_TASK');
@@ -395,8 +400,8 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                   className="w-full px-3 py-2 bg-[#131313] border border-[#1A1A1A] rounded text-xs text-white focus:outline-none focus:border-indigo-500 transition [color-scheme:dark]"
                 >
                   <option value="">{labels.chooseTarget}</option>
-                  {pendingTasks.map(t => (
-                    <option key={t.id} value={t.id}>
+                  {pendingTasks.map((t, index) => (
+                    <option key={'opt_' + t.id + '_' + index} value={t.id}>
                       {t.title} ({t.estimatedEffort}h / {t.importance})
                     </option>
                   ))}
