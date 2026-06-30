@@ -17,9 +17,12 @@ import {
   AlertCircle,
   Gauge,
   Sparkles,
-  Brain
+  Brain,
+  FileDown,
+  Loader2
 } from 'lucide-react';
 import { Task, DayPlan, WeekPlan, DashboardBriefing, MomentumIntelligence } from './types';
+import LandingPage from './components/LandingPage';
 import DailyBriefing from './components/DailyBriefing';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
@@ -32,7 +35,73 @@ import { MODE_LANGUAGES } from './utils/modeLanguage';
 
 type RoleType = 'student' | 'developer' | 'job_seeker' | 'professional';
 
+const BrandLogo = ({ className = "h-7 w-7" }: { className?: string }) => {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  if (imgFailed) {
+    return (
+      <svg className={className} viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Outer squircle with deep background and neon purple border */}
+        <rect width="512" height="512" rx="128" fill="#0A0616" stroke="#5F34D6" strokeWidth="12" />
+        <rect x="6" y="6" width="500" height="500" rx="122" fill="none" stroke="#2D126B" strokeWidth="6" opacity="0.6" />
+        
+        {/* Glowing aura */}
+        <circle cx="256" cy="256" r="200" fill="#5F34D6" opacity="0.05" filter="blur(40px)" />
+        
+        {/* Left Side: Brain Circuitry (Vibrant Violet/Magenta Gradient) */}
+        <path d="M224 136C180 136 150 166 150 200C150 212 154 224 162 232C140 244 128 268 128 296C128 328 152 352 184 352C192 352 200 350 208 346C218 376 244 392 272 392" stroke="url(#brainGrad)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M224 168C200 168 184 184 184 208" stroke="url(#brainGrad)" strokeWidth="10" strokeLinecap="round" />
+        
+        {/* Brain Circuitry Tracks */}
+        <path d="M184 208H224" stroke="url(#brainGrad)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M208 264H224" stroke="url(#brainGrad)" strokeWidth="10" strokeLinecap="round" />
+        <path d="M192 320H224" stroke="url(#brainGrad)" strokeWidth="10" strokeLinecap="round" />
+        
+        {/* Circuit Nodes */}
+        <circle cx="184" cy="208" r="12" fill="#9D4EDD" stroke="#E0AAFF" strokeWidth="4" />
+        <circle cx="208" cy="264" r="12" fill="#9D4EDD" stroke="#E0AAFF" strokeWidth="4" />
+        <circle cx="192" cy="320" r="12" fill="#9D4EDD" stroke="#E0AAFF" strokeWidth="4" />
+        
+        {/* Right Side: Speedometer Gauge (Clean White/Violet) */}
+        <path d="M256 144C322.2 144 376 197.8 376 264C376 295.5 363.8 324.2 344 345.5" stroke="#E2E8F0" strokeWidth="14" strokeLinecap="round" />
+        
+        {/* Gauge ticks */}
+        <line x1="284" y1="172" x2="294" y2="182" stroke="#E2E8F0" strokeWidth="10" strokeLinecap="round" />
+        <line x1="324" y1="202" x2="334" y2="212" stroke="#E2E8F0" strokeWidth="10" strokeLinecap="round" />
+        <line x1="344" y1="244" x2="356" y2="244" stroke="#E2E8F0" strokeWidth="10" strokeLinecap="round" />
+        
+        {/* Speedometer needle (pointing to 2 o'clock, bright neon violet) */}
+        <path d="M256 264L330 190" stroke="#7B2CBF" strokeWidth="14" strokeLinecap="round" />
+        <circle cx="256" cy="264" r="22" fill="#7B2CBF" stroke="#E2E8F0" strokeWidth="6" />
+        
+        {/* Checkmark Accent */}
+        <path d="M256 328L284 356L348 292" stroke="#A855F7" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Gradients */}
+        <defs>
+          <linearGradient id="brainGrad" x1="128" y1="136" x2="272" y2="392" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#9D4EDD" />
+            <stop offset="50%" stopColor="#7B2CBF" />
+            <stop offset="100%" stopColor="#5F34D6" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  return (
+    <img 
+      src="/image.png" 
+      alt="DeadlineOS Logo" 
+      className={className} 
+      onError={() => setImgFailed(true)} 
+      referrerPolicy="no-referrer"
+    />
+  );
+};
+
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [briefing, setBriefing] = useState<DashboardBriefing | null>(null);
   const [momentum, setMomentum] = useState<MomentumIntelligence | null>(null);
@@ -45,6 +114,44 @@ export default function App() {
   // Mock Role Context (Academic, Dev, Job, etc.)
   const [mockRole, setMockRole] = useState<RoleType>('developer');
   
+  // Toast Notifications
+  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'error' }[]>([]);
+  const [exporting, setExporting] = useState(false);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3500);
+  };
+
+  const handleExportReport = async () => {
+    setExporting(true);
+    try {
+      const { generatePDFReport } = await import('./utils/pdfExport');
+      await generatePDFReport({
+        mockRole,
+        tasks,
+        briefing,
+        momentum,
+        dayPlan,
+        weekPlan
+      });
+      showToast('Executive report exported successfully', 'success');
+    } catch (err: any) {
+      showToast('Export failed: ' + err.message, 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleRoleSwitch = (roleKey: RoleType) => {
+    setMockRole(roleKey);
+    const displayLabel = MODE_LANGUAGES[roleKey]?.title || roleKey;
+    showToast(`Workspace re-profiled: ${displayLabel}`, 'info');
+  };
+
   // Loading Metrics
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [loadingBriefing, setLoadingBriefing] = useState(false);
@@ -140,7 +247,12 @@ export default function App() {
 
   // Recalibrate briefing explicitly
   const handleRecalibrateBriefing = async () => {
-    await Promise.all([fetchBriefing(), fetchMomentum()]);
+    try {
+      await Promise.all([fetchBriefing(), fetchMomentum()]);
+      showToast('Executive briefing refreshed', 'success');
+    } catch (err: any) {
+      showToast('Recalibration failed: ' + err.message, 'error');
+    }
   };
 
   // Toggle Completed milestone status
@@ -165,8 +277,9 @@ export default function App() {
       fetchPlans();
       fetchBriefing();
       fetchMomentum();
+      showToast(updatedStatus === 'completed' ? 'Task completed successfully' : 'Task marked as pending', 'success');
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, 'error');
     }
   };
 
@@ -190,6 +303,7 @@ export default function App() {
             return timeB - timeA;
           });
         });
+        showToast('Task updated successfully', 'success');
       } else {
         // Create Mode
         const res = await fetch(`/api/tasks?role=${mockRole}`, {
@@ -207,6 +321,7 @@ export default function App() {
             return timeB - timeA;
           });
         });
+        showToast('Task created successfully', 'success');
       }
       setIsFormOpen(false);
       setEditingTask(null);
@@ -214,26 +329,23 @@ export default function App() {
       fetchBriefing();
       fetchMomentum();
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, 'error');
     }
   };
 
   // Delete task completely
   const handleDeleteTask = async (id: string) => {
-    console.log("DELETE BUTTON CLICKED");
-    console.log("handleDeleteTask invoked", id);
     const url = `/api/tasks/${id}?role=${mockRole}`;
-    console.log("Sending DELETE request", url);
     try {
       const res = await fetch(url, { method: 'DELETE' });
-      console.log("DELETE response", res.status);
       if (!res.ok) throw new Error('De-registration rejected');
       setTasks(prev => prev.filter(t => t.id !== id));
       fetchPlans();
       fetchBriefing();
       fetchMomentum();
+      showToast('Task deleted successfully', 'success');
     } catch (err: any) {
-      console.error(err.message);
+      showToast(err.message, 'error');
     }
   };
 
@@ -245,23 +357,32 @@ export default function App() {
       if (!res.ok) throw new Error('AI Priority computation rejected');
       const updated = await res.json();
       setTasks(prev => prev.map(t => t.id === id ? updated : t));
+      fetchPlans();
+      fetchBriefing();
+      fetchMomentum();
+      showToast('Priority analysis finished', 'success');
     } catch (err: any) {
-      console.error(err);
+      showToast(err.message, 'error');
     } finally {
       setAnalyzingTaskId(null);
     }
   };
 
   // Run Emergency Recovery Agent for breached task
-  const handleGenerateRecoveryPlan = async (id: string) => {
+  const handleGenerateRecoveryPlan = async (id: string, strategy?: string) => {
     setRecoveringTaskId(id);
     try {
-      const res = await fetch(`/api/tasks/${id}/recovery?role=${mockRole}`, { method: 'POST' });
+      const url = `/api/tasks/${id}/recovery?role=${mockRole}${strategy ? `&strategy=${encodeURIComponent(strategy)}` : ''}`;
+      const res = await fetch(url, { method: 'POST' });
       if (!res.ok) throw new Error('AI recovery calculations failed');
       const updated = await res.json();
       setTasks(prev => prev.map(t => t.id === id ? updated : t));
+      fetchPlans();
+      fetchBriefing();
+      fetchMomentum();
+      showToast('Recovery strategy executed', 'success');
     } catch (err: any) {
-      console.error(err);
+      showToast(err.message, 'error');
     } finally {
       setRecoveringTaskId(null);
     }
@@ -275,8 +396,9 @@ export default function App() {
       if (!res.ok) throw new Error('Daily planning sequence timed out');
       const data = await res.json();
       setDayPlan(data);
+      showToast('Day plan generated successfully', 'success');
     } catch (err: any) {
-      console.error(err);
+      showToast(err.message, 'error');
     } finally {
       setLoadingDayPlan(false);
     }
@@ -290,8 +412,9 @@ export default function App() {
       if (!res.ok) throw new Error('Weekly planning sequence timed out');
       const data = await res.json();
       setWeekPlan(data);
+      showToast('Week plan generated successfully', 'success');
     } catch (err: any) {
-      console.error(err);
+      showToast(err.message, 'error');
     } finally {
       setLoadingWeekPlan(false);
     }
@@ -304,9 +427,10 @@ export default function App() {
       if (res.ok) {
         setDayPlan(null);
         setWeekPlan(null);
+        showToast('Temporal plans reset successfully', 'success');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showToast('Reset failed: ' + err.message, 'error');
     }
   };
 
@@ -321,18 +445,39 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#E0E0E0] flex font-sans antialiased overflow-x-hidden selection:bg-white selection:text-black">
+    <AnimatePresence mode="wait">
+      {showLanding ? (
+        <motion.div
+          key="landing"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.45, ease: 'easeInOut' }}
+          className="w-full"
+        >
+          <LandingPage 
+            onLaunch={() => setShowLanding(false)} 
+            brandLogo={<BrandLogo className="h-6 w-6 rounded overflow-hidden" />} 
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="app"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="h-screen overflow-hidden bg-[#080808] text-[#E0E0E0] flex flex-col lg:flex-row font-sans antialiased selection:bg-white selection:text-black w-full"
+        >
       
       {/* SIDEBAR NAVIGATION PANEL */}
-      <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 shrink-0 bg-[#0E0E0E] border-r border-[#1A1A1A] relative z-10">
+      <aside className="hidden lg:flex flex-col w-64 h-full shrink-0 bg-[#0E0E0E] border-r border-[#1A1A1A] relative z-10">
         
         {/* LOGO AREA */}
         <div className="p-6 border-b border-[#1A1A1A] flex items-center gap-2.5 shrink-0">
-          <div className="h-7 w-7 rounded bg-white flex items-center justify-center shadow">
-            <CloudLightning className="h-4 w-4 text-black shrink-0" />
-          </div>
+          <BrandLogo className="h-7 w-7 rounded overflow-hidden shadow shrink-0" />
           <div>
-            <h1 className="text-sm font-bold text-white tracking-widest font-mono uppercase">DeadlineOS</h1>
+            <h1 className="text-sm font-bold text-white font-mono uppercase tracking-[0.15em] flex items-center">
+              DEADLINE<span className="text-zinc-400 pl-1.5 font-bold">OS</span>
+            </h1>
             <span className="text-[9px] text-gray-500 font-mono tracking-wider">CHIEF OF STAFF // AI</span>
           </div>
         </div>
@@ -344,10 +489,10 @@ export default function App() {
             <span className="text-[9px] font-mono text-gray-500 uppercase block tracking-widest mb-2.5">Context Profile</span>
             <div className="space-y-1">
               {([
-                { key: 'developer', icon: Briefcase, label: 'Engineering Mode' },
-                { key: 'student', icon: BookOpen, label: 'Academic Mode' },
-                { key: 'job_seeker', icon: Award, label: 'Careers Mode' },
-                { key: 'professional', icon: User, label: 'Corporate Mode' }
+                { key: 'developer', icon: Briefcase, label: 'Developer Mode' },
+                { key: 'student', icon: BookOpen, label: 'Student Mode' },
+                { key: 'job_seeker', icon: Award, label: 'Career Mode' },
+                { key: 'professional', icon: User, label: 'Professional Mode' }
               ] as const).map(role => {
                 const Icon = role.icon;
                 const active = mockRole === role.key;
@@ -355,7 +500,7 @@ export default function App() {
                 return (
                   <button
                     key={role.key}
-                    onClick={() => setMockRole(role.key)}
+                    onClick={() => handleRoleSwitch(role.key)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-xs font-mono tracking-wide cursor-pointer transition ${
                       active 
                         ? 'bg-[#131313] text-white border border-[#1A1A1A]' 
@@ -486,6 +631,27 @@ export default function App() {
           </nav>
         </div>
 
+        {/* PREMIUM EXECUTIVE REPORT EXPORT BUTTON */}
+        <div className="px-4 pb-4 shrink-0">
+          <button
+            onClick={handleExportReport}
+            disabled={exporting}
+            className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider cursor-pointer transition border border-dashed text-slate-300 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {exporting ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                <span>Generating Report...</span>
+              </>
+            ) : (
+              <>
+                <FileDown className="h-3.5 w-3.5 text-white animate-pulse" />
+                <span>Export Executive Report</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* BOTTOM USER UTILITY */}
         <div className="p-4 border-t border-[#1A1A1A] shrink-0">
           <div className="p-3 bg-[#131313] rounded border border-[#1A1A1A] flex items-center gap-2.5">
@@ -500,22 +666,24 @@ export default function App() {
       </aside>
 
       {/* CORE DISPLAY WINDOW */}
-      <main className="flex-grow flex flex-col min-w-0 min-h-screen relative z-0">
+      <main className="flex-grow flex flex-col min-w-0 h-full relative z-0 overflow-y-auto">
         
         {/* TOP COMPACT NAV BAR FOR MOBILE */}
-        <header className="flex lg:hidden items-center justify-between p-4 bg-[#0E0E0E] border-b border-[#1A1A1A]">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded bg-white flex items-center justify-center">
-              <CloudLightning className="h-3.5 w-3.5 text-black" />
+        <header className="flex lg:hidden flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#0E0E0E] border-b border-[#1A1A1A] shrink-0">
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <BrandLogo className="h-6 w-6 rounded overflow-hidden shadow shrink-0" />
+              <h1 className="text-xs font-bold font-mono text-white uppercase tracking-[0.15em] flex items-center">
+                DEADLINE<span className="text-zinc-400 pl-1 font-bold">OS</span>
+              </h1>
             </div>
-            <h1 className="text-xs font-bold font-mono tracking-widest text-white uppercase">DeadlineOS</h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end">
             <select
               value={activeView}
               onChange={(e) => setActiveView(e.target.value as any)}
-              className="px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-300 focus:outline-none"
+              className="flex-grow sm:flex-grow-0 max-w-[130px] px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-300 focus:outline-none truncate"
             >
               <option value="briefing">{MODE_LANGUAGES[mockRole]?.sidebarLabels.briefing}</option>
               <option value="tasks">{MODE_LANGUAGES[mockRole]?.sidebarLabels.tasks}</option>
@@ -528,14 +696,30 @@ export default function App() {
 
             <select
               value={mockRole}
-              onChange={(e) => setMockRole(e.target.value as any)}
-              className="px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-500 focus:outline-none"
+              onChange={(e) => handleRoleSwitch(e.target.value as any)}
+              className="flex-grow sm:flex-grow-0 max-w-[130px] px-2 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-[10px] font-mono text-gray-555 focus:outline-none truncate"
             >
-              <option value="developer">{MODE_LANGUAGES.developer?.title || "Engineering Mode"}</option>
-              <option value="student">{MODE_LANGUAGES.student?.title || "Academic Mode"}</option>
-              <option value="job_seeker">{MODE_LANGUAGES.job_seeker?.title || "Careers Mode"}</option>
-              <option value="professional">{MODE_LANGUAGES.professional?.title || "Corporate Mode"}</option>
+              <option value="developer">{MODE_LANGUAGES.developer?.title || "Developer Mode"}</option>
+              <option value="student">{MODE_LANGUAGES.student?.title || "Student Mode"}</option>
+              <option value="job_seeker">{MODE_LANGUAGES.job_seeker?.title || "Career Mode"}</option>
+              <option value="professional">{MODE_LANGUAGES.professional?.title || "Professional Mode"}</option>
             </select>
+
+            <button
+              onClick={handleExportReport}
+              disabled={exporting}
+              title="Export Executive Report"
+              className="px-3 py-1 bg-[#131313] border border-[#1A1A1A] rounded text-gray-400 hover:text-white transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1 text-[10px] font-mono"
+            >
+              {exporting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+              ) : (
+                <>
+                  <FileDown className="h-3.5 w-3.5 text-white" />
+                  <span className="sm:hidden">Report</span>
+                </>
+              )}
+            </button>
           </div>
         </header>
 
@@ -715,6 +899,43 @@ export default function App() {
         />
       )}
 
-    </div>
+      {/* TOAST NOTIFICATION STACK */}
+      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
+        <AnimatePresence>
+          {toasts.map(toast => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, y: -10 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="pointer-events-auto w-full bg-[#0E0E0E]/95 border border-[#1A1A1A]/80 shadow-[0_4px_20px_rgba(0,0,0,0.8)] backdrop-blur-md rounded-lg p-3.5 flex items-start gap-3 select-none"
+            >
+              {toast.type === 'success' && (
+                <div className="h-5 w-5 rounded-full bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                </div>
+              )}
+              {toast.type === 'info' && (
+                <div className="h-5 w-5 rounded-full bg-[#131313] border border-[#1A1A1A] flex items-center justify-center shrink-0 mt-0.5">
+                  <CloudLightning className="h-3 w-3 text-white" />
+                </div>
+              )}
+              {toast.type === 'error' && (
+                <div className="h-5 w-5 rounded-full bg-rose-950/40 border border-rose-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertCircle className="h-3 w-3 text-rose-400" />
+                </div>
+              )}
+              <div className="flex-grow">
+                <p className="text-xs font-mono font-medium text-slate-100 leading-normal">{toast.message}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -113,7 +113,7 @@ export function calculateMomentum(pending: any[], completed: any[], role: string
     } else if (pending.length === 0) {
       momentumStatus = 'STABLE';
       keyObservation = 'Subject revision intervals are fully synchronized with the syllabus timeline.';
-      riskAssessment = 'Low risk of concept gaps or last-minute academic cramming.';
+      riskAssessment = 'Low risk of concept gaps or last-minute study cramming.';
       executiveRecommendation = 'Increase retention intervals and engage in active recall sessions.';
     } else {
       momentumStatus = 'DECLINING';

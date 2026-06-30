@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { WhatIfSimulatorSkeleton } from './Skeletons';
+import { AnimatedMetric } from './AnimatedMetric';
 import { 
-  Sparkles, 
   RefreshCw, 
   Clock, 
   ArrowRight, 
@@ -15,7 +16,8 @@ import {
   Skull,
   ShieldCheck,
   Flame,
-  MinusCircle
+  MinusCircle,
+  Sparkles
 } from 'lucide-react';
 import { Task, SimulationScenario, SimulationResult } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
@@ -58,21 +60,21 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
     switch (role) {
       case 'student':
         return {
-          predictorPanel: "Academic Performance Predictor",
+          predictorPanel: "Student Performance Predictor",
           title: "What-If Course Load Simulator",
           description: "Explore the GPA and timeline impact of skipping homeworks, delaying research milestones, or cramming extra study hours.",
           chooseTarget: "-- Choose Target Syllabus Goal --",
           originalCost: "Study Hours Required",
           constraintDeadline: "Submission Deadline",
-          baselineUrgency: "Academic Weight",
+          baselineUrgency: "Student Weight",
           step1: "Step 1: Select Syllabus Target",
-          step2: "Step 2: Hypothesize Academic Adjustments",
-          executeButton: "RUN ACADEMIC PROJECTION",
+          step2: "Step 2: Hypothesize Student Adjustments",
+          executeButton: "RUN STUDENT PROJECTION",
           executingButton: "ANALYZING GRADE IMPACT...",
-          outcomeHeader: "Projected Academic Standing",
+          outcomeHeader: "Projected Student Standing",
           workspaceSuccess: "Syllabus Mastery",
           objectiveSuccess: "Goal Grade Success",
-          failureRisk: "Academic Failure Risk",
+          failureRisk: "Student Failure Risk",
           awaitingInput: "Awaiting Course Load Inputs",
           awaitingDesc: "Adjust study hours or deadlines on the left to project exam performance and grade impact."
         };
@@ -287,7 +289,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
           { 
             value: 'DROP_LOW_PRIORITY', 
             label: 'Prune Minor Admin Objectives', 
-            description: 'Remove low-impact admin tasks to focus maximum corporate capacity on key results.' 
+            description: 'Remove low-impact admin tasks to focus maximum professional capacity on key results.' 
           },
           { 
             value: 'PRIORITIZE_TASK', 
@@ -493,7 +495,17 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
         {/* RIGHT COLUMN: SIMULATION DASHBOARD OUTCOMES */}
         <div className="lg:col-span-7 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A] min-h-[500px] flex flex-col justify-between">
           <AnimatePresence mode="wait">
-            {result ? (
+            {loading ? (
+              <motion.div
+                key="simulation-loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full h-full flex flex-col justify-between flex-grow"
+              >
+                <WhatIfSimulatorSkeleton />
+              </motion.div>
+            ) : result ? (
               <motion.div
                 key="simulation-results"
                 initial={{ opacity: 0, y: 12 }}
@@ -511,7 +523,9 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
 
                     <div className="flex items-center gap-2 bg-[#121212] px-3 py-1 rounded-full border border-[#222]">
                       <span className="text-[9px] font-mono text-gray-500 uppercase">{labels.aiConfidenceLabel || "AI CONFIDENCE:"}</span>
-                      <span className="text-xs font-bold font-mono text-emerald-400">{result.confidenceScore}%</span>
+                      <span className="text-xs font-bold font-mono text-emerald-400">
+                        <AnimatedMetric value={result.confidenceScore} suffix="%" />
+                      </span>
                     </div>
                   </div>
 
@@ -549,13 +563,18 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                 </div>
 
                 {/* EXECUTIVE DECISION VERDICT BANNER */}
-                <div className={`p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden ${
-                  result.verdict === 'RECOMMENDED' 
-                    ? 'bg-emerald-950/10 border-emerald-500/20 text-emerald-400' 
-                    : result.verdict === 'ACCEPTABLE_RISK'
-                      ? 'bg-amber-950/10 border-amber-500/20 text-amber-400'
-                      : 'bg-rose-950/10 border-rose-500/20 text-rose-400'
-                }`}>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05, duration: 0.4 }}
+                  className={`p-4 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden ${
+                    result.verdict === 'RECOMMENDED' 
+                      ? 'bg-emerald-950/10 border-emerald-500/20 text-emerald-400' 
+                      : result.verdict === 'ACCEPTABLE_RISK'
+                        ? 'bg-amber-950/10 border-amber-500/20 text-amber-400'
+                        : 'bg-rose-950/10 border-rose-500/20 text-rose-400'
+                  }`}
+                >
                   <div className="flex items-start gap-3">
                     <div className={`p-2 rounded-lg shrink-0 ${
                       result.verdict === 'RECOMMENDED' ? 'bg-emerald-500/10 text-emerald-400' :
@@ -578,10 +597,15 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* VISUAL GAUGE PANEL FOR CORE PROBABILITIES */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.13, duration: 0.4 }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                >
                   
                   {/* WORKSPACE SUCCESS PROBABILITY */}
                   <div className="p-4 bg-[#121212] rounded-xl border border-[#1C1C1C] flex flex-col justify-between relative overflow-hidden">
@@ -635,7 +659,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                       <div className="space-y-0.5">
                         <span className="text-[8px] font-mono text-gray-500 uppercase tracking-wide">Baseline</span>
                         <div className="text-lg font-bold text-gray-400 font-mono">
-                          {result.currentWorkspaceSuccess}%
+                          <AnimatedMetric value={result.currentWorkspaceSuccess} suffix="%" />
                         </div>
                       </div>
 
@@ -646,7 +670,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                         <div className={`text-2xl font-extrabold font-mono transition-all ${
                           wsDiff > 0 ? 'text-emerald-400' : wsDiff < 0 ? 'text-rose-400' : 'text-indigo-400'
                         }`}>
-                          {result.projectedWorkspaceSuccess}%
+                          <AnimatedMetric value={result.projectedWorkspaceSuccess} suffix="%" />
                         </div>
                       </div>
                     </div>
@@ -687,7 +711,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                       <div className="space-y-0.5">
                         <span className="text-[8px] font-mono text-gray-500 uppercase tracking-wide">Baseline</span>
                         <div className="text-lg font-bold text-gray-400 font-mono">
-                          {result.currentObjectiveSuccess}%
+                          <AnimatedMetric value={result.currentObjectiveSuccess} suffix="%" />
                         </div>
                       </div>
 
@@ -698,7 +722,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                         <div className={`text-2xl font-extrabold font-mono transition-all ${
                           objDiff > 0 ? 'text-emerald-400' : objDiff < 0 ? 'text-rose-400' : 'text-sky-400'
                         }`}>
-                          {result.projectedObjectiveSuccess}%
+                          <AnimatedMetric value={result.projectedObjectiveSuccess} suffix="%" />
                         </div>
                       </div>
                     </div>
@@ -739,7 +763,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                       <div className="space-y-0.5">
                         <span className="text-[8px] font-mono text-gray-500 uppercase tracking-wide">Baseline</span>
                         <div className="text-lg font-bold text-gray-400 font-mono">
-                          {result.currentFailureRisk}%
+                          <AnimatedMetric value={result.currentFailureRisk} suffix="%" />
                         </div>
                       </div>
 
@@ -750,7 +774,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                         <div className={`text-2xl font-extrabold font-mono transition-all ${
                           riskDiff < 0 ? 'text-emerald-400' : 'text-rose-500 animate-pulse'
                         }`}>
-                          {result.projectedFailureRisk}%
+                          <AnimatedMetric value={result.projectedFailureRisk} suffix="%" />
                         </div>
                       </div>
                     </div>
@@ -768,7 +792,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                     </div>
                   </div>
 
-                </div>
+                </motion.div>
 
                 {/* MINI TIMELINE IMPACT VISUALIZATION */}
                 <div className="bg-[#111] p-5 rounded-xl border border-[#1A1A1A] space-y-3" id="timeline-impact-viz">
@@ -833,7 +857,12 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                 </div>
 
                 {/* STRATEGIC TRADE-OFF ANALYSIS */}
-                <div className="bg-[#111] p-5 rounded-xl border border-[#1A1A1A] space-y-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.21, duration: 0.4 }}
+                  className="bg-[#111] p-5 rounded-xl border border-[#1A1A1A] space-y-4"
+                >
                   <div className="flex items-center gap-1.5 text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-semibold border-b border-[#1A1A1A] pb-2">
                     <Activity className="h-3.5 w-3.5" />
                     <span>Strategic Trade-Off Analysis</span>
@@ -874,10 +903,15 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                       {result.netImpact}
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* AI EXECUTIVE IMPACT SUMMARY */}
-                <div className="p-5 bg-gradient-to-r from-indigo-950/10 via-[#131313] to-indigo-950/5 rounded-xl border border-indigo-500/10 relative overflow-hidden">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.29, duration: 0.4 }}
+                  className="p-5 bg-gradient-to-r from-indigo-950/10 via-[#131313] to-indigo-950/5 rounded-xl border border-indigo-500/10 relative overflow-hidden"
+                >
                   <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
                   <div className="flex items-center gap-1.5 text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-semibold mb-2">
                     <Sparkles className="h-4 w-4 animate-pulse" />
@@ -886,10 +920,15 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                   <p className="text-xs text-slate-200 leading-relaxed font-sans">
                     {result.impactSummary}
                   </p>
-                </div>
+                </motion.div>
 
                 {/* TWO COLUMN GRID FOR CONSEQUENCES & RECOVERY */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.37, duration: 0.4 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                >
                   
                   {/* CRITICAL CONSEQUENCES */}
                   <div className="bg-[#111] p-4 rounded-xl border border-[#1A1A1A] space-y-3">
@@ -925,7 +964,7 @@ export default function WhatIfSimulator({ tasks, mockRole }: WhatIfSimulatorProp
                     </ul>
                   </div>
 
-                </div>
+                </motion.div>
 
               </motion.div>
             ) : (

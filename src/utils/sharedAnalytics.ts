@@ -190,7 +190,7 @@ export function calculateWorkspaceAnalytics(tasks: Task[], role: string): Worksp
   } else if (role === 'job_seeker') {
     rootCause = `Outreach and application conversion is stalled. ${overdueTasks.length} pipeline follow-up tasks are overdue, and interview preparation is competing with ${pendingTasks.length} application steps, reducing general placement confidence.`;
   } else {
-    rootCause = `${criticalTasks.length} critical corporate objectives are currently unaligned, and total outstanding workload stands at ${totalPendingEffort} operational hours. Unresolved stakeholder commitments are threatening SLA execution timelines.`;
+    rootCause = `${criticalTasks.length} critical professional objectives are currently unaligned, and total outstanding workload stands at ${totalPendingEffort} operational hours. Unresolved stakeholder commitments are threatening SLA execution timelines.`;
   }
 
   // Recommended actions (list of 3-4 specific strings)

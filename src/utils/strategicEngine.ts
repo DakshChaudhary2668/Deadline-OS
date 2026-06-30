@@ -14,7 +14,7 @@ function getBaseMetrics(task: Task, allTasks: Task[]) {
   const msRemaining = deadlineTime - now;
   const daysRemaining = msRemaining / (1000 * 60 * 60 * 24);
   const pending = allTasks.filter(t => t.status !== 'completed');
-  const totalEffort = pending.reduce((sum, t) => sum + t.estimatedEffort, 0);
+  const totalEffort = pending.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
   return { daysRemaining, pending, totalEffort };
 }
 
@@ -44,7 +44,7 @@ function devLogic(task: Task, allTasks: Task[]) {
     opportunityCost = 'None.';
     recommendedAction = 'Verify deployment pipeline stability.';
     whyThisDecision = 'The pull request is already merged and validated.';
-    whyNotOtherActions = 'No further engineering action required.';
+    whyNotOtherActions = 'No further developer action required.';
     tradeoffSummary = 'Code shipped without lingering technical debt.';
     cosSummary = 'Ticket closed. Monitor deployment logs for regressions.';
     primaryRisk = 'None.';
@@ -90,7 +90,7 @@ function devLogic(task: Task, allTasks: Task[]) {
     whyThisDecision = 'Velocity is stable and tech debt is under control.';
     whyNotOtherActions = 'No aggressive intervention needed. Current trajectory is optimal.';
     tradeoffSummary = 'Maintain steady development cadence to ensure stable deployment.';
-    cosSummary = 'Trajectory is stable. Continue normal engineering cadence.';
+    cosSummary = 'Trajectory is stable. Continue normal development cadence.';
     primaryRisk = 'Unforeseen dependency blockers.';
   }
 
@@ -111,7 +111,7 @@ function studentLogic(task: Task, allTasks: Task[]) {
     opportunityCost = 'None.';
     recommendedAction = 'Schedule spaced repetition in 7 days.';
     whyThisDecision = 'This topic is mastered and requires no immediate attention.';
-    whyNotOtherActions = 'Over-studying yields diminishing academic returns.';
+    whyNotOtherActions = 'Over-studying yields diminishing learning returns.';
     tradeoffSummary = 'Topic secured. Bandwidth freed for weaker subjects.';
     cosSummary = 'Revision complete. Focus shifted to low-retention topics.';
     primaryRisk = 'None.';
@@ -145,7 +145,7 @@ function studentLogic(task: Task, allTasks: Task[]) {
     recommendedAction = 'Maintain current study hours and begin spaced repetition.';
     whyThisDecision = 'Your exam readiness is tracking linearly with the calendar.';
     whyNotOtherActions = 'No radical schedule changes needed. Trust the curriculum plan.';
-    tradeoffSummary = 'Maintain steady focus to avoid last-minute academic panic.';
+    tradeoffSummary = 'Maintain steady focus to avoid last-minute exam panic.';
     cosSummary = 'Syllabus pacing is optimal. Continue scheduled study blocks.';
     primaryRisk = 'Complacency leading to skipped sessions.';
   }

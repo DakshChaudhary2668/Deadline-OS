@@ -10,7 +10,7 @@ export function generateDayPlan(tasks: Task[], role: string): DayPlan {
   if (role === 'developer') {
     slots = [
       { time: '09:00 AM', activity: 'Morning Sync / Unblock PRs', notes: 'Check CI/CD statuses' },
-      { time: '10:00 AM', activity: 'Deep Work: Core Engineering', taskTitle: sortedTasks[0]?.title || 'Architecture Design', notes: 'No meetings' },
+      { time: '10:00 AM', activity: 'Deep Work: Core Development', taskTitle: sortedTasks[0]?.title || 'Architecture Design', notes: 'No meetings' },
       { time: '12:30 PM', activity: 'Lunch / Context Switch', notes: 'Disconnect from IDE' },
       { time: '01:30 PM', activity: 'Code Reviews / Bug Triaging', taskTitle: sortedTasks[1]?.title || 'QA Testing', notes: 'Clear review queue' },
       { time: '04:00 PM', activity: 'Documentation / Admin', notes: 'Update Jira/Linear' }
@@ -18,7 +18,7 @@ export function generateDayPlan(tasks: Task[], role: string): DayPlan {
   } else if (role === 'student') {
     slots = [
       { time: '08:00 AM', activity: 'Morning Review', notes: 'Spaced repetition flashcards' },
-      { time: '09:30 AM', activity: 'Heavy Academic Session', taskTitle: sortedTasks[0]?.title || 'Core Subject Study', notes: 'Focus on weak concepts' },
+      { time: '09:30 AM', activity: 'Heavy Study Session', taskTitle: sortedTasks[0]?.title || 'Core Subject Study', notes: 'Focus on weak concepts' },
       { time: '12:00 PM', activity: 'Lunch Break', notes: 'Hydrate and rest' },
       { time: '01:00 PM', activity: 'Secondary Subject / Assignments', taskTitle: sortedTasks[1]?.title || 'Homework', notes: 'Complete deliverables' },
       { time: '03:30 PM', activity: 'Light Reading / Prep', notes: 'Prepare for tomorrow' }
@@ -43,7 +43,7 @@ export function generateDayPlan(tasks: Task[], role: string): DayPlan {
   }
 
   let brief = '';
-  if (role === 'developer') brief = 'Optimize for deep focus during core engineering blocks. Minimize context switching.';
+  if (role === 'developer') brief = 'Optimize for deep focus during core development blocks. Minimize context switching.';
   else if (role === 'student') brief = 'Maintain high cognitive load during morning blocks; transition to lighter review by afternoon.';
   else if (role === 'job_seeker') brief = 'Balance outbound application volume with rigorous interview preparation to maintain funnel health.';
   else brief = 'Front-load strategic deliverables before reactionary meetings consume afternoon bandwidth.';

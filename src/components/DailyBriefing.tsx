@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { ExecutiveBriefSkeleton, KpiCardsSkeleton, AIRecommendationsSkeleton, AnalyticsCardsSkeleton, ShimmerBlock } from './Skeletons';
 import { AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AnimatedMetric } from './AnimatedMetric';
 import { 
   ShieldCheck, 
   Flame, 
@@ -70,7 +72,7 @@ export default function DailyBriefing({
   };
 
   const pendingTasks = roleTasks.filter(t => t.status !== 'completed');
-  const totalEffort = pendingTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
+  const totalEffort = pendingTasks.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
   
   const roleKey = mockRole as 'student' | 'developer' | 'job_seeker' | 'professional';
   const categoriesList = WORKSPACE_CATEGORIES[roleKey] || WORKSPACE_CATEGORIES.professional;
@@ -78,7 +80,7 @@ export default function DailyBriefing({
   // Calculate category distribution for the mini analytics chart
   const chartData = categoriesList.map(cat => {
     const catTasks = pendingTasks.filter(t => t.category === cat);
-    const effort = catTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
+    const effort = catTasks.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
     const avgRisk = catTasks.length > 0
       ? Math.round(catTasks.reduce((sum, t) => sum + (t.riskScore || 0), 0) / catTasks.length)
       : 0;
@@ -177,254 +179,267 @@ export default function DailyBriefing({
         </button>
       </div>
 
-      {/* 🔮 DYNAMIC NARRATIVE SUMMARY BRIEFING PANEL */}
-      <motion.div 
-        initial={{ opacity: 0, y: -5 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-5 bg-[#0C0C0F] border border-indigo-950/40 rounded-xl flex items-start gap-3.5 relative overflow-hidden"
-      >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full filter blur-xl pointer-events-none"></div>
-        <Sparkles className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-bold">
-              {secondaryLabels.activeNarrativeSummary}
-            </span>
-            <span className="px-1.5 py-0.2 text-[8px] font-mono bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 rounded uppercase tracking-wider">
-              {secondaryLabels.bandwidthLabel}
-            </span>
-          </div>
-          <p className="text-sm text-gray-300 leading-relaxed font-serif italic">
-            {loading ? secondaryLabels.narrativeLoading : generateNarrative()}
-          </p>
-        </div>
-      </motion.div>
-
-      {/* ⚠ FAILURE FORECAST HERO CARD */}
-      <div className={`p-6 rounded-xl border transition-all duration-300 ${cardBg}`}>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          
-          {/* Left Block: Probability score metrics */}
-          <div className="space-y-2 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-[#1A1A1A] pb-5 lg:pb-0 lg:pr-6 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <span className={`text-[10px] font-mono tracking-[0.15em] font-semibold ${headingColor} flex items-center gap-1 uppercase`}>
-                ⚠ {labels.failureForecast}
-              </span>
-              <span className={`px-1.5 py-0.5 rounded tracking-widest uppercase text-[8px] font-bold ${badgeStyle}`}>
-                {highestRiskTask ? highestRiskTask.failureForecast?.riskLevel : secondaryLabels.nominalRiskLabel}
-              </span>
-            </div>
-
-            <div className="mt-3.5 flex items-baseline gap-2">
-              <span className={`text-6xl font-light tracking-tighter font-sans leading-none ${probabilityColor}`}>
-                {highestRiskTask ? `${maxProbability}%` : '0%'}
-              </span>
-              <div className="flex flex-col">
-                <span className="text-[9px] uppercase font-mono text-gray-500 tracking-wider leading-none">
-                  {labels.failureProbability}
+      {loading ? (
+        <>
+          <ExecutiveBriefSkeleton />
+          <KpiCardsSkeleton />
+        </>
+      ) : (
+        <>
+          {/* 🔮 DYNAMIC NARRATIVE SUMMARY BRIEFING PANEL */}
+          <motion.div 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 bg-[#0C0C0F] border border-indigo-950/40 rounded-xl flex items-start gap-3.5 relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full filter blur-xl pointer-events-none"></div>
+            <Sparkles className="h-5 w-5 text-indigo-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-widest font-bold">
+                  {secondaryLabels.activeNarrativeSummary}
                 </span>
-                <span className="text-[8px] font-mono text-gray-655 mt-1 uppercase tracking-widest">
-                  {secondaryLabels.thresholdTargetLabel}
+                <span className="px-1.5 py-0.2 text-[8px] font-mono bg-indigo-950/40 text-indigo-300 border border-indigo-900/40 rounded uppercase tracking-wider">
+                  {secondaryLabels.bandwidthLabel}
                 </span>
               </div>
+              <p className="text-sm text-gray-300 leading-relaxed font-serif italic">
+                {loading ? secondaryLabels.narrativeLoading : generateNarrative()}
+              </p>
             </div>
+          </motion.div>
+
+          {/* ⚠ FAILURE FORECAST HERO CARD */}
+          <div className={`p-6 rounded-xl border transition-all duration-300 ${cardBg}`}>
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              
+              {/* Left Block: Probability score metrics */}
+              <div className="space-y-2 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-[#1A1A1A] pb-5 lg:pb-0 lg:pr-6 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <span className={`text-[10px] font-mono tracking-[0.15em] font-semibold ${headingColor} flex items-center gap-1 uppercase`}>
+                    ⚠ {labels.failureForecast}
+                  </span>
+                  <span className={`px-1.5 py-0.5 rounded tracking-widest uppercase text-[8px] font-bold ${badgeStyle}`}>
+                    {highestRiskTask ? highestRiskTask.failureForecast?.riskLevel : secondaryLabels.nominalRiskLabel}
+                  </span>
+                </div>
+
+                <div className="mt-3.5 flex items-baseline gap-2">
+                  <span className={`text-6xl font-light tracking-tighter font-sans leading-none ${probabilityColor}`}>
+                    <AnimatedMetric value={highestRiskTask ? maxProbability : 0} suffix="%" />
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] uppercase font-mono text-gray-500 tracking-wider leading-none">
+                      {labels.failureProbability}
+                    </span>
+                    <span className="text-[8px] font-mono text-gray-655 mt-1 uppercase tracking-widest">
+                      {secondaryLabels.thresholdTargetLabel}
+                    </span>
+                  </div>
+                </div>
+                
+                <p className="text-[8px] font-mono text-gray-500 leading-relaxed uppercase tracking-widest pt-1">
+                  {highestRiskTask ? secondaryLabels.activeProbabilityMatrix : labels.systemCalibrated}
+                </p>
+              </div>
+
+              {/* Right Block: Highest Risk task particulars */}
+              <div className="flex-grow space-y-4">
+                <div>
+                  <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block font-medium">{labels.highestRiskObjective}</span>
+                  <h3 className="text-base font-serif italic text-white mt-1 uppercase tracking-tight">
+                    {highestRiskTask ? highestRiskTask.title : secondaryLabels.noThreatHeader}
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="p-3.5 bg-[#131313] rounded border border-[#1A1A1A]">
+                    <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">{labels.criticalRiskReasoning}</span>
+                    <p className="text-xs text-[#C0C0C0] mt-1.5 leading-relaxed">
+                      {highestRiskTask ? highestRiskTask.failureForecast?.reasoning : secondaryLabels.noThreatReasoning}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 bg-[#131313] rounded border border-[#111A13]/30 border-dashed">
+                    <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block">{labels.aiMitigationStrategy}</span>
+                    <p className="text-xs text-indigo-200 mt-1.5 leading-relaxed font-serif italic">
+                      {highestRiskTask ? highestRiskTask.failureForecast?.recommendedIntervention : secondaryLabels.noThreatMitigation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* CHIEF OF STAFF STRATEGIC GUIDANCE row */}
+          {briefing && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-[#0A0A0C] p-6 rounded-xl border border-indigo-950/30 shadow-[0_4px_30px_rgba(99,102,241,0.02)]"
+            >
+              <div className="md:col-span-5 border-b border-[#1A1A1A] pb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <p className="text-[10px] font-mono text-indigo-400 tracking-widest uppercase">{labels.strategicIntelTitle}</p>
+                </div>
+                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{labels.realTimeForecast || "REAL-TIME FORECAST"}</span>
+              </div>
+
+              <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
+                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block font-semibold">{labels.strategicFocus}</span>
+                <p className="text-xs font-serif italic text-white mt-1.5">
+                  {briefing.strategicFocusArea || secondaryLabels.awaitingScansText || 'Aligning workspace vectors.'}
+                </p>
+              </div>
+
+              <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
+                <span className="text-[9px] font-mono text-rose-400 uppercase tracking-wider block font-semibold">{labels.biggestRiskToday}</span>
+                <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
+                  {briefing.biggestRiskToday || 'None active.'}
+                </p>
+              </div>
+
+              <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
+                <span className="text-[9px] font-mono text-amber-400 uppercase tracking-wider block font-semibold">{labels.mostImportantTask}</span>
+                <p className="text-xs text-white mt-1.5 font-sans font-medium">
+                  {briefing.mostImportantTask || 'Standard pacing.'}
+                </p>
+              </div>
+
+              <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
+                <span className="text-[9px] font-mono text-sky-400 uppercase tracking-wider block font-semibold">{labels.criticalBottleneck}</span>
+                <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
+                  {briefing.criticalBottleneck || 'No operational roadblocks.'}
+                </p>
+              </div>
+
+              <div className="md:col-span-1 p-4 bg-gradient-to-br from-[#121215] to-[#121C1C] rounded border border-emerald-950/30">
+                <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider block font-semibold">{labels.recommendedIntervention}</span>
+                <p className="text-xs text-emerald-200/90 mt-1.5 font-serif italic leading-relaxed">
+                  {briefing.recommendedIntervention || 'Continue normal operations.'}
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Stats row Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             
-            <p className="text-[8px] font-mono text-gray-500 leading-relaxed uppercase tracking-widest pt-1">
-              {highestRiskTask ? secondaryLabels.activeProbabilityMatrix : labels.systemCalibrated}
-            </p>
-          </div>
-
-          {/* Right Block: Highest Risk task particulars */}
-          <div className="flex-grow space-y-4">
-            <div>
-              <span className="text-[9px] font-mono text-gray-400 uppercase tracking-widest block font-medium">{labels.highestRiskObjective}</span>
-              <h3 className="text-base font-serif italic text-white mt-1 uppercase tracking-tight">
-                {highestRiskTask ? highestRiskTask.title : secondaryLabels.noThreatHeader}
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              <div className="p-3.5 bg-[#131313] rounded border border-[#1A1A1A]">
-                <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">{labels.criticalRiskReasoning}</span>
-                <p className="text-xs text-[#C0C0C0] mt-1.5 leading-relaxed">
-                  {highestRiskTask ? highestRiskTask.failureForecast?.reasoning : secondaryLabels.noThreatReasoning}
+            {/* SUCCESS PROBABILITY COMPONENT */}
+            <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full filter blur-xl pointer-events-none"></div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.successProbability}</span>
+                  <ShieldCheck className="h-4.5 w-4.5 text-blue-500" />
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className={`text-5xl font-light text-white font-sans ${briefing ? getProbabilityColor(briefing.successProbability) : 'text-slate-400'}`}>
+                    {loading ? '---' : <AnimatedMetric value={briefing?.successProbability ?? 87.4} decimals={1} suffix="%" />}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
+                  {loading ? 'AI scanning cognitive queues...' : briefing?.successReason}
                 </p>
               </div>
-
-              <div className="p-3.5 bg-[#131313] rounded border border-[#111A13]/30 border-dashed">
-                <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block">{labels.aiMitigationStrategy}</span>
-                <p className="text-xs text-indigo-200 mt-1.5 leading-relaxed font-serif italic">
-                  {highestRiskTask ? highestRiskTask.failureForecast?.recommendedIntervention : secondaryLabels.noThreatMitigation}
-                </p>
+              <div className="mt-4 pt-4 border-t border-[#1A1A1A]">
+                <div className="w-full bg-[#1A1A1A] h-1.5 rounded-full overflow-hidden">
+                  <motion.div 
+                    className="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full shadow-[0_0_10px_rgba(37,99,235,0.3)]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${briefing?.successProbability ?? 87.4}%` }}
+                    transition={{ duration: 1 }}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-        </div>
-      </div>
-
-      {/* CHIEF OF STAFF STRATEGIC GUIDANCE row */}
-      {briefing && (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-[#0A0A0C] p-6 rounded-xl border border-indigo-950/30 shadow-[0_4px_30px_rgba(99,102,241,0.02)]"
-        >
-          <div className="md:col-span-5 border-b border-[#1A1A1A] pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-              <p className="text-[10px] font-mono text-indigo-400 tracking-widest uppercase">{labels.strategicIntelTitle}</p>
+            {/* WORKLOAD STRESS ASSESSMENT */}
+            <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-505/5 rounded-full filter blur-xl pointer-events-none"></div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.workloadStress}</span>
+                  <Brain className="h-4.5 w-4.5 text-indigo-400" />
+                </div>
+                <div className="mt-4">
+                  <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded font-mono border ${getStressColor(briefing?.workloadStressLevel)}`}>
+                    {loading ? 'Computing...' : (briefing?.workloadStressLevel || 'Optimal')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
+                  {labels.totalEstimatedEffortDesc}
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex items-center justify-between text-xs">
+                <span className="text-gray-500 tracking-wider uppercase">{labels.totalEstimatedEffort}</span>
+                <span className="text-white font-mono font-bold">
+                  <AnimatedMetric value={totalEffort} suffix="h" />
+                </span>
+              </div>
             </div>
-            <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest">{labels.realTimeForecast || "REAL-TIME FORECAST"}</span>
-          </div>
 
-          <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-indigo-400 uppercase tracking-wider block font-semibold">{labels.strategicFocus}</span>
-            <p className="text-xs font-serif italic text-white mt-1.5">
-              {briefing.strategicFocusArea || secondaryLabels.awaitingScansText || 'Aligning workspace vectors.'}
-            </p>
-          </div>
+            {/* THREAT ANALYSIS AND HIGHRISK */}
+            <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
+                <div className="w-24 h-24 rounded-full border-[10px] border-orange-500"></div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.threatMatrix}</span>
+                  <Flame className="h-4.5 w-4.5 text-orange-500 animate-pulse" />
+                </div>
+                <div className="mt-4 flex items-baseline gap-1.5">
+                  <span className="text-5xl font-light text-orange-500 font-sans">
+                    {loading ? '--' : <AnimatedMetric value={briefing?.highRiskCount ?? 0} />}
+                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">{labels.highRiskGoals}</span>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
+                  Requires structural de-escalation for items near or beyond deadline borders.
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-orange-500 font-mono">
+                <span className="tracking-wider uppercase">{labels.criticalBlockers}</span>
+                <span>
+                  <AnimatedMetric value={roleTasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length} />{' '}
+                  {secondaryLabels.unitPlural}
+                </span>
+              </div>
+            </div>
 
-          <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-rose-400 uppercase tracking-wider block font-semibold">{labels.biggestRiskToday}</span>
-            <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
-              {briefing.biggestRiskToday || 'None active.'}
-            </p>
-          </div>
+            {/* COGNITIVE RECOVERY METRIC */}
+            <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full filter blur-xl pointer-events-none"></div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.completedSecured}</span>
+                  <UserCheck className="h-4.5 w-4.5 text-emerald-400" />
+                </div>
+                <div className="mt-4 flex items-baseline gap-1.5">
+                  <span className="text-5xl font-light text-white font-sans">
+                    <AnimatedMetric value={roleTasks.filter(t => t.status === 'completed').length} />
+                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ <AnimatedMetric value={roleTasks.length} /> SECURED</span>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
+                  {labels.completedSecuredDesc}
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-emerald-400 font-mono">
+                <span className="tracking-wider uppercase">{labels.resolvedToday}</span>
+                <span className="font-bold">
+                  <AnimatedMetric value={roleTasks.filter(t => t.status === 'completed' && t.completedAt).length} /> {secondaryLabels.resolvedUnitsLabel}
+                </span>
+              </div>
+            </div>
 
-          <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-amber-400 uppercase tracking-wider block font-semibold">{labels.mostImportantTask}</span>
-            <p className="text-xs text-white mt-1.5 font-sans font-medium">
-              {briefing.mostImportantTask || 'Standard pacing.'}
-            </p>
           </div>
-
-          <div className="md:col-span-1 p-4 bg-[#111115]/80 rounded border border-indigo-950/20">
-            <span className="text-[9px] font-mono text-sky-400 uppercase tracking-wider block font-semibold">{labels.criticalBottleneck}</span>
-            <p className="text-xs text-[#E5E5E5] mt-1.5 font-sans leading-relaxed">
-              {briefing.criticalBottleneck || 'No operational roadblocks.'}
-            </p>
-          </div>
-
-          <div className="md:col-span-1 p-4 bg-gradient-to-br from-[#121215] to-[#121C1C] rounded border border-emerald-950/30">
-            <span className="text-[9px] font-mono text-emerald-400 uppercase tracking-wider block font-semibold">{labels.recommendedIntervention}</span>
-            <p className="text-xs text-emerald-200/90 mt-1.5 font-serif italic leading-relaxed">
-              {briefing.recommendedIntervention || 'Continue normal operations.'}
-            </p>
-          </div>
-        </motion.div>
+        </>
       )}
-
-      {/* Stats row Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        
-        {/* SUCCESS PROBABILITY COMPONENT */}
-        <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full filter blur-xl pointer-events-none"></div>
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.successProbability}</span>
-              <ShieldCheck className="h-4.5 w-4.5 text-blue-500" />
-            </div>
-            <div className="mt-4 flex items-baseline gap-2">
-              <span className={`text-5xl font-light text-white font-sans ${briefing ? getProbabilityColor(briefing.successProbability) : 'text-slate-400'}`}>
-                {loading ? '---' : `${briefing?.successProbability ?? 87.4}%`}
-              </span>
-            </div>
-            <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              {loading ? 'AI scanning cognitive queues...' : briefing?.successReason}
-            </p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#1A1A1A]">
-            <div className="w-full bg-[#1A1A1A] h-1.5 rounded-full overflow-hidden">
-              <motion.div 
-                className="bg-gradient-to-r from-blue-600 to-indigo-500 h-full rounded-full shadow-[0_0_10px_rgba(37,99,235,0.3)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${briefing?.successProbability ?? 87.4}%` }}
-                transition={{ duration: 1 }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* WORKLOAD STRESS ASSESSMENT */}
-        <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-505/5 rounded-full filter blur-xl pointer-events-none"></div>
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.workloadStress}</span>
-              <Brain className="h-4.5 w-4.5 text-indigo-400" />
-            </div>
-            <div className="mt-4">
-              <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded font-mono border ${getStressColor(briefing?.workloadStressLevel)}`}>
-                {loading ? 'Computing...' : (briefing?.workloadStressLevel || 'Optimal')}
-              </span>
-            </div>
-            <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              {labels.totalEstimatedEffortDesc}
-            </p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex items-center justify-between text-xs">
-            <span className="text-gray-500 tracking-wider uppercase">{labels.totalEstimatedEffort}</span>
-            <span className="text-white font-mono font-bold">{totalEffort}h</span>
-          </div>
-        </div>
-
-        {/* THREAT ANALYSIS AND HIGHRISK */}
-        <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
-            <div className="w-24 h-24 rounded-full border-[10px] border-orange-500"></div>
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.threatMatrix}</span>
-              <Flame className="h-4.5 w-4.5 text-orange-500 animate-pulse" />
-            </div>
-            <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-5xl font-light text-orange-500 font-sans">
-                {loading ? '--' : String(briefing?.highRiskCount ?? 0).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">{labels.highRiskGoals}</span>
-            </div>
-            <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              Requires structural de-escalation for items near or beyond deadline borders.
-            </p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-orange-500 font-mono">
-            <span className="tracking-wider uppercase">{labels.criticalBlockers}</span>
-            <span>
-              {roleTasks.filter(t => t.importance === 'Critical' && t.status !== 'completed').length}{' '}
-              {secondaryLabels.unitPlural}
-            </span>
-          </div>
-        </div>
-
-        {/* COGNITIVE RECOVERY METRIC */}
-        <div className="bg-[#0E0E0E] border border-[#1A1A1A] p-6 rounded-xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full filter blur-xl pointer-events-none"></div>
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-gray-500">{labels.completedSecured}</span>
-              <UserCheck className="h-4.5 w-4.5 text-emerald-400" />
-            </div>
-            <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-5xl font-light text-white font-sans">
-                {String(roleTasks.filter(t => t.status === 'completed').length).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider">/ {roleTasks.length} SECURED</span>
-            </div>
-            <p className="text-[11px] text-gray-400 mt-2 leading-relaxed italic">
-              {labels.completedSecuredDesc}
-            </p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-[#1A1A1A] flex justify-between text-xs text-emerald-400 font-mono">
-            <span className="tracking-wider uppercase">{labels.resolvedToday}</span>
-            <span className="font-bold">{roleTasks.filter(t => t.status === 'completed' && t.completedAt).length} {secondaryLabels.resolvedUnitsLabel}</span>
-          </div>
-        </div>
-
-      </div>
 
       {/* Main Grid: AI Recommendations & Effort Distribution Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -443,11 +458,15 @@ export default function DailyBriefing({
             <div className="space-y-3">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="animate-pulse flex items-start gap-3 p-4 bg-[#131313] rounded border border-[#1A1A1A]">
-                    <div className="h-5 w-5 bg-gray-800 rounded-full"></div>
+                  <div key={i} className="p-4 bg-[#131313]/60 rounded border border-[#1A1A1A]/60 flex items-start gap-3">
+                    <ShimmerBlock height="h-4.5" width="w-4.5" className="rounded-full shrink-0 mt-0.5" />
                     <div className="space-y-2 flex-grow">
-                      <div className="h-3 w-3/4 bg-gray-800 rounded"></div>
-                      <div className="h-2 w-1/2 bg-gray-800 rounded"></div>
+                      <div className="flex items-center justify-between">
+                        <ShimmerBlock height="h-3" width="w-1/2" />
+                        <ShimmerBlock height="h-2.5" width="w-12" />
+                      </div>
+                      <ShimmerBlock height="h-2.5" width="w-full" />
+                      <ShimmerBlock height="h-2.5" width="w-4/5" />
                     </div>
                   </div>
                 ))
@@ -529,8 +548,8 @@ export default function DailyBriefing({
                       labelStyle={{ color: '#fff', fontSize: '11px', fontWeight: 'bold' }}
                       itemStyle={{ fontSize: '11px' }}
                     />
-                    <Area type="monotone" dataKey="effort" name={secondaryLabels.focusLabel} stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" />
-                    <Area type="monotone" dataKey="risk" name={secondaryLabels.riskLabel} stroke="#F97316" strokeWidth={1.5} strokeDasharray="3 3" fillOpacity={1} fill="url(#colorRisk)" />
+                    <Area type="monotone" dataKey="effort" name={secondaryLabels.focusLabel} stroke="#2563EB" strokeWidth={2} fillOpacity={1} fill="url(#colorHours)" isAnimationActive={true} animationDuration={1000} animationEasing="ease-out" />
+                    <Area type="monotone" dataKey="risk" name={secondaryLabels.riskLabel} stroke="#F97316" strokeWidth={1.5} strokeDasharray="3 3" fillOpacity={1} fill="url(#colorRisk)" isAnimationActive={true} animationDuration={1000} animationEasing="ease-out" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
@@ -544,12 +563,14 @@ export default function DailyBriefing({
           <div className="grid grid-cols-2 gap-2 mt-4 text-center">
             <div className="bg-[#131313] p-2.5 rounded border border-[#1A1A1A]">
               <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">{labels.focusHoursLoaded}</span>
-              <span className="text-lg font-bold text-blue-400 font-mono">{totalEffort}h</span>
+              <span className="text-lg font-bold text-blue-400 font-mono">
+                <AnimatedMetric value={totalEffort} suffix="h" />
+              </span>
             </div>
             <div className="bg-[#131313] p-2.5 rounded border border-[#1A1A1A]">
               <span className="block text-[10px] font-mono text-gray-500 uppercase tracking-wider">{labels.peakHazardQuotient}</span>
               <span className="text-lg font-bold text-orange-500 font-mono">
-                {pendingTasks.length > 0 ? Math.max(...pendingTasks.map(t => t.riskScore || 0), 10) : 0}%
+                <AnimatedMetric value={pendingTasks.length > 0 ? Math.max(...pendingTasks.map(t => t.riskScore || 0), 10) : 0} suffix="%" />
               </span>
             </div>
           </div>
@@ -669,19 +690,19 @@ export default function DailyBriefing({
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.completedSecured}</span>
                 <span className="text-xl font-bold text-white font-mono mt-1">
-                  {momentum?.stats?.totalCompleted ?? 0}
+                  <AnimatedMetric value={momentum?.stats?.totalCompleted ?? 0} />
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.createdOverallStat}</span>
                 <span className="text-xl font-bold text-white font-mono mt-1">
-                  {momentum?.stats?.totalCreated ?? 0}
+                  <AnimatedMetric value={momentum?.stats?.totalCreated ?? 0} />
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
                 <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider">{labels.completionRatioStat}</span>
                 <span className="text-xl font-bold text-emerald-400 font-mono mt-1">
-                  {momentum?.stats?.completionRatio ?? 0}%
+                  <AnimatedMetric value={momentum?.stats?.completionRatio ?? 0} suffix="%" />
                 </span>
               </div>
               <div className="bg-[#131313] p-4 rounded border border-[#1A1A1A] flex flex-col justify-between">
@@ -691,14 +712,14 @@ export default function DailyBriefing({
                     <>
                       <TrendingUp className="h-4 w-4 text-emerald-500 font-bold" />
                       <span className="text-xl font-bold text-emerald-400 font-mono">
-                        +{momentum?.stats?.weeklyChange ?? 0}%
+                        +<AnimatedMetric value={momentum?.stats?.weeklyChange ?? 0} />%
                       </span>
                     </>
                   ) : (
                     <>
                       <TrendingDown className="h-4 w-4 text-rose-500 font-bold" />
                       <span className="text-xl font-bold text-rose-500 font-mono">
-                        {momentum?.stats?.weeklyChange ?? 0}%
+                        <AnimatedMetric value={momentum?.stats?.weeklyChange ?? 0} />%
                       </span>
                     </>
                   )}

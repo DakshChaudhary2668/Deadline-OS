@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { IncidentRecoverySkeleton } from './Skeletons';
+import { AnimatedMetric, AnimatedProgressBar } from './AnimatedMetric';
 import { 
-  ShieldAlert, 
   Sparkles, 
   RefreshCw, 
   HelpCircle, 
@@ -12,7 +13,8 @@ import {
   AlertOctagon,
   Calendar,
   Undo2,
-  ListTodo
+  ListTodo,
+  ShieldAlert
 } from 'lucide-react';
 import { Task } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
@@ -114,6 +116,8 @@ export default function RecoveryHub({
         </div>
       </div>
 
+      {loading && <IncidentRecoverySkeleton />}
+
       {/* THREAT LEVEL ASSESSMENT & ROOT CAUSE */}
       {recoveryState && (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A]">
@@ -139,21 +143,22 @@ export default function RecoveryHub({
                 </span>
               </div>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-3xl font-light text-white font-mono">{recoveryState.threatScore}%</span>
+                <span className="text-3xl font-light text-white font-mono">
+                  <AnimatedMetric value={recoveryState.threatScore} suffix="%" />
+                </span>
                 <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Threat Index</span>
               </div>
             </div>
-            <div className="w-full bg-[#161616] h-1.5 rounded-full overflow-hidden mt-3">
-              <div 
-                className={`h-full transition-all duration-500 ${
-                  recoveryState.threatScore >= 85 ? 'bg-rose-500' :
-                  recoveryState.threatScore >= 60 ? 'bg-orange-500' :
-                  recoveryState.threatScore >= 30 ? 'bg-amber-500' :
-                  'bg-emerald-500'
-                }`}
-                style={{ width: `${recoveryState.threatScore}%` }}
-              ></div>
-            </div>
+            <AnimatedProgressBar 
+              value={recoveryState.threatScore}
+              colorClass={
+                recoveryState.threatScore >= 85 ? 'bg-rose-500' :
+                recoveryState.threatScore >= 60 ? 'bg-orange-500' :
+                recoveryState.threatScore >= 30 ? 'bg-amber-500' :
+                'bg-emerald-500'
+              }
+              className="w-full bg-[#161616] h-1.5 rounded-full overflow-hidden mt-3"
+            />
           </div>
         </div>
       )}
@@ -166,7 +171,7 @@ export default function RecoveryHub({
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Overdue Tasks</span>
             <div className="flex items-baseline gap-1 mt-2">
               <span className={`text-2xl font-mono ${recoveryState.metrics.overdueTasks > 0 ? 'text-rose-500 font-bold' : 'text-white'}`}>
-                {recoveryState.metrics.overdueTasks}
+                <AnimatedMetric value={recoveryState.metrics.overdueTasks} />
               </span>
             </div>
           </div>
@@ -176,7 +181,7 @@ export default function RecoveryHub({
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Critical Tasks</span>
             <div className="flex items-baseline gap-1 mt-2">
               <span className={`text-2xl font-mono ${recoveryState.metrics.criticalTasks > 0 ? 'text-amber-500 font-bold' : 'text-white'}`}>
-                {recoveryState.metrics.criticalTasks}
+                <AnimatedMetric value={recoveryState.metrics.criticalTasks} />
               </span>
             </div>
           </div>
@@ -186,7 +191,7 @@ export default function RecoveryHub({
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Blocked Tasks</span>
             <div className="flex items-baseline gap-1 mt-2">
               <span className={`text-2xl font-mono ${recoveryState.metrics.blockedTasks > 0 ? 'text-rose-400 font-bold' : 'text-white'}`}>
-                {recoveryState.metrics.blockedTasks}
+                <AnimatedMetric value={recoveryState.metrics.blockedTasks} />
               </span>
             </div>
           </div>
@@ -195,7 +200,9 @@ export default function RecoveryHub({
           <div className="bg-[#0E0E0E] p-4 rounded-xl border border-[#1A1A1A] flex flex-col justify-between">
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Remaining Workload</span>
             <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-2xl font-mono text-white">{recoveryState.metrics.remainingWorkload}h</span>
+              <span className="text-2xl font-mono text-white">
+                <AnimatedMetric value={recoveryState.metrics.remainingWorkload} suffix="h" />
+              </span>
             </div>
           </div>
 
@@ -203,7 +210,9 @@ export default function RecoveryHub({
           <div className="bg-[#0E0E0E] p-4 rounded-xl border border-[#1A1A1A] flex flex-col justify-between">
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Completion Velocity</span>
             <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-2xl font-mono text-white">{recoveryState.metrics.completionVelocity}%</span>
+              <span className="text-2xl font-mono text-white">
+                <AnimatedMetric value={recoveryState.metrics.completionVelocity} suffix="%" />
+              </span>
             </div>
           </div>
 
@@ -211,7 +220,9 @@ export default function RecoveryHub({
           <div className="bg-[#0E0E0E] p-4 rounded-xl border border-[#1A1A1A] flex flex-col justify-between">
             <span className="text-[9px] font-mono text-gray-500 uppercase tracking-wider block">Est. Recovery Time</span>
             <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-2xl font-mono text-emerald-400">{recoveryState.metrics.estimatedRecoveryTime}h</span>
+              <span className="text-2xl font-mono text-emerald-400">
+                <AnimatedMetric value={recoveryState.metrics.estimatedRecoveryTime} suffix="h" />
+              </span>
             </div>
           </div>
 
@@ -224,7 +235,7 @@ export default function RecoveryHub({
                 recoveryState.metrics.recoveryConfidence >= 50 ? 'text-amber-400' :
                 'text-rose-500'
               }`}>
-                {recoveryState.metrics.recoveryConfidence}%
+                <AnimatedMetric value={recoveryState.metrics.recoveryConfidence} suffix="%" />
               </span>
             </div>
           </div>
@@ -356,9 +367,10 @@ export default function RecoveryHub({
               <button
                 onClick={handleRunRecovery}
                 disabled={generatingId !== null || (!selectedTaskId && !viewTaskId)}
-                className="w-full mt-2 py-2 bg-white text-black text-xs font-bold font-mono tracking-wide rounded hover:bg-gray-200 transition select-none disabled:opacity-40"
+                className="w-full mt-2 py-2 bg-white text-black text-xs font-bold font-mono tracking-wide rounded hover:bg-gray-200 transition select-none disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                {generatingId ? labels.loadingDeploy : labels.deployButton}
+                {generatingId !== null && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                {generatingId !== null ? "Recovering..." : labels.deployButton}
               </button>
             </div>
           </div>
@@ -499,9 +511,9 @@ export default function RecoveryHub({
                   <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">Active Workspace Roadmap</span>
                   <h3 className="text-base font-semibold text-white mt-1 uppercase tracking-tight">
                     {mockRole === 'developer' ? 'Sprint Recovery Steps' :
-                     mockRole === 'student' ? 'Academic Recovery Steps' :
+                     mockRole === 'student' ? 'Student Recovery Steps' :
                      mockRole === 'job_seeker' ? 'Placement Recovery Steps' :
-                     'Corporate SLA Recovery Steps'}
+                     'Professional SLA Recovery Steps'}
                   </h3>
                 </div>
 

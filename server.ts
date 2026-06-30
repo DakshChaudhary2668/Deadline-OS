@@ -170,7 +170,7 @@ function computeFailureForecast(task: Task, allTasks: Task[]): any {
 
   // 3. Adjust for existing pending tasks & overall user workload stress
   const pendingTasks = allTasks.filter(t => t.status !== 'completed' && t.id !== task.id);
-  const totalPendingEffort = pendingTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
+  const totalPendingEffort = pendingTasks.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
   const pendingCount = pendingTasks.length;
 
   // Add workload penalty: more pending effort/tasks reduces time available for this task
@@ -756,7 +756,7 @@ app.post('/api/ai/simulate', async (req, res) => {
   }
 
   try {
-    const totalEffort = pending.reduce((sum, t) => sum + t.estimatedEffort, 0);
+    const totalEffort = pending.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
     const highRisk = pending.filter(t => t.status === 'overdue' || (t.riskScore && t.riskScore >= 70));
     
     const context = {

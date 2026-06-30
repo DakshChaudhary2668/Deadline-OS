@@ -8,7 +8,7 @@ export function computeSimulation(task: Task | undefined, scenario: string, pend
 }
 
 function devSim(task: Task | undefined, scenario: string, pending: Task[], tasks: Task[]) {
-  const effort = pending.reduce((s, t) => s + t.estimatedEffort, 0);
+  const effort = pending.reduce((s, t) => s + (t.estimatedEffort || 0), 0);
   const sprintCapacity = 40;
   
   let currentWorkspaceSuccess = Math.max(10, Math.min(99, 100 - (effort / sprintCapacity) * 50));
@@ -44,13 +44,13 @@ function devSim(task: Task | undefined, scenario: string, pending: Task[], tasks
     projectedObjectiveSuccess = Math.min(99, currentObjectiveSuccess + 25);
     projectedWorkspaceSuccess = Math.max(10, currentWorkspaceSuccess - 15);
     gains = [`Guarantees merge for ${tName}`];
-    losses = ['Burns out engineering resources', 'Delays peer code reviews'];
+    losses = ['Burns out developer resources', 'Delays peer code reviews'];
     netImpact = 'High sprint risk for guaranteed single-feature delivery.';
     criticalConsequences = ['Decreased team velocity', 'Missed sprint commitments on secondary tasks'];
-    recoveryRecommendations = ['Delay secondary tickets', 'Approve engineering overtime compensatory hours'];
+    recoveryRecommendations = ['Delay secondary tickets', 'Approve developer overtime compensatory hours'];
     verdict = 'ACCEPTABLE_RISK';
     verdictExplanation = 'Acceptable risk only if this ticket directly blocks a production-critical deployment.';
-    impactSummary = 'Doubling engineering cycles secures this PR but drains team capacity, risking velocity slippage.';
+    impactSummary = 'Doubling developer cycles secures this PR but drains team capacity, risking velocity slippage.';
   } else if (scenario === 'DELAY_DEADLINE') {
     projectedObjectiveSuccess = Math.max(10, currentObjectiveSuccess - 15);
     projectedWorkspaceSuccess = Math.min(95, currentWorkspaceSuccess + 5);
@@ -72,7 +72,7 @@ function devSim(task: Task | undefined, scenario: string, pending: Task[], tasks
     criticalConsequences = ['Production outage risk', 'Broken master branch build'];
     recoveryRecommendations = ['Schedule immediate hotfix sprint', 'Run post-mortem code review'];
     verdict = 'NOT_RECOMMENDED';
-    verdictExplanation = 'Bypassing quality assurance and forcing completion violates software engineering best practices.';
+    verdictExplanation = 'Bypassing quality assurance and forcing completion violates software development best practices.';
     impactSummary = 'Forcing completion skips standard testing gates and risks severe regression bugs in production.';
   }
 
@@ -80,7 +80,7 @@ function devSim(task: Task | undefined, scenario: string, pending: Task[], tasks
 }
 
 function studentSim(task: Task | undefined, scenario: string, pending: Task[], tasks: Task[]) {
-  const effort = pending.reduce((s, t) => s + t.estimatedEffort, 0);
+  const effort = pending.reduce((s, t) => s + (t.estimatedEffort || 0), 0);
   
   let currentWorkspaceSuccess = Math.max(10, Math.min(99, 100 - (effort / 20) * 40));
   let currentObjectiveSuccess = task ? 100 - (task.riskScore || 30) : 100;
@@ -115,13 +115,13 @@ function studentSim(task: Task | undefined, scenario: string, pending: Task[], t
     projectedObjectiveSuccess = 99;
     projectedWorkspaceSuccess = Math.max(10, currentWorkspaceSuccess - 20);
     gains = [`Total mastery of ${tName}`, 'High exam confidence'];
-    losses = ['Severe academic burnout', 'Memory decay in other registered courses'];
+    losses = ['Severe student burnout', 'Memory decay in other registered courses'];
     netImpact = 'Secures one grade at the expense of overall semester balance.';
     criticalConsequences = ['Cramming fatigue', 'Failing secondary subjects due to neglect'];
     recoveryRecommendations = ['Implement spaced repetition', 'Schedule a full day of rest post-exam'];
     verdict = 'NOT_RECOMMENDED';
     verdictExplanation = 'Not recommended unless this exam is a high-stakes prerequisite or core class.';
-    impactSummary = 'Cramming double hours secures conceptual mastery of this topic, but threatens overall academic performance across other subjects.';
+    impactSummary = 'Cramming double hours secures conceptual mastery of this topic, but threatens overall student performance across other subjects.';
   } else if (scenario === 'DELAY_DEADLINE') {
     projectedObjectiveSuccess = Math.max(10, currentObjectiveSuccess - 15);
     projectedWorkspaceSuccess = Math.min(95, currentWorkspaceSuccess + 10);

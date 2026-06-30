@@ -63,7 +63,7 @@ export default function AIChat({ tasks, mockRole }: AIChatProps) {
         return [
           { text: 'Optimize active sprint commitments to secure release deadlines', label: 'Sprint Optimizer' },
           { text: 'Formulate fallback strategy for the highest risk ticket', label: 'Risk Mitigation' },
-          { text: 'Help me prioritize engineering backlog to secure Sprint Velocity', label: 'Prioritization Matrix' }
+          { text: 'Help me prioritize developer backlog to secure Sprint Velocity', label: 'Prioritization Matrix' }
         ];
       case 'job_seeker':
         return [

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Task } from '../types';
 import { calculateStrategicDecision } from '../utils/strategicEngine';
+import { AnimatedMetric, AnimatedProgressBar } from './AnimatedMetric';
 import { 
   Brain, 
   Cpu, 
@@ -114,7 +116,7 @@ export function StrategicDecisions({
 
   // Global aggregate metrics for the Header Panel
   const pendingTasks = enrichedTasks.filter(t => t.status !== 'completed');
-  const totalPendingEffort = pendingTasks.reduce((sum, t) => sum + t.estimatedEffort, 0);
+  const totalPendingEffort = pendingTasks.reduce((sum, t) => sum + (t.estimatedEffort || 0), 0);
   const decisionCounts = pendingTasks.reduce((acc: Record<string, number>, t) => {
     const dType = t.computedDecision.decisionType;
     acc[dType] = (acc[dType] || 0) + 1;
@@ -261,16 +263,15 @@ export function StrategicDecisions({
           <div>
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.workspacePressure}</span>
             <div className="flex items-baseline gap-2 mt-3">
-              <p className="text-2xl font-bold text-zinc-100 font-mono">{totalPendingEffort}h</p>
+              <p className="text-2xl font-bold text-zinc-100 font-mono">
+                <AnimatedMetric value={totalPendingEffort} suffix="h" />
+              </p>
               <span className="text-xs text-zinc-500">{secondaryLabels.workloadSubtitle || 'Est. effort'}</span>
             </div>
             <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.workloadDescPrefix || 'Across'} {pendingTasks.length} {secondaryLabels.workloadDescSuffix || 'pending items'}</p>
           </div>
-          <div className="w-full bg-zinc-900 h-1.5 rounded-full mt-4 overflow-hidden">
-            <div 
-              className="bg-emerald-500 h-full transition-all duration-500" 
-              style={{ width: `${Math.min(100, Math.round((totalPendingEffort / 40) * 100))}%` }}
-            ></div>
+          <div className="w-full mt-4">
+            <AnimatedProgressBar value={Math.min(100, Math.round((totalPendingEffort / 40) * 100))} colorClass="bg-emerald-500" />
           </div>
         </div>
 
@@ -278,7 +279,9 @@ export function StrategicDecisions({
         <div className="flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-zinc-800 pb-4 lg:pb-0 lg:px-4">
           <div>
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.tasksImproved}</span>
-            <p className="text-2xl font-bold text-amber-400 mt-3 font-mono">{tasksOptimizedRate}%</p>
+            <p className="text-2xl font-bold text-amber-400 mt-3 font-mono">
+              <AnimatedMetric value={tasksOptimizedRate} suffix="%" />
+            </p>
             <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.optimizedDesc || 'Workload reduced via optimization'}</p>
           </div>
           <p className="text-[10px] text-zinc-500 font-mono mt-4 uppercase">
@@ -291,7 +294,7 @@ export function StrategicDecisions({
           <div>
             <span className="text-xs text-zinc-400 font-mono uppercase">{labels.workspaceHealth}</span>
             <p className="text-2xl font-bold text-white mt-3 font-mono">
-              {briefing?.executiveScore ?? briefing?.codebaseStability ?? averageAIScore}<span className="text-xs text-zinc-500 font-normal font-sans">/100</span>
+              <AnimatedMetric value={briefing?.executiveScore ?? briefing?.codebaseStability ?? averageAIScore} /><span className="text-xs text-zinc-500 font-normal font-sans">/100</span>
             </p>
             <p className="text-xs text-zinc-500 mt-1">{secondaryLabels.healthDesc || 'Average strategic readiness'}</p>
           </div>
@@ -348,10 +351,23 @@ export function StrategicDecisions({
 
       {/* 4. Main Executive Grid */}
       {filteredTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 bg-zinc-900/30 border border-zinc-800 border-dashed rounded-lg text-center">
-          <Brain className="w-10 h-10 text-zinc-600 mb-3 animate-pulse" />
-          <h3 className="text-sm font-semibold text-zinc-300">{labels.noTasks}</h3>
-          <p className="text-xs text-zinc-500 mt-1">{labels.adjustFilters}</p>
+        <div className="flex flex-col items-center justify-center p-12 bg-[#0E0E0E] border border-dashed border-[#1A1A1A] rounded-lg text-center max-w-xl mx-auto my-6 space-y-4">
+          <Brain className="w-10 h-10 text-zinc-650 mb-2 animate-pulse" />
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider font-mono">{labels.noTasks}</h3>
+            <p className="text-xs text-zinc-500 mt-1">{labels.adjustFilters}</p>
+          </div>
+          <div className="border-t border-[#1A1A1A]/80 pt-4 text-left space-y-2.5 max-w-sm mx-auto w-full">
+            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">Workspace Intelligence</span>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              Once you populate active milestones, DeadlineOS runs its Chief of Staff heuristics to compute:
+            </p>
+            <ul className="list-disc list-inside text-[11px] text-zinc-400 space-y-1 pl-1 font-mono">
+              <li>Automatic resource throttling recommendations</li>
+              <li>Scope-reduction parameters & opportunity-cost analysis</li>
+              <li>Real-time workload stress index alignment</li>
+            </ul>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

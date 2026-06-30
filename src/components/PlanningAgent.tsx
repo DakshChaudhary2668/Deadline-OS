@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { RoadmapSkeleton, SequentialTerminalLoader } from './Skeletons';
+import { AnimatedMetric } from './AnimatedMetric';
 import { 
-  CalendarDays, 
   Clock, 
   Sparkles, 
   ChevronRight, 
@@ -12,7 +13,8 @@ import {
   Award,
   ShieldCheck,
   CheckCircle,
-  HelpCircle
+  HelpCircle,
+  CalendarDays
 } from 'lucide-react';
 import { DayPlan, WeekPlan, Task } from '../types';
 import { MODE_LANGUAGES } from '../utils/modeLanguage';
@@ -132,13 +134,13 @@ export default function PlanningAgent({
   const roadmapAnalyticsLabels = React.useMemo(() => {
     if (mockRole === 'student') {
       return {
-        cardTitle: "ACADEMIC ROADMAP ANALYTICS",
+        cardTitle: "STUDENT ROADMAP ANALYTICS",
         focusLabel: "Today's Study Focus",
         effortLabel: "Study Effort Required",
         confidenceLabel: "Exam Prep Confidence",
         riskLabel: "Curriculum Slip Risk",
         burnoutLabel: "Cognitive Burnout",
-        debtLabel: "Academic Debt"
+        debtLabel: "Student Debt"
       };
     } else if (mockRole === 'developer') {
       return {
@@ -267,9 +269,10 @@ export default function PlanningAgent({
                 <button
                   onClick={onGenerateDay}
                   disabled={loadingDay}
-                  className="w-full mt-6 py-2 bg-white text-black text-xs font-semibold tracking-wider font-mono uppercase rounded hover:bg-gray-200 transition disabled:opacity-50"
+                  className="w-full mt-6 py-2 bg-white text-black text-xs font-semibold tracking-wider font-mono uppercase rounded hover:bg-gray-200 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loadingDay ? getCompilingTimelineText() : labels.generateDayText}
+                  {loadingDay && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                  {loadingDay ? "Planning..." : labels.generateDayText}
                 </button>
               )}
             </div>
@@ -279,12 +282,14 @@ export default function PlanningAgent({
               <ul className="mt-4 space-y-2.5 text-xs text-slate-400">
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2">
                   <span>{labels.paramPendingLabel}</span>
-                  <span className="text-white font-mono font-semibold">{roleTasks.filter(t => t.status !== 'completed').length}</span>
+                  <span className="text-white font-mono font-semibold">
+                    <AnimatedMetric value={roleTasks.filter(t => t.status !== 'completed').length} />
+                  </span>
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2">
                   <span>{labels.paramEffortLabel}</span>
                   <span className="text-white font-mono font-semibold">
-                    {roleTasks.filter(t => t.status !== 'completed').reduce((sum, t) => sum + t.estimatedEffort, 0)} {labels.hoursUnit}
+                    <AnimatedMetric value={roleTasks.filter(t => t.status !== 'completed').reduce((sum, t) => sum + (t.estimatedEffort || 0), 0)} /> {labels.hoursUnit}
                   </span>
                 </li>
                 {dayPlan && (
@@ -301,10 +306,16 @@ export default function PlanningAgent({
 
           <div className="lg:col-span-8 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A]">
             {loadingDay ? (
-              <div className="py-24 space-y-3 text-center bg-[#131313] rounded border border-[#1A1A1A] border-dashed">
-                <RefreshCw className="h-6 w-6 text-emerald-500 animate-spin mx-auto" />
-                <p className="text-sm font-semibold text-white uppercase tracking-widest font-mono">{getScanningFocusText()}</p>
-                <p className="text-xs text-slate-450 italic mt-1.5">{getPrecisionSlaText()}</p>
+              <div className="space-y-6">
+                <SequentialTerminalLoader />
+                <div className="space-y-4 pt-4 opacity-30">
+                  <div className="h-3 w-1/4 bg-zinc-800 rounded animate-pulse" />
+                  <div className="space-y-3">
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                  </div>
+                </div>
               </div>
             ) : dayPlan ? (
               <div className="space-y-6">
@@ -400,9 +411,10 @@ export default function PlanningAgent({
                 <button
                   onClick={onGenerateWeek}
                   disabled={loadingWeek}
-                  className="w-full mt-6 py-2 bg-white text-black text-xs font-semibold tracking-wider font-mono uppercase rounded hover:bg-gray-200 transition disabled:opacity-50"
+                  className="w-full mt-6 py-2 bg-white text-black text-xs font-semibold tracking-wider font-mono uppercase rounded hover:bg-gray-200 transition disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loadingWeek ? getCompilingRoadmapText() : labels.generateWeekText}
+                  {loadingWeek && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                  {loadingWeek ? "Planning..." : labels.generateWeekText}
                 </button>
               )}
             </div>
@@ -439,30 +451,32 @@ export default function PlanningAgent({
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
                   <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.effortLabel}</span>
-                  <span className="text-white font-bold">{metrics.deepWorkHours}h</span>
+                  <span className="text-white font-bold">
+                    <AnimatedMetric value={metrics.deepWorkHours} suffix="h" />
+                  </span>
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
                   <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.confidenceLabel}</span>
                   <span className={`font-bold ${metrics.confidence >= 75 ? 'text-emerald-400' : metrics.confidence >= 50 ? 'text-amber-400' : 'text-rose-500'}`}>
-                    {metrics.confidence}%
+                    <AnimatedMetric value={metrics.confidence} suffix="%" />
                   </span>
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
                   <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.riskLabel}</span>
                   <span className={`font-bold ${metrics.maxFailureRisk >= 70 ? 'text-rose-500 animate-pulse' : metrics.maxFailureRisk >= 40 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {metrics.maxFailureRisk}%
+                    <AnimatedMetric value={metrics.maxFailureRisk} suffix="%" />
                   </span>
                 </li>
                 <li className="flex items-center justify-between border-b border-[#1A1A1A]/55 pb-2.5">
                   <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.burnoutLabel}</span>
                   <span className={`font-bold ${metrics.burnout >= 70 ? 'text-rose-400 animate-pulse' : metrics.burnout >= 45 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {metrics.burnout}%
+                    <AnimatedMetric value={metrics.burnout} suffix="%" />
                   </span>
                 </li>
                 <li className="flex items-center justify-between pb-1">
                   <span className="text-gray-500 text-[10px] uppercase">{roadmapAnalyticsLabels.debtLabel}</span>
                   <span className={`font-bold ${metrics.overdueCount > 0 ? 'text-rose-500 animate-pulse' : 'text-emerald-400'}`}>
-                    {metrics.overdueCount} {metrics.overdueCount === 1 ? 'item' : 'items'} overdue
+                    <AnimatedMetric value={metrics.overdueCount} /> {metrics.overdueCount === 1 ? 'item' : 'items'} overdue
                   </span>
                 </li>
               </ul>
@@ -471,10 +485,16 @@ export default function PlanningAgent({
 
           <div className="lg:col-span-8 bg-[#0E0E0E] p-6 rounded-xl border border-[#1A1A1A]">
             {loadingWeek ? (
-              <div className="py-24 space-y-3 text-center bg-[#131313] rounded border border-[#1A1A1A] border-dashed">
-                <RefreshCw className="h-6 w-6 text-indigo-400 animate-spin mx-auto" />
-                <p className="text-sm font-semibold text-white uppercase tracking-widest font-mono">{getPlottingMilestonesText()}</p>
-                <p className="text-xs text-slate-455 italic mt-1.5">{labels.balanceEngineText}</p>
+              <div className="space-y-6">
+                <SequentialTerminalLoader />
+                <div className="space-y-4 pt-4 opacity-30">
+                  <div className="h-3 w-1/4 bg-zinc-800 rounded animate-pulse" />
+                  <div className="space-y-3">
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                    <div className="h-10 bg-[#131313] rounded border border-zinc-800/20" />
+                  </div>
+                </div>
               </div>
             ) : weekPlan ? (
               <div className="space-y-6">

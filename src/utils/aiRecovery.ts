@@ -51,7 +51,7 @@ export function getRecoveryStrategy(
   if (isDev) {
     strategyText = `Triggering immediate ${strategy} protocol to contain sprint delivery threat. We will streamline the development path for "${title}" to secure production stability.`;
     
-    resourceReallocation = `Reallocate 12 engineering hours from non-blocking tech debt backlogs directly to "${title}".`;
+    resourceReallocation = `Reallocate 12 developer hours from non-blocking tech debt backlogs directly to "${title}".`;
     scopeReduction = `Trimming decorative UI edge-cases and visual polish. Ship core robust functional APIs only.`;
     priorityShifts = `De-prioritize all Q4 exploratory feature spikes and routine administrative team standups.`;
     riskMitigation = `Implement a temporary feature flag to completely isolate the code changes and prevent regression leakage.`;
@@ -88,7 +88,7 @@ export function getRecoveryStrategy(
       actionItems = [
         `Identify past-paper questions directly associated with "${title}".`,
         `Formulate target concept outlines to consolidate fundamental principles.`,
-        `Submit draft revision materials to academic advisors for early feedback.`
+        `Submit draft revision materials to course advisors for early feedback.`
       ];
     } else if (strategy === 'Resource Reallocation') {
       actionItems = [

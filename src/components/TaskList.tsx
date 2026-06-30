@@ -204,12 +204,12 @@ export default function TaskList({
         </div>
 
         {/* STATUS INDEX TABS */}
-        <div className="flex gap-1 bg-[#0E0E0E] p-1 rounded border border-[#1A1A1A]">
+        <div className="flex flex-wrap sm:flex-nowrap gap-1 bg-[#0E0E0E] p-1 rounded border border-[#1A1A1A] w-full md:w-auto justify-center">
           {(['all', 'pending', 'overdue', 'completed'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setStatusFilter(tab)}
-              className={`px-3 py-1.5 rounded-sm text-[10px] font-mono tracking-wide transition duration-150 ${
+              className={`flex-grow sm:flex-grow-0 text-center px-2 py-1.5 rounded-sm text-[10px] font-mono tracking-wide transition duration-150 ${
                 statusFilter === tab 
                   ? 'bg-[#1A1A1A] text-white font-semibold' 
                   : 'text-gray-500 hover:text-white'
@@ -247,10 +247,23 @@ export default function TaskList({
       {/* Task list list items container */}
       <div className="space-y-3">
         {filteredTasks.length === 0 ? (
-          <div className="text-center p-12 bg-[#0E0E0E] rounded border border-[#1A1A1A]">
-            <Clock className="h-6 w-6 text-gray-600 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-white uppercase tracking-wider font-mono">{labels.emptyStateNoTasks}</p>
-            <p className="text-xs text-slate-400 italic mt-2">{labels.emptyStateAdjustFilters}</p>
+          <div className="text-center p-12 bg-[#0E0E0E] rounded border border-[#1A1A1A]/70 max-w-xl mx-auto my-6 space-y-4">
+            <Clock className="h-8 w-8 text-zinc-650 mx-auto mb-2 animate-pulse" />
+            <div>
+              <p className="text-sm font-semibold text-white uppercase tracking-wider font-mono">{labels.emptyStateNoTasks}</p>
+              <p className="text-xs text-zinc-400 mt-1">{labels.emptyStateAdjustFilters || "Adjust filters or add a new milestone to display task telemetry."}</p>
+            </div>
+            <div className="border-t border-[#1A1A1A]/80 pt-4 text-left space-y-2.5 max-w-sm mx-auto">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block font-bold">Unlocking AI Capabilities</span>
+              <p className="text-[11px] text-zinc-400 leading-relaxed">
+                Add milestones to activate our <strong className="text-zinc-200 font-mono">Decision Intelligence Heuristics</strong>. Once tasks are declared, DeadlineOS automatically models:
+              </p>
+              <ul className="list-disc list-inside text-[11px] text-zinc-400 space-y-1 pl-1 font-mono">
+                <li>SLA breach and risk forecasting</li>
+                <li>What-If scenario simulation engines</li>
+                <li>Stochastic day and week planning</li>
+              </ul>
+            </div>
           </div>
         ) : (
           <AnimatePresence mode="popLayout">
@@ -492,7 +505,6 @@ export default function TaskList({
                       </button>
                       <button 
                         onClick={() => {
-                          console.log("DELETE BUTTON CLICKED", t.id);
                           onDelete(t.id);
                         }}
                         className="p-1.5 text-gray-500 hover:text-rose-400 rounded hover:bg-rose-950/20 transition"
