@@ -20,7 +20,7 @@
 | **Current Release** | `v1.0.0-RC1` (Stable Release Phase) |
 | **Status** | Production Ready & Stable |
 | **Primary Deployment Target** | Google Cloud Run (Containerized Node.js Environment) |
-| **AI Processing Unit** | Gemini 2.5 Flash via `@google/genai` TypeScript SDK |
+| **AI Processing Unit** | Gemini 3.5 Flash via `@google/genai` TypeScript SDK |
 | **PDF Generation** | Available (High-Fidelity Executive Grade Reports) |
 | **Responsiveness** | Desktop, Tablet, and Mobile Optimized |
 
